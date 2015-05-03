@@ -1,0 +1,22 @@
+{
+  "name": "purescript-uri",
+  "homepage": "https://github.com/slamdata/purescript-uri",
+  "description": "A type-safe parser, printer, and ADT for URLs and URIs. ",
+  "keywords": [
+    "purescript",
+    "parser",
+    "uri"
+  ],
+  "license": "Apache 2.0",
+  "ignore": [
+    "**/.*",
+    "bower_components",
+    "node_modules",
+    "bower.json",
+    "gulpfile.js",
+    "package.json"
+  ],
+  "dependencies": {
+    "purescript-string-parsers": "~0.4.1"
+  }
+}
