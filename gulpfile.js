@@ -37,7 +37,9 @@ var docTask = function(name) {
   docTasks.push(taskName);
 };
 
-["Network.URI"].forEach(docTask);
+["Data.URI", "Data.URI.Authority", "Data.URI.Common", "Data.URI.Host",
+ "Data.URI.Path", "Data.URI.Query", "Data.URI.Scheme", "Data.URI.Types",
+ "Data.URI.UserInfo"].forEach(docTask);
 
 gulp.task("docs", docTasks);
 
