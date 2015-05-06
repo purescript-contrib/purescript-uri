@@ -12,15 +12,15 @@ bower install purescript-uri
 
 ## Module documentation
 
-- [Network.URI](docs/Network.URI.md)
-- [Network.URI.Types](docs/Network.URI.Types.md)
+- [Data.URI](docs/Data.URI.md)
+- [Data.URI.Types](docs/Data.URI.Types.md)
 
 ### Component parsing
 
-- [Network.URI.Authority](docs/Network.URI.Authority.md)
-- [Network.URI.Common](docs/Network.URI.Common.md)
-- [Network.URI.Host](docs/Network.URI.Host.md)
-- [Network.URI.Path](docs/Network.URI.Path.md)
-- [Network.URI.Query](docs/Network.URI.Query.md)
-- [Network.URI.Scheme](docs/Network.URI.Scheme.md)
-- [Network.URI.UserInfo](docs/Network.URI.UserInfo.md)
+- [Data.URI.Authority](docs/Data.URI.Authority.md)
+- [Data.URI.Common](docs/Data.URI.Common.md)
+- [Data.URI.Host](docs/Data.URI.Host.md)
+- [Data.URI.Path](docs/Data.URI.Path.md)
+- [Data.URI.Query](docs/Data.URI.Query.md)
+- [Data.URI.Scheme](docs/Data.URI.Scheme.md)
+- [Data.URI.UserInfo](docs/Data.URI.UserInfo.md)
