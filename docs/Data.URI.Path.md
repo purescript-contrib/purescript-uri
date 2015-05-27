@@ -5,35 +5,35 @@
 #### `parsePath`
 
 ``` purescript
-parsePath :: forall a. Parser (URIPath a) -> Parser (Maybe (URIPath a))
+parsePath :: forall p. Parser p -> Parser (Maybe p)
 ```
 
 
 #### `parsePathAbEmpty`
 
 ``` purescript
-parsePathAbEmpty :: forall a. Parser (URIPath a) -> Parser (Maybe (URIPath a))
+parsePathAbEmpty :: forall p. Parser p -> Parser (Maybe p)
 ```
 
 
 #### `parsePathAbsolute`
 
 ``` purescript
-parsePathAbsolute :: forall a. Parser (URIPath a) -> Parser (URIPath a)
+parsePathAbsolute :: forall p. Parser p -> Parser p
 ```
 
 
 #### `parsePathNoScheme`
 
 ``` purescript
-parsePathNoScheme :: forall a. Parser (URIPath a) -> Parser (URIPath a)
+parsePathNoScheme :: forall p. Parser p -> Parser p
 ```
 
 
 #### `parsePathRootless`
 
 ``` purescript
-parsePathRootless :: forall a. Parser (URIPath a) -> Parser (URIPath a)
+parsePathRootless :: forall p. Parser p -> Parser p
 ```
 
 
@@ -58,17 +58,24 @@ parseSegmentNonZeroNoColon :: Parser String
 ```
 
 
-#### `parseFilePath`
+#### `parseURIPathAbs`
 
 ``` purescript
-parseFilePath :: Parser (URIPath File)
+parseURIPathAbs :: Parser URIPathAbs
 ```
 
 
-#### `parseDirPath`
+#### `parseURIPathRel`
 
 ``` purescript
-parseDirPath :: Parser (URIPath Dir)
+parseURIPathRel :: Parser URIPathRel
+```
+
+
+#### `printPath`
+
+``` purescript
+printPath :: forall a s. URIPath a s -> String
 ```
 
 

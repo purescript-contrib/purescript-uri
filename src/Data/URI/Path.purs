@@ -7,13 +7,16 @@ module Data.URI.Path
   , parseSegment
   , parseSegmentNonZero
   , parseSegmentNonZeroNoColon
-  , parseFilePath
-  , parseDirPath
+  , parseURIPathAbs
+  , parseURIPathRel
+  , printPath
   ) where
 
 import Control.Alt ((<|>))
+import Control.Bind ((=<<))
+import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
-import Data.Path.Pathy (Dir(), File(), parseAbsDir, parseAbsFile)
+import Data.Path.Pathy (parseAbsDir, parseRelDir, parseAbsFile, parseRelFile, sandbox, rootDir, (</>), unsafePrintPath)
 import Data.String (joinWith, drop, length)
 import Data.URI.Common
 import Data.URI.Types
@@ -21,33 +24,33 @@ import Text.Parsing.StringParser (Parser(..), ParseError(..), try)
 import Text.Parsing.StringParser.Combinators (many, many1)
 import Text.Parsing.StringParser.String (string)
 
-parsePath :: forall a. Parser (URIPath a) -> Parser (Maybe (URIPath a))
+parsePath :: forall p. Parser p -> Parser (Maybe p)
 parsePath p = parsePathAbEmpty p
-          <|> (Just <$> parsePathAbsolute p)
-          <|> (Just <$> parsePathNoScheme p)
-          <|> (Just <$> parsePathRootless p)
-          <|> pure Nothing
+         <|> (Just <$> parsePathAbsolute p)
+         <|> (Just <$> parsePathNoScheme p)
+         <|> (Just <$> parsePathRootless p)
+         <|> pure Nothing
 
-parsePathAbEmpty :: forall a. Parser (URIPath a) -> Parser (Maybe (URIPath a))
+parsePathAbEmpty :: forall p. Parser p -> Parser (Maybe p)
 parsePathAbEmpty p = try (Just <$> wrapParser p (joinWith "" <$> many ((++) <$> string "/" <*> parseSegment)))
-                 <|> pure Nothing
+                     <|> pure Nothing
 
-parsePathAbsolute :: forall a. Parser (URIPath a) -> Parser (URIPath a)
+parsePathAbsolute :: forall p. Parser p -> Parser p
 parsePathAbsolute p = wrapParser p $ do
   string "/"
   start <- parseSegmentNonZero
   rest <- joinWith "" <$> many ((++) <$> string "/" <*> parseSegment)
   return $ "/" ++ start ++ rest
 
-parsePathNoScheme :: forall a. Parser (URIPath a) -> Parser (URIPath a)
-parsePathNoScheme p =
-  wrapParser p $ ((++) <$> parseSegmentNonZeroNoColon
-                        <*> (joinWith "" <$> many ((++) <$> string "/" <*> parseSegment)))
+parsePathNoScheme :: forall p. Parser p -> Parser p
+parsePathNoScheme p = wrapParser p $
+  ((++) <$> parseSegmentNonZeroNoColon
+        <*> (joinWith "" <$> many ((++) <$> string "/" <*> parseSegment)))
 
-parsePathRootless :: forall a. Parser (URIPath a) -> Parser (URIPath a)
-parsePathRootless p =
-  wrapParser p $ ((++) <$> parseSegmentNonZero
-                        <*> (joinWith "" <$> many ((++) <$> string "/" <*> parseSegment)))
+parsePathRootless :: forall p. Parser p -> Parser p
+parsePathRootless p = wrapParser p $
+  ((++) <$> parseSegmentNonZero
+        <*> (joinWith "" <$> many ((++) <$> string "/" <*> parseSegment)))
 
 parseSegment :: Parser String
 parseSegment = joinWith "" <$> many parsePChar
@@ -61,12 +64,21 @@ parseSegmentNonZeroNoColon = joinWith "" <$> many1 (parseUnreserved
                                                 <|> parseSubDelims
                                                 <|> string "@")
 
-parseFilePath :: Parser (URIPath File)
-parseFilePath = Parser \{ str: str, pos: i } fc sc -> case parseAbsFile (drop i str) of
-  Just path -> sc path { str: str, pos: length str }
-  Nothing -> fc i (ParseError $ "Expected a valid file path")
+parseURIPathAbs :: Parser URIPathAbs
+parseURIPathAbs = Parser \{ str: str, pos: i } fc sc ->
+  case sandbox rootDir =<< parseAbsFile (drop i str) of
+    Just file -> sc (Left $ rootDir </> file) { str: str, pos: length str }
+    Nothing -> case sandbox rootDir =<< parseAbsDir (drop i str) of
+      Just dir -> sc (Right $ rootDir </> dir) { str: str, pos: length str }
+      Nothing -> fc i (ParseError $ "Expected a valid path")
 
-parseDirPath :: Parser (URIPath Dir)
-parseDirPath = Parser \{ str: str, pos: i } fc sc -> case parseAbsDir (drop i str) of
-  Just path -> sc path { str: str, pos: length str }
-  Nothing -> fc i (ParseError $ "Expected a valid directory path")
+parseURIPathRel :: Parser URIPathRel
+parseURIPathRel = Parser \{ str: str, pos: i } fc sc ->
+  case parseRelFile (drop i str) of
+    Just file -> sc (Left file) { str: str, pos: length str }
+    Nothing -> case parseRelDir (drop i str) of
+      Just dir -> sc (Right dir) { str: str, pos: length str }
+      Nothing -> fc i (ParseError $ "Expected a valid path")
+
+printPath :: forall a s. URIPath a s -> String
+printPath = either unsafePrintPath unsafePrintPath

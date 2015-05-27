@@ -28,7 +28,13 @@ parseIPv4Address = IPv4Address <$> rxPat pattern <?> "IPv4 address"
   pattern :: String
   pattern = joinWith "" ["(", octet, "\\.", octet, "\\.", octet, "\\.", octet, ")"]
   octet :: String
-  octet = "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
+  octet = "(1[0-9]{2}|[1-9][0-9]|[0-9]|2[0-4][0-9]|25[0-5])"
 
 parseRegName :: Parser Host
 parseRegName = NameAddress <$> try (joinWith "" <$> many1 (parseUnreserved <|> parsePCTEncoded <|> parseSubDelims))
+
+printHost :: Host -> String
+printHost (IPv6Address i) = "[" ++ i ++ "]"
+printHost (IPv4Address i) = i
+printHost (NameAddress i) = i
+printHost (MultipleHosts hs) = joinWith "," $ printHost <$> hs

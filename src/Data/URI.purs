@@ -1,120 +1,82 @@
-module Data.URI
-  ( parseFileURI
-  , parseDirURI
-  , parserFileURI
-  , parserDirURI
-  , printURI
-  ) where
+module Data.URI where
 
+import Control.Alt ((<|>))
+import Control.Apply ((<*), (*>))
+import Data.Array (catMaybes)
+import Data.Either (Either(..), either)
+import Data.Maybe (Maybe(..))
+import Data.String (joinWith)
 import Data.URI.Authority
 import Data.URI.Common
+import Data.URI.Fragment
+import Data.URI.RelativePart
+import Data.URI.HierarchicalPart
 import Data.URI.Host
 import Data.URI.Path
 import Data.URI.Query
 import Data.URI.Scheme
 import Data.URI.Types
 import Data.URI.UserInfo
-import Control.Alt ((<|>))
-import Control.Apply ((<*), (*>))
-import Data.Array (catMaybes)
-import Data.Maybe (Maybe(..))
-import Data.Either (Either())
-import Data.Tuple (Tuple(..))
-import Data.StrMap (toList)
-import Data.String (joinWith)
 import Text.Parsing.StringParser (Parser(), ParseError(), runParser, try)
-import Text.Parsing.StringParser.Combinators (many, optionMaybe)
+import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (string, eof)
-import Data.Path.Pathy (File(), Dir(), unsafePrintPath)
 
-parseFileURI :: String -> Either ParseError (URI File)
-parseFileURI = runParser parserFileURI
+runParseURIRef :: String -> Either ParseError URIRef
+runParseURIRef = runParser parseURIRef
 
-parseDirURI :: String -> Either ParseError (URI Dir)
-parseDirURI = runParser parserDirURI
+runParseURI :: String -> Either ParseError URI
+runParseURI = runParser parseURI
 
-parserFileURI :: Parser (URI File)
-parserFileURI = URI <$> (parseScheme <* string ":")
-                    <*> parseHierarchicalPart parseFilePath
-                    <*> optionMaybe (string "?" *> parseQuery)
-                    <*> optionMaybe (string "#" *> parseFragment)
-                    <* eof
+runParseAbsoluteURI :: String -> Either ParseError AbsoluteURI
+runParseAbsoluteURI = runParser parseAbsoluteURI
 
-parserDirURI :: Parser (URI Dir)
-parserDirURI = URI <$> (parseScheme <* string ":")
-                   <*> parseHierarchicalPart parseDirPath
-                   <*> optionMaybe (string "?" *> parseQuery)
-                   <*> optionMaybe (string "#" *> parseFragment)
-                   <* eof
+runParseRelativeRef :: String -> Either ParseError RelativeRef
+runParseRelativeRef = runParser parseRelativeRef
 
-parseHierarchicalPart :: forall a. Parser (URIPath a) -> Parser (HierarchicalPart a)
-parseHierarchicalPart p = (HierarchicalPart <$> optionMaybe (string "//" *> parseAuthority) <*> parsePathAbEmpty p)
-                      <|> (HierarchicalPart Nothing <$> ((Just <$> parsePathAbsolute p)
-                                                     <|> (Just <$> parsePathRootless p)
-                                                     <|> pure Nothing))
+parseURIRef :: Parser URIRef
+parseURIRef = (Left <$> try parseURI)
+          <|> (Right <$> parseRelativeRef)
 
--- URI-reference = URI / relative-ref
--- uriReference :: Parser _
--- uriReference = { uri: _, relativeRef: _ }
---            <$> parseURI
---            <*> parseRelativeRef
+parseURI :: Parser URI
+parseURI = URI <$> (parseScheme <* string ":")
+               <*> parseHierarchicalPart
+               <*> optionMaybe (string "?" *> parseQuery)
+               <*> optionMaybe (string "#" *> parseFragment)
+               <* eof
 
--- relative-ref = relative-part [ "?" query ] [ "#" fragment ]
--- parseRelativeRef :: Parser _
--- parseRelativeRef = { relativePart: _, query: _, fragment: _ }
---                <$> parseRelativePart
---                <*> optionMaybe (string "?" *> parseQuery)
---                <*> optionMaybe (string "#" *> parseFragment)
+parseAbsoluteURI :: Parser AbsoluteURI
+parseAbsoluteURI = AbsoluteURI <$> (parseScheme <* string ":")
+                               <*> parseHierarchicalPart
+                               <*> optionMaybe (string "?" *> parseQuery)
+                               <* eof
 
--- relative-part = "//" authority path-abempty
---               / path-absolute
---               / path-noscheme
---               / path-empty
--- parseRelativePart :: Parser _
--- parseRelativePart = ({ authority: _, path: _ } <$> optionMaybe (string "//" *> parseAuthority) <*> parsePathAbEmpty)
---                 <|> ({ authority: Nothing, path: _ } <$> (parsePathAbsolute
---                                                       <|> parsePathNoScheme
---                                                       <|> pure ""))
+parseRelativeRef :: Parser RelativeRef
+parseRelativeRef = RelativeRef <$> parseRelativePart
+                               <*> optionMaybe (string "?" *> parseQuery)
+                               <*> optionMaybe (string "#" *> parseFragment)
+                               <* eof
 
-parseFragment :: Parser Fragment
-parseFragment = try (joinWith "" <$> many (parsePChar <|> string "/" <|> string "?"))
+printURIRef :: URIRef -> String
+printURIRef = either printURI printRelativeRef
 
-printURI :: forall a. URI a -> String
-printURI (URI s h q f) = combine [ printScheme <$> s
-                                 , Just (printHierPart h)
-                                 , printQuery <$> q
-                                 , ("#" ++ ) <$> f
-                                 ]
-  where
+printURI :: URI -> String
+printURI (URI s h q f) =
+  joinWith "" $ catMaybes [ printScheme <$> s
+                          , Just (printHierPart h)
+                          , printQuery <$> q
+                          , ("#" ++ ) <$> f
+                          ]
 
-  combine :: [Maybe String] -> String
-  combine = joinWith "" <<< catMaybes
+printAbsoluteURI :: AbsoluteURI -> String
+printAbsoluteURI (AbsoluteURI s h q) =
+  joinWith "" $ catMaybes [ printScheme <$> s
+                          , Just (printHierPart h)
+                          , printQuery <$> q
+                          ]
 
-  printScheme :: URIScheme -> String
-  printScheme (URIScheme s) = s ++ ":"
-
-  printHierPart :: HierarchicalPart a -> String
-  printHierPart (HierarchicalPart a p) = combine [ printAuthority <$> a
-                                                 , printPath <$> p
-                                                 ]
-
-  printAuthority :: Authority -> String
-  printAuthority (Authority u h p) = "//" ++ combine [ (++ "@") <$> u
-                                                     , Just (printHost h)
-                                                     , (":" ++) <$> p
-                                                     ]
-
-  printHost :: Host -> String
-  printHost (IPv6Address i) = "[" ++ i ++ "]"
-  printHost (IPv4Address i) = i
-  printHost (NameAddress i) = i
-  printHost (MultipleHosts hs) = joinWith "," $ printHost <$> hs
-
-  printPath :: URIPath a -> String
-  printPath = unsafePrintPath
-
-  printQuery :: Query -> String
-  printQuery (Query m) = "?" ++ joinWith "&" (printQueryPart <$> toList m)
-
-  printQueryPart :: Tuple String String -> String
-  printQueryPart (Tuple k v) = k ++ "=" ++ v
+printRelativeRef :: RelativeRef -> String
+printRelativeRef (RelativeRef h q f) =
+  joinWith "" $ catMaybes [ Just (printRelativePart h)
+                          , printQuery <$> q
+                          , ("#" ++ ) <$> f
+                          ]

@@ -8,3 +8,6 @@ import Text.Parsing.StringParser.Combinators (optionMaybe)
 
 parseScheme :: Parser (Maybe URIScheme)
 parseScheme = optionMaybe (URIScheme <$> rxPat "[a-z][a-z0-9+\\.\\-]+")
+
+printScheme :: URIScheme -> String
+printScheme (URIScheme s) = s ++ ":"

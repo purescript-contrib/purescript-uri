@@ -2,38 +2,87 @@
 
 ## Module Data.URI
 
-#### `parseFileURI`
+#### `runParseURIRef`
 
 ``` purescript
-parseFileURI :: String -> Either ParseError (URI File)
+runParseURIRef :: String -> Either ParseError URIRef
 ```
 
 
-#### `parseDirURI`
+#### `runParseURI`
 
 ``` purescript
-parseDirURI :: String -> Either ParseError (URI Dir)
+runParseURI :: String -> Either ParseError URI
 ```
 
 
-#### `parserFileURI`
+#### `runParseAbsoluteURI`
 
 ``` purescript
-parserFileURI :: Parser (URI File)
+runParseAbsoluteURI :: String -> Either ParseError AbsoluteURI
 ```
 
 
-#### `parserDirURI`
+#### `runParseRelativeRef`
 
 ``` purescript
-parserDirURI :: Parser (URI Dir)
+runParseRelativeRef :: String -> Either ParseError RelativeRef
+```
+
+
+#### `parseURIRef`
+
+``` purescript
+parseURIRef :: Parser URIRef
+```
+
+
+#### `parseURI`
+
+``` purescript
+parseURI :: Parser URI
+```
+
+
+#### `parseAbsoluteURI`
+
+``` purescript
+parseAbsoluteURI :: Parser AbsoluteURI
+```
+
+
+#### `parseRelativeRef`
+
+``` purescript
+parseRelativeRef :: Parser RelativeRef
+```
+
+
+#### `printURIRef`
+
+``` purescript
+printURIRef :: URIRef -> String
 ```
 
 
 #### `printURI`
 
 ``` purescript
-printURI :: forall a. URI a -> String
+printURI :: URI -> String
+```
+
+
+#### `printAbsoluteURI`
+
+``` purescript
+printAbsoluteURI :: AbsoluteURI -> String
+```
+
+
+#### `printRelativeRef`
+
+``` purescript
+printRelativeRef :: RelativeRef -> String
 ```
 
 

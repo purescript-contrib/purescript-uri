@@ -5,10 +5,62 @@
 #### `URI`
 
 ``` purescript
-data URI a
-  = URI (Maybe URIScheme) (HierarchicalPart a) (Maybe Query) (Maybe Fragment)
+data URI
+  = URI (Maybe URIScheme) HierarchicalPart (Maybe Query) (Maybe Fragment)
 ```
 
+A generic URI
+
+#### `AbsoluteURI`
+
+``` purescript
+data AbsoluteURI
+  = AbsoluteURI (Maybe URIScheme) HierarchicalPart (Maybe Query)
+```
+
+An absolute URI.
+
+#### `RelativeRef`
+
+``` purescript
+data RelativeRef
+  = RelativeRef RelativePart (Maybe Query) (Maybe Fragment)
+```
+
+A relative reference for a URI.
+
+#### `URIPath`
+
+``` purescript
+type URIPath a s = Either (Path a File s) (Path a Dir s)
+```
+
+A general URI path, can be used to represent relative or absolute paths
+that are sandboxed or unsandboxed.
+
+#### `URIPathAbs`
+
+``` purescript
+type URIPathAbs = URIPath Abs Sandboxed
+```
+
+The path part for a generic or absolute URI.
+
+#### `URIPathRel`
+
+``` purescript
+type URIPathRel = URIPath Rel Unsandboxed
+```
+
+The path part for a relative reference.
+
+#### `URIRef`
+
+``` purescript
+type URIRef = Either URI RelativeRef
+```
+
+An alias for the most common use case of resource identifiers.
 
 #### `URIScheme`
 
@@ -17,21 +69,25 @@ newtype URIScheme
   = URIScheme String
 ```
 
+The scheme part of an absolute URI. For example: `http`, `ftp`, `git`.
 
 #### `HierarchicalPart`
 
 ``` purescript
-data HierarchicalPart a
-  = HierarchicalPart (Maybe Authority) (Maybe (URIPath a))
+data HierarchicalPart
+  = HierarchicalPart (Maybe Authority) (Maybe URIPathAbs)
 ```
 
+The "hierarchical part" of a generic or absolute URI.
 
-#### `URIPath`
+#### `RelativePart`
 
 ``` purescript
-type URIPath a = Path Abs a Unsandboxed
+data RelativePart
+  = RelativePart (Maybe Authority) (Maybe URIPathRel)
 ```
 
+The "relative part" of a relative reference.
 
 #### `Authority`
 
@@ -40,6 +96,8 @@ data Authority
   = Authority (Maybe UserInfo) Host (Maybe Port)
 ```
 
+The authority part of a URI. For example: `purescript.org`,
+`localhost:3000`, `user@example.net`
 
 #### `UserInfo`
 
@@ -47,6 +105,7 @@ data Authority
 type UserInfo = String
 ```
 
+The user info part of an `Authority`. For example: `user`, `foo:bar`.
 
 #### `Host`
 
@@ -58,21 +117,24 @@ data Host
   | MultipleHosts [Host]
 ```
 
+A host address.
 
 #### `Port`
 
 ``` purescript
-type Port = String
+type Port = Int
 ```
 
+A port number.
 
 #### `Query`
 
 ``` purescript
 newtype Query
-  = Query (StrMap String)
+  = Query (StrMap (Maybe String))
 ```
 
+The query component of a URI.
 
 #### `Fragment`
 
@@ -80,18 +142,47 @@ newtype Query
 type Fragment = String
 ```
 
+The hash fragment of a URI.
 
 #### `eqURI`
 
 ``` purescript
-instance eqURI :: Eq (URI a)
+instance eqURI :: Eq URI
 ```
 
 
 #### `showURI`
 
 ``` purescript
-instance showURI :: Show (URI a)
+instance showURI :: Show URI
+```
+
+
+#### `eqAbsoluteURI`
+
+``` purescript
+instance eqAbsoluteURI :: Eq AbsoluteURI
+```
+
+
+#### `showAbsoluteURI`
+
+``` purescript
+instance showAbsoluteURI :: Show AbsoluteURI
+```
+
+
+#### `eqRelativeRef`
+
+``` purescript
+instance eqRelativeRef :: Eq RelativeRef
+```
+
+
+#### `showRelativeRef`
+
+``` purescript
+instance showRelativeRef :: Show RelativeRef
 ```
 
 
@@ -112,14 +203,28 @@ instance showURIScheme :: Show URIScheme
 #### `eqHierarchicalPart`
 
 ``` purescript
-instance eqHierarchicalPart :: Eq (HierarchicalPart a)
+instance eqHierarchicalPart :: Eq HierarchicalPart
 ```
 
 
 #### `showHierarchicalPart`
 
 ``` purescript
-instance showHierarchicalPart :: Show (HierarchicalPart a)
+instance showHierarchicalPart :: Show HierarchicalPart
+```
+
+
+#### `eqRelativePart`
+
+``` purescript
+instance eqRelativePart :: Eq RelativePart
+```
+
+
+#### `showRelativePart`
+
+``` purescript
+instance showRelativePart :: Show RelativePart
 ```
 
 

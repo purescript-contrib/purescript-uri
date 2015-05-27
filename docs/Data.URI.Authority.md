@@ -16,5 +16,12 @@ parsePort :: Parser Port
 ```
 
 
+#### `printAuthority`
+
+``` purescript
+printAuthority :: Authority -> String
+```
+
+
 
 

@@ -9,5 +9,12 @@ parseQuery :: Parser Query
 ```
 
 
+#### `printQuery`
+
+``` purescript
+printQuery :: Query -> String
+```
+
+
 
 

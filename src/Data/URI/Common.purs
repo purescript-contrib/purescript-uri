@@ -29,10 +29,10 @@ parsePChar = parseUnreserved
          <|> string "@"
 
 parseUnreserved :: Parser String
-parseUnreserved = anyMatch $ Rx.regex "[0-9a-z\\-\\._~]+" (Rx.noFlags { ignoreCase = true })
+parseUnreserved = rxPat "[0-9a-z\\-\\._~]+"
 
 parsePCTEncoded :: Parser String
-parsePCTEncoded = anyMatch $ Rx.regex "%[0-9a-f]{2}" (Rx.noFlags { ignoreCase = true })
+parsePCTEncoded = rxPat "%[0-9a-f]{2}"
 
 parseSubDelims :: Parser String
 parseSubDelims = rxPat "[!$&'()*+;=]"

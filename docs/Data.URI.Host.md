@@ -29,5 +29,12 @@ parseRegName :: Parser Host
 ```
 
 
+#### `printHost`
+
+``` purescript
+printHost :: Host -> String
+```
+
+
 
 

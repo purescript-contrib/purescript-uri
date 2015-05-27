@@ -9,5 +9,12 @@ parseScheme :: Parser (Maybe URIScheme)
 ```
 
 
+#### `printScheme`
+
+``` purescript
+printScheme :: URIScheme -> String
+```
+
+
 
 

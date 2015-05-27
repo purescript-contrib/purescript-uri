@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/slamdata/purescript-uri.svg?branch=master)](https://travis-ci.org/slamdata/purescript-uri)
 
-A type-safe parser, printer, and ADT for URLs and URIs.
+A type-safe parser, printer, and ADT for URLs and URIs based on [RFC 3986](http://tools.ietf.org/html/rfc3986).
 
 ## Installation
 
