@@ -6,6 +6,7 @@ import Data.Int (Int())
 import Data.Maybe (Maybe())
 import Data.Path.Pathy (Path(), File(), Dir(), Abs(), Rel(), Sandboxed(), Unsandboxed())
 import Data.StrMap (StrMap())
+import Data.Tuple (Tuple())
 
 import qualified Data.Array.Unsafe as U
 
@@ -42,7 +43,7 @@ data RelativePart = RelativePart (Maybe Authority) (Maybe URIPathRel)
 
 -- | The authority part of a URI. For example: `purescript.org`,
 -- | `localhost:3000`, `user@example.net`
-data Authority = Authority (Maybe UserInfo) Host (Maybe Port)
+data Authority = Authority (Maybe UserInfo) [Tuple Host (Maybe Port)]
 
 -- | The user info part of an `Authority`. For example: `user`, `foo:bar`.
 type UserInfo = String
@@ -52,7 +53,6 @@ data Host
   = IPv6Address String
   | IPv4Address String
   | NameAddress String
-  | MultipleHosts [Host]
 
 -- | A port number.
 type Port = Int
@@ -106,19 +106,16 @@ instance showRelativePart :: Show RelativePart where
   show (RelativePart authority path) = "RelativePart (" ++ show authority ++ ") (" ++ show path ++ ")"
 
 instance eqAuthority :: Eq Authority where
-  (==) (Authority u1 h1 p1) (Authority u2 h2 p2) = u1 == u2 && h1 == h2 && p1 == p2
+  (==) (Authority u1 hs1) (Authority u2 hs2) = u1 == u2 && hs1 == hs2
   (/=) x y = not (x == y)
 
 instance showAuthority :: Show Authority where
-  show (Authority userinfo host port) = "Authority (" ++ show userinfo ++ ") (" ++ show host ++ ") (" ++ show port ++ ")"
+  show (Authority userinfo hosts) = "Authority (" ++ show userinfo ++ ") " ++ show hosts
 
 instance eqHost :: Eq Host where
   (==) (IPv6Address i1) (IPv6Address i2) = i1 == i2
   (==) (IPv4Address i1) (IPv4Address i2) = i1 == i2
   (==) (NameAddress n1) (NameAddress n2) = n1 == n2
-  (==) (MultipleHosts hs1) (MultipleHosts hs2) = hs1 == hs2
-  (==) (MultipleHosts hs) h2 | length hs == 1 = U.head hs == h2
-  (==) h1 (MultipleHosts hs) | length hs == 1 = h1 == U.head hs
   (==) _ _ = false
   (/=) x y = not (x == y)
 
@@ -126,7 +123,6 @@ instance showHost :: Show Host where
   show (IPv6Address ip) = "IPv6Address " ++ show ip
   show (IPv4Address ip) = "IPv4Address " ++ show ip
   show (NameAddress name) = "NameAddress " ++ show name
-  show (MultipleHosts hs) = "MultipleHosts " ++ show hs
 
 instance eqQuery :: Eq Query where
   (==) (Query m1) (Query m2) = m1 == m2

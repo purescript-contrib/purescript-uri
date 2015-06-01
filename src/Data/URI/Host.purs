@@ -12,11 +12,7 @@ import Text.Parsing.StringParser.String (string)
 import qualified Data.Array.Unsafe as U
 
 parseHost :: Parser Host
-parseHost = do
-  hosts <- sepBy1 (parseIPv6Address <|> parseIPv4Address <|> parseRegName) (string ",")
-  return $ if length hosts > 1
-           then MultipleHosts hosts
-           else U.head hosts
+parseHost = parseIPv6Address <|> parseIPv4Address <|> parseRegName
 
 -- TODO: this is much too forgiving right now
 parseIPv6Address :: Parser Host
@@ -37,4 +33,3 @@ printHost :: Host -> String
 printHost (IPv6Address i) = "[" ++ i ++ "]"
 printHost (IPv4Address i) = i
 printHost (NameAddress i) = i
-printHost (MultipleHosts hs) = joinWith "," $ printHost <$> hs

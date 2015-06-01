@@ -12,6 +12,7 @@ main = do
   test runParseURIRef "http://en.wikipedia.org/wiki/URI_scheme"
   test runParseURIRef "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"
   test runParseURIRef "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
+  test runParseURIRef "mongodb://foo:bar@db1.example.net:666,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
   test runParseURIRef "mongodb://192.168.0.1"
   test runParseURIRef "mongodb://192.168.0.1,192.168.0.2"
   test runParseURIRef "mongodb://sysop:moon@localhost"

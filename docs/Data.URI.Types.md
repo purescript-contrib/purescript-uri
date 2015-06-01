@@ -93,7 +93,7 @@ The "relative part" of a relative reference.
 
 ``` purescript
 data Authority
-  = Authority (Maybe UserInfo) Host (Maybe Port)
+  = Authority (Maybe UserInfo) [Tuple Host (Maybe Port)]
 ```
 
 The authority part of a URI. For example: `purescript.org`,
@@ -114,7 +114,6 @@ data Host
   = IPv6Address String
   | IPv4Address String
   | NameAddress String
-  | MultipleHosts [Host]
 ```
 
 A host address.
