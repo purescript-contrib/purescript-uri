@@ -17,10 +17,12 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-string-parsers": "~0.4.1",
-    "purescript-pathy": "~0.1.3",
-    "purescript-maps": "~0.3.4",
-    "purescript-integers": "~0.1.0",
-    "purescript-globals": "~0.1.6"
+    "purescript-string-parsers":  "^0.5.0",
+    "purescript-pathy":           "SimonRichardson/purescript-pathy#meltdown",
+    "purescript-arrays":          "^0.4.0",
+    "purescript-lists":           "^0.7.0",
+    "purescript-maps":            "^0.4.0",
+    "purescript-integers":        "^0.2.0",
+    "purescript-globals":         "^0.2.0"
   }
 }

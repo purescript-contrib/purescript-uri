@@ -1,8 +1,8 @@
 module Data.URI.Types where
 
+import Prelude
 import Data.Array (length)
 import Data.Either (Either())
-import Data.Int (Int())
 import Data.Maybe (Maybe())
 import Data.Path.Pathy (Path(), File(), Dir(), Abs(), Rel(), Sandboxed(), Unsandboxed())
 import Data.StrMap (StrMap())
@@ -43,7 +43,7 @@ data RelativePart = RelativePart (Maybe Authority) (Maybe URIPathRel)
 
 -- | The authority part of a URI. For example: `purescript.org`,
 -- | `localhost:3000`, `user@example.net`
-data Authority = Authority (Maybe UserInfo) [Tuple Host (Maybe Port)]
+data Authority = Authority (Maybe UserInfo) (Array (Tuple Host (Maybe Port)))
 
 -- | The user info part of an `Authority`. For example: `user`, `foo:bar`.
 type UserInfo = String
@@ -64,60 +64,53 @@ newtype Query = Query (StrMap (Maybe String))
 type Fragment = String
 
 instance eqURI :: Eq URI where
-  (==) (URI s1 h1 q1 f1) (URI s2 h2 q2 f2) = s1 == s2 && h1 == h2 && q1 == q2 && f1 == f2
-  (/=) x y = not (x == y)
+  eq (URI s1 h1 q1 f1) (URI s2 h2 q2 f2) = s1 == s2 && h1 == h2 && q1 == q2 && f1 == f2
+  
 
 instance showURI :: Show URI where
   show (URI s h q f) = "URI (" ++ show s ++ ") (" ++ show h ++ ") (" ++ show q ++ ") (" ++ show f ++ ")"
 
 instance eqAbsoluteURI :: Eq AbsoluteURI where
-  (==) (AbsoluteURI s1 h1 q1) (AbsoluteURI s2 h2 q2) = s1 == s2 && h1 == h2 && q1 == q2
-  (/=) x y = not (x == y)
+  eq (AbsoluteURI s1 h1 q1) (AbsoluteURI s2 h2 q2) = s1 == s2 && h1 == h2 && q1 == q2
 
 instance showAbsoluteURI :: Show AbsoluteURI where
   show (AbsoluteURI s h q) = "AbsoluteURI (" ++ show s ++ ") (" ++ show h ++ ") (" ++ show q ++ ")"
 
 instance eqRelativeRef :: Eq RelativeRef where
-  (==) (RelativeRef r1 q1 f1) (RelativeRef r2 q2 f2) = r1 == r2 && q1 == q2 && f1 == f2
-  (/=) x y = not (x == y)
+  eq (RelativeRef r1 q1 f1) (RelativeRef r2 q2 f2) = r1 == r2 && q1 == q2 && f1 == f2
 
 instance showRelativeRef :: Show RelativeRef where
   show (RelativeRef r q f) = "RelativeRef (" ++ show r ++ ") (" ++ show q ++ ") (" ++ show f ++ ")"
 
 instance eqURIScheme :: Eq URIScheme where
-  (==) (URIScheme s1) (URIScheme s2) = s1 == s2
-  (/=) x y = not (x == y)
+  eq (URIScheme s1) (URIScheme s2) = s1 == s2
 
 instance showURIScheme :: Show URIScheme where
   show (URIScheme s) = "URIScheme " ++ show s
 
 instance eqHierarchicalPart :: Eq HierarchicalPart where
-  (==) (HierarchicalPart a1 p1) (HierarchicalPart a2 p2) = a1 == a2 && p1 == p2
-  (/=) x y = not (x == y)
+  eq (HierarchicalPart a1 p1) (HierarchicalPart a2 p2) = a1 == a2 && p1 == p2
 
 instance showHierarchicalPart :: Show HierarchicalPart where
   show (HierarchicalPart authority path) = "HierarchicalPart (" ++ show authority ++ ") (" ++ show path ++ ")"
 
 instance eqRelativePart :: Eq RelativePart where
-  (==) (RelativePart a1 p1) (RelativePart a2 p2) = a1 == a2 && p1 == p2
-  (/=) x y = not (x == y)
+  eq (RelativePart a1 p1) (RelativePart a2 p2) = a1 == a2 && p1 == p2
 
 instance showRelativePart :: Show RelativePart where
   show (RelativePart authority path) = "RelativePart (" ++ show authority ++ ") (" ++ show path ++ ")"
 
 instance eqAuthority :: Eq Authority where
-  (==) (Authority u1 hs1) (Authority u2 hs2) = u1 == u2 && hs1 == hs2
-  (/=) x y = not (x == y)
+  eq (Authority u1 hs1) (Authority u2 hs2) = u1 == u2 && hs1 == hs2
 
 instance showAuthority :: Show Authority where
   show (Authority userinfo hosts) = "Authority (" ++ show userinfo ++ ") " ++ show hosts
 
 instance eqHost :: Eq Host where
-  (==) (IPv6Address i1) (IPv6Address i2) = i1 == i2
-  (==) (IPv4Address i1) (IPv4Address i2) = i1 == i2
-  (==) (NameAddress n1) (NameAddress n2) = n1 == n2
-  (==) _ _ = false
-  (/=) x y = not (x == y)
+  eq (IPv6Address i1) (IPv6Address i2) = i1 == i2
+  eq (IPv4Address i1) (IPv4Address i2) = i1 == i2
+  eq (NameAddress n1) (NameAddress n2) = n1 == n2
+  eq _ _ = false
 
 instance showHost :: Show Host where
   show (IPv6Address ip) = "IPv6Address " ++ show ip
@@ -125,8 +118,7 @@ instance showHost :: Show Host where
   show (NameAddress name) = "NameAddress " ++ show name
 
 instance eqQuery :: Eq Query where
-  (==) (Query m1) (Query m2) = m1 == m2
-  (/=) x y = not (x == y)
+  eq (Query m1) (Query m2) = m1 == m2
 
 instance showQuery :: Show Query where
   show (Query m) = "Query (" ++ show m ++ ")"

@@ -1,14 +1,15 @@
 module Data.URI.HierarchicalPart where
 
+import Prelude
 import Control.Alt ((<|>))
 import Control.Apply ((*>))
 import Data.Array (catMaybes)
 import Data.Maybe (Maybe(..))
-import Data.String (joinWith)
 import Data.URI.Authority
 import Data.URI.Common
 import Data.URI.Path
 import Data.URI.Types
+import qualified Data.String as S
 import Text.Parsing.StringParser (Parser())
 import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (string)
@@ -21,6 +22,6 @@ parseHierarchicalPart = (HierarchicalPart <$> optionMaybe (string "//" *> parseA
 
 printHierPart :: HierarchicalPart -> String
 printHierPart (HierarchicalPart a p) =
-  joinWith "" $ catMaybes [ printAuthority <$> a
-                          , printPath <$> p
-                          ]
+  S.joinWith "" $ catMaybes [ printAuthority <$> a
+                            , printPath <$> p
+                            ]

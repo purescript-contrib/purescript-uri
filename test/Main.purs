@@ -1,8 +1,9 @@
 module Test.Main where
 
+import Prelude
 import Data.Either
 import Control.Monad.Eff
-import Debug.Trace
+import Control.Monad.Eff.Console
 import Data.URI
 import Data.URI.Types
 import Text.Parsing.StringParser
@@ -41,19 +42,9 @@ main = do
 
 test :: forall a. (String -> Either ParseError URIRef) -> String -> _
 test f s = do
-  trace $ "\nTrying to parse " ++ s ++ ""
+  log $ "\nTrying to parse " ++ s ++ ""
   case f s of
-    (Left err) -> trace $ "  Parse failed: " ++ show err
+    (Left err) -> log $ "  Parse failed: " ++ show err
     (Right x) -> do
-      trace $ "      printURI: " ++ printURIRef x
-      trace $ "          show: " ++ show x
-
-foreign import traceAny
-  """
-  function traceAny (x) {
-    return function () {
-      console.log(JSON.stringify(x));
-      return {};
-    };
-  }
-  """ :: forall a e. a -> Eff (trace :: Trace) Unit
+      log $ "      printURI: " ++ printURIRef x
+      log $ "          show: " ++ show x

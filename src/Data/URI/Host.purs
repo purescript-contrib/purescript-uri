@@ -1,11 +1,13 @@
 module Data.URI.Host where
 
+import Prelude
 import Control.Alt ((<|>))
 import Control.Apply ((*>), (<*))
 import Data.Array (length)
-import Data.String (joinWith)
+import Data.List (fromList)
 import Data.URI.Common
 import Data.URI.Types
+import qualified Data.String as S
 import Text.Parsing.StringParser (Parser(), try)
 import Text.Parsing.StringParser.Combinators ((<?>), many1, sepBy1)
 import Text.Parsing.StringParser.String (string)
@@ -22,7 +24,7 @@ parseIPv4Address :: Parser Host
 parseIPv4Address = IPv4Address <$> rxPat pattern <?> "IPv4 address"
   where
   pattern :: String
-  pattern = joinWith "" ["(", octet, "\\.", octet, "\\.", octet, "\\.", octet, ")"]
+  pattern = S.joinWith "" ["(", octet, "\\.", octet, "\\.", octet, "\\.", octet, ")"]
   octet :: String
   octet = "(1[0-9]{2}|[1-9][0-9]|[0-9]|2[0-4][0-9]|25[0-5])"
 

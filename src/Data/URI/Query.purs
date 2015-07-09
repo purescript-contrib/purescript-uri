@@ -3,9 +3,10 @@ module Data.URI.Query
   , printQuery
   ) where
 
+import Prelude
 import Control.Alt
 import Control.Apply
-import Data.String
+import qualified Data.String as S
 import Data.StrMap (StrMap(), fromList, toList)
 import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..), fromMaybe)
