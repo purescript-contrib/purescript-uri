@@ -36,4 +36,4 @@ printAuthority (Authority u hs) =
   "//" ++ maybe "" (++ "@") u
        ++ S.joinWith "," (printHostAndPort <$> hs)
   where
-  printHostAndPort (Tuple h p) = printHost h ++ maybe "" (\n -> ":" ++ show (toNumber n)) p
+  printHostAndPort (Tuple h p) = printHost h ++ maybe "" (\n -> ":" ++ show n) p
