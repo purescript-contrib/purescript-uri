@@ -1,7 +1,7 @@
 module Data.URI.Fragment where
 
+import Prelude
 import Control.Alt ((<|>))
-import Data.String (joinWith)
 import Data.URI.Common
 import Data.URI.Types
 import Text.Parsing.StringParser (Parser(), try)

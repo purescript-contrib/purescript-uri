@@ -12,12 +12,14 @@ module Data.URI.Path
   , printPath
   ) where
 
+import Prelude
 import Control.Alt ((<|>))
 import Control.Bind ((=<<))
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
 import Data.Path.Pathy (parseAbsDir, parseRelDir, parseAbsFile, parseRelFile, sandbox, rootDir, (</>), unsafePrintPath)
-import Data.String (joinWith, drop, length)
+import Data.List (fromList)
+import Data.String (drop, length)
 import Data.URI.Common
 import Data.URI.Types
 import Text.Parsing.StringParser (Parser(..), ParseError(..), try)
@@ -60,9 +62,9 @@ parseSegmentNonZero = joinWith "" <$> many1 parsePChar
 
 parseSegmentNonZeroNoColon :: Parser String
 parseSegmentNonZeroNoColon = joinWith "" <$> many1 (parseUnreserved
-                                                <|> parsePCTEncoded
-                                                <|> parseSubDelims
-                                                <|> string "@")
+                                         <|> parsePCTEncoded
+                                         <|> parseSubDelims
+                                         <|> string "@")
 
 parseURIPathAbs :: Parser URIPathAbs
 parseURIPathAbs = Parser \{ str: str, pos: i } fc sc ->

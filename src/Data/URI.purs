@@ -1,11 +1,11 @@
 module Data.URI where
 
+import Prelude
 import Control.Alt ((<|>))
 import Control.Apply ((<*), (*>))
 import Data.Array (catMaybes)
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
-import Data.String (joinWith)
 import Data.URI.Authority
 import Data.URI.Common
 import Data.URI.Fragment
@@ -17,6 +17,7 @@ import Data.URI.Query
 import Data.URI.Scheme
 import Data.URI.Types
 import Data.URI.UserInfo
+import qualified Data.String as S
 import Text.Parsing.StringParser (Parser(), ParseError(), runParser, try)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (string, eof)
@@ -61,22 +62,22 @@ printURIRef = either printURI printRelativeRef
 
 printURI :: URI -> String
 printURI (URI s h q f) =
-  joinWith "" $ catMaybes [ printScheme <$> s
-                          , Just (printHierPart h)
-                          , printQuery <$> q
-                          , ("#" ++ ) <$> f
-                          ]
+  S.joinWith "" $ catMaybes [ printScheme <$> s
+                            , Just (printHierPart h)
+                            , printQuery <$> q
+                            , ("#" ++ ) <$> f
+                            ]
 
 printAbsoluteURI :: AbsoluteURI -> String
 printAbsoluteURI (AbsoluteURI s h q) =
-  joinWith "" $ catMaybes [ printScheme <$> s
-                          , Just (printHierPart h)
-                          , printQuery <$> q
-                          ]
+  S.joinWith "" $ catMaybes [ printScheme <$> s
+                            , Just (printHierPart h)
+                            , printQuery <$> q
+                            ]
 
 printRelativeRef :: RelativeRef -> String
 printRelativeRef (RelativeRef h q f) =
-  joinWith "" $ catMaybes [ Just (printRelativePart h)
-                          , printQuery <$> q
-                          , ("#" ++ ) <$> f
-                          ]
+  S.joinWith "" $ catMaybes [ Just (printRelativePart h)
+                            , printQuery <$> q
+                            , ("#" ++ ) <$> f
+                            ]

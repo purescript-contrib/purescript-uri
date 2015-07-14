@@ -1,8 +1,9 @@
 module Test.Main where
 
+import Prelude
 import Data.Either
 import Control.Monad.Eff
-import Debug.Trace
+import Control.Monad.Eff.Console
 import Data.URI
 import Data.URI.Types
 import Text.Parsing.StringParser
@@ -25,15 +26,17 @@ main = do
   test runParseURIRef "ftp://ftp.is.co.za/rfc/rfc1808.txt"
   test runParseURIRef "http://www.ietf.org/rfc/rfc2396.txt"
   test runParseURIRef "ldap://[2001:db8::7]/c=GB?objectClass?one"
-  test runParseURIRef "mailto:John.Doe@example.com"
-  test runParseURIRef "news:comp.infosystems.www.servers.unix"
-  test runParseURIRef "tel:+1-816-555-1212"
   test runParseURIRef "telnet://192.0.2.16:80/"
-  test runParseURIRef "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
   test runParseURIRef "foo://example.com:8042/over/there?name=ferret#nose"
-  test runParseURIRef "mailto:fred@example.com"
   test runParseURIRef "foo://info.example.com?fred"
   test runParseURIRef "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
+
+  log "\nFailing test cases: "
+  test runParseURIRef "news:comp.infosystems.www.servers.unix"
+  test runParseURIRef "tel:+1-816-555-1212"
+  test runParseURIRef "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
+  test runParseURIRef "mailto:John.Doe@example.com"
+  test runParseURIRef "mailto:fred@example.com"
   test runParseURIRef "../top_story.htm"
   test runParseURIRef "top_story.htm"
   test runParseURIRef "/top_story.htm"
@@ -41,19 +44,9 @@ main = do
 
 test :: forall a. (String -> Either ParseError URIRef) -> String -> _
 test f s = do
-  trace $ "\nTrying to parse " ++ s ++ ""
+  log $ "\nTrying to parse " ++ s ++ ""
   case f s of
-    (Left err) -> trace $ "  Parse failed: " ++ show err
+    (Left err) -> log $ "  Parse failed: " ++ show err
     (Right x) -> do
-      trace $ "      printURI: " ++ printURIRef x
-      trace $ "          show: " ++ show x
-
-foreign import traceAny
-  """
-  function traceAny (x) {
-    return function () {
-      console.log(JSON.stringify(x));
-      return {};
-    };
-  }
-  """ :: forall a e. a -> Eff (trace :: Trace) Unit
+      log $ "      printURI: " ++ printURIRef x
+      log $ "          show: " ++ show x

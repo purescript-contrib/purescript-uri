@@ -1,5 +1,6 @@
 module Data.URI.Scheme where
 
+import Prelude
 import Data.Maybe (Maybe())
 import Data.URI.Common
 import Data.URI.Types
