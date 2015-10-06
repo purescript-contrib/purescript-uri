@@ -2,11 +2,14 @@ module Test.Main where
 
 import Prelude
 import Data.Either
+import Control.Apply
 import Control.Monad.Eff
-import Control.Monad.Eff.Console
+import qualified Control.Monad.Eff.Console as C
+import Control.Monad.Eff.Exception
 import Data.URI
 import Data.URI.Types
 import Text.Parsing.StringParser
+
 
 main = do
   test runParseURIRef "mongodb://localhost"
@@ -31,22 +34,30 @@ main = do
   test runParseURIRef "foo://info.example.com?fred"
   test runParseURIRef "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
 
-  log "\nFailing test cases: "
-  test runParseURIRef "news:comp.infosystems.www.servers.unix"
-  test runParseURIRef "tel:+1-816-555-1212"
-  test runParseURIRef "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
-  test runParseURIRef "mailto:John.Doe@example.com"
-  test runParseURIRef "mailto:fred@example.com"
-  test runParseURIRef "../top_story.htm"
-  test runParseURIRef "top_story.htm"
-  test runParseURIRef "/top_story.htm"
+  C.log "\nFailing test cases: "
+  testFails runParseURIRef "news:comp.infosystems.www.servers.unix"
+  testFails runParseURIRef "tel:+1-816-555-1212"
+  testFails runParseURIRef "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
+  testFails runParseURIRef "mailto:John.Doe@example.com"
+  testFails runParseURIRef "mailto:fred@example.com"
+  testFails runParseURIRef "../top_story.htm"
+  testFails runParseURIRef "top_story.htm"
+  testFails runParseURIRef "/top_story.htm"
 
 
-test :: forall a. (String -> Either ParseError URIRef) -> String -> _
-test f s = do
-  log $ "\nTrying to parse " ++ s ++ ""
+testCommon :: (String -> Eff _ Unit) -> (String -> Eff _ Unit) ->
+              (String -> Either ParseError URIRef) -> String -> _
+testCommon leftMsg rightMsg f s = do
+  C.log $ "\nTrying to parse " <> s <> ""
   case f s of
-    (Left err) -> log $ "  Parse failed: " ++ show err
-    (Right x) -> do
-      log $ "      printURI: " ++ printURIRef x
-      log $ "          show: " ++ show x
+    Left err -> leftMsg $ "  Parse failed: " <> show err
+    Right x -> do
+      rightMsg $ "      printURI: " <> printURIRef x
+        <> "\n          show: " <> show x
+
+
+test :: (String -> Either ParseError URIRef) -> String -> _
+test = testCommon (\x -> C.error x *> (throwException $ error x)) C.log
+
+testFails :: (String -> Either ParseError URIRef) -> String -> _
+testFails = testCommon C.log (\x -> C.error x *> (throwException $ error x))

@@ -1,12 +1,11 @@
 {
-  "name"    : "purescript-uri",
+  "name": "purescript-uri",
   "private": true,
-  "devDependencies": {
-    "ioredis": "1.1.x",
-    "gulp": "^3.8.11",
-    "gulp-jscs": "^1.6.0",
-    "gulp-jshint": "^1.11.2",
-    "gulp-purescript": "^0.5.0",
-    "gulp-run": "^1.6.8"
+  "devDependencies": {},
+  "dependencies": {
+    "gulp": "^3.9.0",
+    "gulp-purescript": "^0.7.0",
+    "gulp-run": "^1.6.11",
+    "purescript": "^0.7.4"
   }
 }
