@@ -17,13 +17,15 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-arrays": "~0.4.2",
-    "purescript-globals": "~0.2.1",
+    "purescript-arrays": "~0.4.4",
+    "purescript-either": "~0.2.3",
+    "purescript-functions": "~0.1.0",
+    "purescript-globals": "~0.2.2",
     "purescript-integers": "~0.2.1",
-    "purescript-lists": "~0.7.5",
-    "purescript-maps": "~0.5.0",
+    "purescript-lists": "~0.7.8",
+    "purescript-maps": "~0.5.4",
     "purescript-pathy": "~0.3.0",
-    "purescript-string-parsers": "~0.6.0"
+    "purescript-string-parsers": "~0.6.3"
   },
   "devDependencies": {
     "purescript-exceptions": "~0.3.0"
