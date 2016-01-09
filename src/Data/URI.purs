@@ -6,17 +6,12 @@ import Control.Apply ((<*), (*>))
 import Data.Array (catMaybes)
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
-import Data.URI.Authority
-import Data.URI.Common
 import Data.URI.Fragment
 import Data.URI.RelativePart
 import Data.URI.HierarchicalPart
-import Data.URI.Host
-import Data.URI.Path
 import Data.URI.Query
 import Data.URI.Scheme
 import Data.URI.Types
-import Data.URI.UserInfo
 import qualified Data.String as S
 import Text.Parsing.StringParser (Parser(), ParseError(), runParser, try)
 import Text.Parsing.StringParser.Combinators (optionMaybe)

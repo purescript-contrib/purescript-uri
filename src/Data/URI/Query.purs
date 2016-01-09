@@ -6,10 +6,9 @@ module Data.URI.Query
 import Prelude
 import Control.Alt
 import Control.Apply
-import qualified Data.String as S
 import Data.StrMap (StrMap(), fromList, toList)
 import Data.Tuple (Tuple(..))
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.URI.Common
 import Data.URI.Types
 import Text.Parsing.StringParser

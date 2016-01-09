@@ -3,15 +3,12 @@ module Data.URI.Host where
 import Prelude
 import Control.Alt ((<|>))
 import Control.Apply ((*>), (<*))
-import Data.Array (length)
-import Data.List (fromList)
 import Data.URI.Common
 import Data.URI.Types
 import qualified Data.String as S
 import Text.Parsing.StringParser (Parser(), try)
-import Text.Parsing.StringParser.Combinators ((<?>), many1, sepBy1)
+import Text.Parsing.StringParser.Combinators ((<?>), many1)
 import Text.Parsing.StringParser.String (string)
-import qualified Data.Array.Unsafe as U
 
 parseHost :: Parser Host
 parseHost = parseIPv6Address <|> parseIPv4Address <|> parseRegName

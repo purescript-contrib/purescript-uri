@@ -18,7 +18,6 @@ import Control.Bind ((=<<))
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
 import Data.Path.Pathy (parseAbsDir, parseRelDir, parseAbsFile, parseRelFile, sandbox, rootDir, (</>), unsafePrintPath)
-import Data.List (fromList)
 import Data.String (drop, length)
 import Data.URI.Common
 import Data.URI.Types

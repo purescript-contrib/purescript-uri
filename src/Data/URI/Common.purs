@@ -3,11 +3,10 @@ module Data.URI.Common where
 import Prelude
 import Control.Alt ((<|>))
 import Data.Array (replicateM)
-import Data.List (List(..), fromList)
+import Data.List (List(), fromList)
 import Data.Function (Fn5(), runFn5)
 import Data.Maybe (Maybe(..))
 import qualified Data.String as S
-import Data.URI.Types
 import Text.Parsing.StringParser (Parser(..), ParseError(..), unParser)
 import Text.Parsing.StringParser.String (string)
 import qualified Data.String.Regex as Rx
