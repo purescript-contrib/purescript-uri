@@ -6,7 +6,6 @@ import Control.Apply ((*>))
 import Data.Array (catMaybes)
 import Data.Maybe (Maybe(..))
 import Data.URI.Authority
-import Data.URI.Common
 import Data.URI.Path
 import Data.URI.Types
 import qualified Data.String as S

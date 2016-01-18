@@ -1,14 +1,11 @@
 module Data.URI.Types where
 
 import Prelude
-import Data.Array (length)
 import Data.Either (Either())
 import Data.Maybe (Maybe())
 import Data.Path.Pathy (Path(), File(), Dir(), Abs(), Rel(), Sandboxed(), Unsandboxed())
 import Data.StrMap (StrMap())
 import Data.Tuple (Tuple())
-
-import qualified Data.Array.Unsafe as U
 
 -- | A generic URI
 data URI = URI (Maybe URIScheme) HierarchicalPart (Maybe Query) (Maybe Fragment)

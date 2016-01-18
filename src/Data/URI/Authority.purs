@@ -2,16 +2,15 @@ module Data.URI.Authority where
 
 import Prelude
 import Control.Apply ((*>))
-import Data.Array (catMaybes)
-import Data.Int (fromNumber, toNumber)
+import Data.Int (fromNumber)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple(Tuple(..))
-import Data.List (List(..), fromList)
+import Data.List (fromList)
 import Data.URI.Common
 import Data.URI.Host
 import Data.URI.Types
 import Data.URI.UserInfo
-import Global (readInt, isNaN)
+import Global (readInt)
 import qualified Data.String as S
 import Text.Parsing.StringParser (Parser(), fail)
 import Text.Parsing.StringParser.Combinators (optionMaybe, sepBy1)
