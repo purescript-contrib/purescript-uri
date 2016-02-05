@@ -34,14 +34,14 @@ parseURIRef = (Left <$> try parseURI)
           <|> (Right <$> parseRelativeRef)
 
 parseURI :: Parser URI
-parseURI = URI <$> (parseScheme <* string ":")
+parseURI = URI <$> (parseScheme <* string "://")
                <*> parseHierarchicalPart
                <*> optionMaybe (string "?" *> parseQuery)
                <*> optionMaybe (string "#" *> parseFragment)
                <* eof
 
 parseAbsoluteURI :: Parser AbsoluteURI
-parseAbsoluteURI = AbsoluteURI <$> (parseScheme <* string ":")
+parseAbsoluteURI = AbsoluteURI <$> (parseScheme <* string "://")
                                <*> parseHierarchicalPart
                                <*> optionMaybe (string "?" *> parseQuery)
                                <* eof
