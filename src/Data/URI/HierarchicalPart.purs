@@ -14,10 +14,18 @@ import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (string)
 
 parseHierarchicalPart :: Parser HierarchicalPart
-parseHierarchicalPart = (HierarchicalPart <$> optionMaybe (string "//" *> parseAuthority) <*> parsePathAbEmpty parseURIPathAbs)
-                    <|> (HierarchicalPart Nothing <$> ((Just <$> parsePathAbsolute parseURIPathAbs)
-                                                  <|> (Just <$> parsePathRootless parseURIPathAbs)
-                                                  <|> pure Nothing))
+parseHierarchicalPart =
+  (HierarchicalPart
+   <$> optionMaybe parseAuthority
+   <*> parsePathAbEmpty parseURIPathAbs)
+  <|>
+  (HierarchicalPart Nothing
+   <$> ((Just
+         <$> parsePathAbsolute parseURIPathAbs)
+        <|>
+        (Just <$> parsePathRootless parseURIPathAbs)
+        <|>
+        pure Nothing))
 
 printHierPart :: HierarchicalPart -> String
 printHierPart (HierarchicalPart a p) =
