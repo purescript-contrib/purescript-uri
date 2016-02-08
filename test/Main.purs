@@ -34,6 +34,8 @@ main = do
   test runParseURIRef "foo://example.com:8042/over/there?name=ferret#nose"
   test runParseURIRef "foo://info.example.com?fred"
   test runParseURIRef "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
+  test runParseURIRef "../top_story.htm"
+  test runParseURIRef "top_story.htm"
 
   C.log "\nFailing test cases: "
   testFails runParseURIRef "news:comp.infosystems.www.servers.unix"
@@ -41,8 +43,6 @@ main = do
   testFails runParseURIRef "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
   testFails runParseURIRef "mailto:John.Doe@example.com"
   testFails runParseURIRef "mailto:fred@example.com"
-  testFails runParseURIRef "../top_story.htm"
-  testFails runParseURIRef "top_story.htm"
   testFails runParseURIRef "/top_story.htm"
 
 
