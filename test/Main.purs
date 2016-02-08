@@ -12,6 +12,7 @@ import Text.Parsing.StringParser
 
 
 main = do
+  test runParseURIRef "sql2:///?q=foo&var.bar=baz"
   test runParseURIRef "mongodb://localhost"
   test runParseURIRef "http://en.wikipedia.org/wiki/URI_scheme"
   test runParseURIRef "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"

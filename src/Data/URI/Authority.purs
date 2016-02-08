@@ -13,14 +13,16 @@ import Data.URI.UserInfo
 import Global (readInt)
 import qualified Data.String as S
 import Text.Parsing.StringParser (Parser(), fail)
-import Text.Parsing.StringParser.Combinators (optionMaybe, sepBy1)
+import Text.Parsing.StringParser.Combinators (optionMaybe, sepBy)
 import Text.Parsing.StringParser.String (string)
 
 parseAuthority :: Parser Authority
 parseAuthority = do
   ui <- optionMaybe parseUserInfo
-  hosts <- flip sepBy1 (string ",") $ Tuple <$> parseHost
-                                            <*> optionMaybe (string ":" *> parsePort)
+  hosts <- flip sepBy (string ",")
+           $ Tuple
+             <$> parseHost
+             <*> optionMaybe (string ":" *> parsePort)
   return $ Authority ui (fromList hosts)
 
 parsePort :: Parser Port

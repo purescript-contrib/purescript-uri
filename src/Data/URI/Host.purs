@@ -26,7 +26,16 @@ parseIPv4Address = IPv4Address <$> rxPat pattern <?> "IPv4 address"
   octet = "(1[0-9]{2}|[1-9][0-9]|[0-9]|2[0-4][0-9]|25[0-5])"
 
 parseRegName :: Parser Host
-parseRegName = NameAddress <$> try (joinWith "" <$> many1 (parseUnreserved <|> parsePCTEncoded <|> parseSubDelims))
+parseRegName =
+  NameAddress
+    <$> try
+    (joinWith ""
+     <$> many1 (parseUnreserved
+               <|>
+               parsePCTEncoded
+               <|>
+               parseSubDelims)
+    )
 
 printHost :: Host -> String
 printHost (IPv6Address i) = "[" ++ i ++ "]"
