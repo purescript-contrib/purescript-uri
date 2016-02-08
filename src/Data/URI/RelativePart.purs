@@ -14,10 +14,20 @@ import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (string)
 
 parseRelativePart :: Parser RelativePart
-parseRelativePart = (RelativePart <$> optionMaybe (string "//" *> parseAuthority) <*> parsePathAbEmpty parseURIPathRel)
-                <|> (RelativePart Nothing <$> ((Just <$> parsePathAbsolute parseURIPathRel)
-                                          <|> (Just <$> parsePathNoScheme parseURIPathRel)
-                                          <|> pure Nothing))
+parseRelativePart = withAuth <|> withoutAuth
+  where
+
+  withAuth =
+    RelativePart
+      <$> Just <$> (string "//" *> parseAuthority)
+      <*> parsePathAbEmpty parseURIPathRel
+
+  withoutAuth = RelativePart Nothing <$> noAuthPath
+
+  noAuthPath
+      = (Just <$> parsePathAbsolute parseURIPathRel)
+    <|> (Just <$> parsePathNoScheme parseURIPathRel)
+    <|> pure Nothing
 
 printRelativePart :: RelativePart -> String
 printRelativePart (RelativePart a p) =

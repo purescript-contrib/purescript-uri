@@ -17,8 +17,8 @@ import Control.Alt ((<|>))
 import Control.Bind ((=<<))
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
-import Data.Path.Pathy (parseAbsDir, parseRelDir, parseAbsFile, parseRelFile, sandbox, rootDir, (</>), unsafePrintPath)
-import Data.String (drop, length)
+import Data.Path.Pathy (Path(), parseAbsDir, parseRelDir, parseAbsFile, parseRelFile, sandbox, rootDir, (</>), unsafePrintPath)
+import Data.String as Str
 import Data.URI.Common
 import Data.URI.Types
 import Text.Parsing.StringParser (Parser(..), ParseError(..), try)
@@ -67,19 +67,24 @@ parseSegmentNonZeroNoColon = joinWith "" <$> many1 (parseUnreserved
 
 parseURIPathAbs :: Parser URIPathAbs
 parseURIPathAbs = Parser \{ str: str, pos: i } fc sc ->
-  case sandbox rootDir =<< parseAbsFile (drop i str) of
-    Just file -> sc (Left $ rootDir </> file) { str: str, pos: length str }
-    Nothing -> case sandbox rootDir =<< parseAbsDir (drop i str) of
-      Just dir -> sc (Right $ rootDir </> dir) { str: str, pos: length str }
+  case sandbox rootDir =<< parseAbsFile (Str.drop i str) of
+    Just file -> sc (Left $ rootDir </> file) { str: str, pos: Str.length str }
+    Nothing -> case sandbox rootDir =<< parseAbsDir (Str.drop i str) of
+      Just dir -> sc (Right $ rootDir </> dir) { str: str, pos: Str.length str }
       Nothing -> fc i (ParseError $ "Expected a valid path")
 
 parseURIPathRel :: Parser URIPathRel
 parseURIPathRel = Parser \{ str: str, pos: i } fc sc ->
-  case parseRelFile (drop i str) of
-    Just file -> sc (Left file) { str: str, pos: length str }
-    Nothing -> case parseRelDir (drop i str) of
-      Just dir -> sc (Right dir) { str: str, pos: length str }
+  case parseRelFile (Str.drop i str) of
+    Just file -> sc (Left file) { str: str, pos: Str.length str }
+    Nothing -> case parseRelDir (Str.drop i str) of
+      Just dir -> sc (Right dir) { str: str, pos: Str.length str }
       Nothing -> fc i (ParseError $ "Expected a valid path")
 
 printPath :: forall a s. URIPath a s -> String
-printPath = either unsafePrintPath unsafePrintPath
+printPath = either print print
+  where
+  print :: forall a' b s'. Path a' b s' -> String
+  print path =
+    let printed = unsafePrintPath path
+    in if Str.take 2 printed == "./" then Str.drop 2 printed else printed

@@ -14,17 +14,19 @@ import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (string)
 
 parseHierarchicalPart :: Parser HierarchicalPart
-parseHierarchicalPart =
-  (HierarchicalPart
-   <$> optionMaybe (string "//" *> parseAuthority)
-   <*> parsePathAbEmpty parseURIPathAbs)
+parseHierarchicalPart = withAuth <|> withoutAuth
+  where
+  withAuth =
+    HierarchicalPart
+      <$> Just <$> (string "//" *> parseAuthority)
+      <*> parsePathAbEmpty parseURIPathAbs
 
-  <|> (HierarchicalPart Nothing
-       <$> ((Just <$> parsePathAbsolute parseURIPathAbs)
-            <|>
-            (Just <$> parsePathRootless parseURIPathAbs)
-            <|>
-            pure Nothing))
+  withoutAuth = HierarchicalPart Nothing <$> noAuthPath
+
+  noAuthPath
+      = (Just <$> parsePathAbsolute parseURIPathAbs)
+    <|> (Just <$> parsePathRootless parseURIPathAbs)
+    <|> pure Nothing
 
 printHierPart :: HierarchicalPart -> String
 printHierPart (HierarchicalPart a p) =
