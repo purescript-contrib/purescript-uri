@@ -10,7 +10,6 @@ import Data.URI.Path
 import Data.URI.Types
 import qualified Data.String as S
 import Text.Parsing.StringParser (Parser())
-import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (string)
 
 parseRelativePart :: Parser RelativePart
