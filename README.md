@@ -10,17 +10,6 @@ A type-safe parser, printer, and ADT for URLs and URIs based on [RFC 3986](http:
 bower install purescript-uri
 ```
 
-## Module documentation
+## Documentation
 
-- [Data.URI](docs/Data.URI.md)
-- [Data.URI.Types](docs/Data.URI.Types.md)
-
-### Component parsing
-
-- [Data.URI.Authority](docs/Data.URI.Authority.md)
-- [Data.URI.Common](docs/Data.URI.Common.md)
-- [Data.URI.Host](docs/Data.URI.Host.md)
-- [Data.URI.Path](docs/Data.URI.Path.md)
-- [Data.URI.Query](docs/Data.URI.Query.md)
-- [Data.URI.Scheme](docs/Data.URI.Scheme.md)
-- [Data.URI.UserInfo](docs/Data.URI.UserInfo.md)
+Module documentation is [published on Pursuit](http://pursuit.purescript.org/packages/purescript-uri).
