@@ -1,11 +1,12 @@
 module Data.URI.Types where
 
 import Prelude
-import Data.Either (Either())
-import Data.Maybe (Maybe())
-import Data.Path.Pathy (Path(), File(), Dir(), Abs(), Rel(), Sandboxed(), Unsandboxed())
-import Data.StrMap (StrMap())
-import Data.Tuple (Tuple())
+
+import Data.Either (Either)
+import Data.Maybe (Maybe)
+import Data.Path.Pathy (Path, File, Dir, Abs, Rel, Sandboxed, Unsandboxed)
+import Data.StrMap (StrMap)
+import Data.Tuple (Tuple)
 
 -- | A generic URI
 data URI = URI (Maybe URIScheme) HierarchicalPart (Maybe Query) (Maybe Fragment)
@@ -18,7 +19,7 @@ data RelativeRef = RelativeRef RelativePart (Maybe Query) (Maybe Fragment)
 
 -- | A general URI path, can be used to represent relative or absolute paths
 -- | that are sandboxed or unsandboxed.
-type URIPath a s = Either (Path a File s) (Path a Dir s)
+type URIPath a s = Either (Path a Dir s) (Path a File s)
 
 -- | The path part for a generic or absolute URI.
 type URIPathAbs = URIPath Abs Sandboxed
@@ -60,62 +61,52 @@ newtype Query = Query (StrMap (Maybe String))
 -- | The hash fragment of a URI.
 type Fragment = String
 
-instance eqURI :: Eq URI where
-  eq (URI s1 h1 q1 f1) (URI s2 h2 q2 f2) = s1 == s2 && h1 == h2 && q1 == q2 && f1 == f2
-  
+derive instance eqURI ∷ Eq URI
 
-instance showURI :: Show URI where
+instance showURI ∷ Show URI where
   show (URI s h q f) = "URI (" ++ show s ++ ") (" ++ show h ++ ") (" ++ show q ++ ") (" ++ show f ++ ")"
 
-instance eqAbsoluteURI :: Eq AbsoluteURI where
-  eq (AbsoluteURI s1 h1 q1) (AbsoluteURI s2 h2 q2) = s1 == s2 && h1 == h2 && q1 == q2
+derive instance eqAbsoluteURI ∷ Eq AbsoluteURI
 
-instance showAbsoluteURI :: Show AbsoluteURI where
+instance showAbsoluteURI ∷ Show AbsoluteURI where
   show (AbsoluteURI s h q) = "AbsoluteURI (" ++ show s ++ ") (" ++ show h ++ ") (" ++ show q ++ ")"
 
-instance eqRelativeRef :: Eq RelativeRef where
-  eq (RelativeRef r1 q1 f1) (RelativeRef r2 q2 f2) = r1 == r2 && q1 == q2 && f1 == f2
+derive instance eqRelativeRef ∷ Eq RelativeRef
 
-instance showRelativeRef :: Show RelativeRef where
+instance showRelativeRef ∷ Show RelativeRef where
   show (RelativeRef r q f) = "RelativeRef (" ++ show r ++ ") (" ++ show q ++ ") (" ++ show f ++ ")"
 
-instance eqURIScheme :: Eq URIScheme where
-  eq (URIScheme s1) (URIScheme s2) = s1 == s2
+derive instance eqURIScheme ∷ Eq URIScheme
+derive instance ordURIScheme ∷ Ord URIScheme
 
-instance showURIScheme :: Show URIScheme where
+instance showURIScheme ∷ Show URIScheme where
   show (URIScheme s) = "URIScheme " ++ show s
 
-instance eqHierarchicalPart :: Eq HierarchicalPart where
-  eq (HierarchicalPart a1 p1) (HierarchicalPart a2 p2) = a1 == a2 && p1 == p2
+derive instance eqHierarchicalPart ∷ Eq HierarchicalPart
 
-instance showHierarchicalPart :: Show HierarchicalPart where
+instance showHierarchicalPart ∷ Show HierarchicalPart where
   show (HierarchicalPart authority path) = "HierarchicalPart (" ++ show authority ++ ") (" ++ show path ++ ")"
 
-instance eqRelativePart :: Eq RelativePart where
-  eq (RelativePart a1 p1) (RelativePart a2 p2) = a1 == a2 && p1 == p2
+derive instance eqRelativePart ∷ Eq RelativePart
 
-instance showRelativePart :: Show RelativePart where
+instance showRelativePart ∷ Show RelativePart where
   show (RelativePart authority path) = "RelativePart (" ++ show authority ++ ") (" ++ show path ++ ")"
 
-instance eqAuthority :: Eq Authority where
-  eq (Authority u1 hs1) (Authority u2 hs2) = u1 == u2 && hs1 == hs2
+derive instance eqAuthority ∷ Eq Authority
+derive instance ordAuthority ∷ Ord Authority
 
-instance showAuthority :: Show Authority where
+instance showAuthority ∷ Show Authority where
   show (Authority userinfo hosts) = "Authority (" ++ show userinfo ++ ") " ++ show hosts
 
-instance eqHost :: Eq Host where
-  eq (IPv6Address i1) (IPv6Address i2) = i1 == i2
-  eq (IPv4Address i1) (IPv4Address i2) = i1 == i2
-  eq (NameAddress n1) (NameAddress n2) = n1 == n2
-  eq _ _ = false
+derive instance eqHost ∷ Eq Host
+derive instance ordHost ∷ Ord Host
 
-instance showHost :: Show Host where
+instance showHost ∷ Show Host where
   show (IPv6Address ip) = "IPv6Address " ++ show ip
   show (IPv4Address ip) = "IPv4Address " ++ show ip
   show (NameAddress name) = "NameAddress " ++ show name
 
-instance eqQuery :: Eq Query where
-  eq (Query m1) (Query m2) = m1 == m2
+derive instance eqQuery ∷ Eq Query
 
-instance showQuery :: Show Query where
+instance showQuery ∷ Show Query where
   show (Query m) = "Query (" ++ show m ++ ")"

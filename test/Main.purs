@@ -1,16 +1,21 @@
 module Test.Main where
 
 import Prelude
-import Data.Either
-import Control.Apply
-import Control.Monad.Eff
-import qualified Control.Monad.Eff.Console as C
-import Control.Monad.Eff.Exception
-import Data.URI
-import Data.URI.Types
-import Text.Parsing.StringParser
 
+import Control.Apply ((*>))
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Console as C
+import Control.Monad.Eff.Exception as E
 
+import Data.Either (Either(..))
+import Data.URI (printURIRef, runParseURIRef)
+import Data.URI.Types (URIRef)
+
+import Text.Parsing.StringParser (ParseError)
+
+type Test = Eff (console ∷ C.CONSOLE, err ∷ E.EXCEPTION) Unit
+
+main ∷ Test
 main = do
   test runParseURIRef "sql2:///?q=foo&var.bar=baz"
   test runParseURIRef "mongodb://localhost"
@@ -45,20 +50,23 @@ main = do
   testFails runParseURIRef "mailto:fred@example.com"
   testFails runParseURIRef "/top_story.htm"
 
-
-testCommon :: (String -> Eff _ Unit) -> (String -> Eff _ Unit) ->
-              (String -> Either ParseError URIRef) -> String -> _
+testCommon
+  ∷ (String → Test)
+  → (String → Test)
+  → (String → Either ParseError URIRef)
+  → String
+  → Test
 testCommon leftMsg rightMsg f s = do
   C.log $ "\nTrying to parse " <> s <> ""
   case f s of
-    Left err -> leftMsg $ "  Parse failed: " <> show err
-    Right x -> do
+    Left err → leftMsg $ "  Parse failed: " <> show err
+    Right x → do
       rightMsg $ "      printURI: " <> printURIRef x
         <> "\n          show: " <> show x
 
 
-test :: (String -> Either ParseError URIRef) -> String -> _
-test = testCommon (\x -> C.error x *> (throwException $ error x)) C.log
+test ∷ (String → Either ParseError URIRef) → String → Test
+test = testCommon (\x → C.error x *> (E.throwException $ E.error x)) C.log
 
-testFails :: (String -> Either ParseError URIRef) -> String -> _
-testFails = testCommon C.log (\x -> C.error x *> (throwException $ error x))
+testFails ∷ (String → Either ParseError URIRef) → String → Test
+testFails = testCommon C.log (\x → C.error x *> (E.throwException $ E.error x))
