@@ -17,10 +17,11 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-globals": "^0.2.2",
-    "purescript-integers": "^0.2.1",
-    "purescript-maps": "^0.5.7",
-    "purescript-pathy": "^0.3.1",
-    "purescript-string-parsers": "^0.6.7"
+    "purescript-globals": "^1.0.0",
+    "purescript-integers": "^1.0.0",
+    "purescript-maps": "^1.1.0",
+    "purescript-pathy": "git@github.com:slamdata/purescript-pathy.git#master",
+    "purescript-string-parsers": "^1.0.1",
+    "purescript-unfoldable": "1.0.0"
   }
 }

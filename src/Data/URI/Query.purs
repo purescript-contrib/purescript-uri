@@ -9,6 +9,7 @@ import Prelude
 import Control.Alt ((<|>))
 import Control.Apply ((*>))
 
+import Data.Either (Either(Right))
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.String.Regex as Rgx
@@ -18,6 +19,8 @@ import Data.URI.Common (joinWith, rxPat, parsePChar, wrapParser)
 import Data.URI.Types (Query(..))
 
 import Global (encodeURIComponent, decodeURIComponent)
+
+import Partial.Unsafe (unsafePartial)
 
 import Text.Parsing.StringParser (Parser, try)
 import Text.Parsing.StringParser.Combinators (optionMaybe, sepBy, many)
@@ -34,7 +37,7 @@ parsePart ∷ Parser (Tuple String (Maybe String))
 parsePart = do
   key ← rxPat "[^=]+"
   value ← optionMaybe $ string "=" *> rxPat "[^;&]*"
-  return $ Tuple (prettyDecodeURI key) (prettyDecodeURI <$> value)
+  pure $ Tuple (prettyDecodeURI key) (prettyDecodeURI <$> value)
 
 printQuery ∷ Query → String
 printQuery (Query m) =
@@ -53,8 +56,10 @@ prettyDecodeURI ∷ String → String
 prettyDecodeURI = decodeURIComponent <<< Rgx.replace rgxPlus " "
 
 rgxSpace ∷ Rgx.Regex
-rgxSpace = Rgx.regex "%20" (Rgx.noFlags { global = true })
+rgxSpace = unsafePartial $ case Rgx.regex "%20" (Rgx.noFlags { global = true }) of
+  Right r -> r
 
 rgxPlus ∷ Rgx.Regex
-rgxPlus = Rgx.regex "\\+" (Rgx.noFlags { global = true })
+rgxPlus = unsafePartial $ case Rgx.regex "\\+" (Rgx.noFlags { global = true }) of
+  Right r -> r
 

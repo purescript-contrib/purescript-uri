@@ -48,7 +48,7 @@ parsePathAbsolute p = wrapParser p $ do
   string "/"
   start ← parseSegmentNonZero
   rest ← joinWith "" <$> many (append <$> string "/" <*> parseSegment)
-  return $ "/" ++ start ++ rest
+  pure $ "/" <> start <> rest
 
 parsePathNoScheme ∷ ∀ p. Parser p → Parser p
 parsePathNoScheme p = wrapParser p $
@@ -74,20 +74,20 @@ parseSegmentNonZeroNoColon =
     (parseUnreserved <|> parsePCTEncoded <|> parseSubDelims <|> string "@")
 
 parseURIPathAbs ∷ Parser URIPathAbs
-parseURIPathAbs = Parser \{ str: str, pos: i } fc sc →
+parseURIPathAbs = Parser \{ str: str, pos: i } →
   case sandbox rootDir =<< parseAbsFile (Str.drop i str) of
-    Just file → sc (Right $ rootDir </> file) { str: str, pos: Str.length str }
+    Just file → Right { result: (Right $ rootDir </> file), suffix: { str: str, pos: Str.length str }}
     Nothing → case sandbox rootDir =<< parseAbsDir (Str.drop i str) of
-      Just dir → sc (Left $ rootDir </> dir) { str: str, pos: Str.length str }
-      Nothing → fc i (ParseError $ "Expected a valid path")
+      Just dir → Right { result: (Left $ rootDir </> dir), suffix: { str: str, pos: Str.length str }}
+      Nothing → Left { error: (ParseError $ "Expected a valid path"), pos: i }
 
 parseURIPathRel ∷ Parser URIPathRel
-parseURIPathRel = Parser \{ str: str, pos: i } fc sc →
+parseURIPathRel = Parser \{ str: str, pos: i } →
   case parseRelFile (Str.drop i str) of
-    Just file → sc (Right file) { str: str, pos: Str.length str }
+    Just file → Right { result : Right file, suffix: { str: str, pos: Str.length str }}
     Nothing → case parseRelDir (Str.drop i str) of
-      Just dir → sc (Left dir) { str: str, pos: Str.length str }
-      Nothing → fc i (ParseError $ "Expected a valid path")
+      Just dir →  Right { result : Left dir,  suffix: { str: str, pos: Str.length str }}
+      Nothing → Left { error: (ParseError $ "Expected a valid path"), pos: i}
 
 printPath ∷ ∀ a s. URIPath a s → String
 printPath = either printPath' printPath'

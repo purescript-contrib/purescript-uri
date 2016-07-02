@@ -38,6 +38,6 @@ parseRegName =
       <$> many1 (parseUnreserved <|> parsePCTEncoded <|> parseSubDelims))
 
 printHost ∷ Host → String
-printHost (IPv6Address i) = "[" ++ i ++ "]"
+printHost (IPv6Address i) = "[" <> i <> "]"
 printHost (IPv4Address i) = i
 printHost (NameAddress i) = i

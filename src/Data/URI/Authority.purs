@@ -7,8 +7,8 @@ import Prelude
 
 import Control.Apply ((*>))
 
+import Data.Array (fromFoldable)
 import Data.Int (fromNumber)
-import Data.List (fromList)
 import Data.Maybe (Maybe(..), maybe)
 import Data.String as S
 import Data.Tuple (Tuple(..))
@@ -28,7 +28,7 @@ parseAuthority = do
   ui ← optionMaybe parseUserInfo
   hosts ← flip sepBy (string ",") $
     Tuple <$> parseHost <*> optionMaybe (string ":" *> parsePort)
-  return $ Authority ui (fromList hosts)
+  pure $ Authority ui (fromFoldable hosts)
 
 parsePort ∷ Parser Port
 parsePort = do
@@ -39,6 +39,6 @@ parsePort = do
 
 printAuthority ∷ Authority → String
 printAuthority (Authority u hs) =
-  "//" ++ maybe "" (_ ++ "@") u ++ S.joinWith "," (printHostAndPort <$> hs)
+  "//" <> maybe "" (_ <> "@") u <> S.joinWith "," (printHostAndPort <$> hs)
   where
-  printHostAndPort (Tuple h p) = printHost h ++ maybe "" (\n → ":" ++ show n) p
+  printHostAndPort (Tuple h p) = printHost h <> maybe "" (\n → ":" <> show n) p

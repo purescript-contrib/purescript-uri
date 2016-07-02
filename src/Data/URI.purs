@@ -71,7 +71,7 @@ printURI (URI s h q f) =
     [ printScheme <$> s
     , Just (printHierPart h)
     , printQuery <$> q
-    , ("#" ++ _) <$> f
+    , ("#" <> _) <$> f
     ]
 
 printAbsoluteURI ∷ AbsoluteURI → String
@@ -87,5 +87,5 @@ printRelativeRef (RelativeRef h q f) =
   S.joinWith "" $ catMaybes
     [ Just (printRelativePart h)
     , printQuery <$> q
-    , ("#" ++ _) <$> f
+    , ("#" <> _) <$> f
     ]
