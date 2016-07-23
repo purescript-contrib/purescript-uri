@@ -5,7 +5,7 @@ import Prelude
 import Control.Alt ((<|>))
 
 import Data.Array (fromFoldable)
-import Data.Either (Either(..))
+import Data.Either (Either(..), fromRight)
 import Data.List (List)
 import Data.Maybe (Maybe(..))
 import Data.String as S
@@ -24,8 +24,7 @@ rep n p = S.joinWith "" <$> replicateA n p
 
 rxPat ∷ String → Parser String
 rxPat rx =
-  unsafePartial $ case anyMatch <$> Rx.regex rx (Rx.noFlags { ignoreCase = true }) of
-    Right p -> p
+  unsafePartial $ fromRight $ anyMatch <$> Rx.regex rx (Rx.noFlags { ignoreCase = true })
 
 wrapParser ∷ ∀ a. Parser a → Parser String → Parser a
 wrapParser outer inner = Parser \ps → do

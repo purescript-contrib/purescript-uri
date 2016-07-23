@@ -9,7 +9,7 @@ import Prelude
 import Control.Alt ((<|>))
 import Control.Apply ((*>))
 
-import Data.Either (Either(Right))
+import Data.Either (fromRight)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.String.Regex as Rgx
@@ -56,10 +56,8 @@ prettyDecodeURI ∷ String → String
 prettyDecodeURI = decodeURIComponent <<< Rgx.replace rgxPlus " "
 
 rgxSpace ∷ Rgx.Regex
-rgxSpace = unsafePartial $ case Rgx.regex "%20" (Rgx.noFlags { global = true }) of
-  Right r -> r
+rgxSpace = unsafePartial $ fromRight $ Rgx.regex "%20" (Rgx.noFlags { global = true })
 
 rgxPlus ∷ Rgx.Regex
-rgxPlus = unsafePartial $ case Rgx.regex "\\+" (Rgx.noFlags { global = true }) of
-  Right r -> r
+rgxPlus = unsafePartial $ fromRight $ Rgx.regex "\\+" (Rgx.noFlags { global = true })
 
