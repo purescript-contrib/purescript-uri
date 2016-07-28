@@ -5,8 +5,6 @@ module Data.URI.Authority
 
 import Prelude
 
-import Control.Apply ((*>))
-
 import Data.Array (fromFoldable)
 import Data.Int (fromNumber)
 import Data.Maybe (Maybe(..), maybe)

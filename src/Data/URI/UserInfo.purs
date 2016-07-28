@@ -6,7 +6,6 @@ module Data.URI.UserInfo
 import Prelude
 
 import Control.Alt ((<|>))
-import Control.Apply ((<*))
 
 import Data.URI.Common (parseSubDelims, parsePCTEncoded, parseUnreserved, joinWith)
 import Data.URI.Types (UserInfo)

@@ -6,7 +6,6 @@ module Data.URI.Host
 import Prelude
 
 import Control.Alt ((<|>))
-import Control.Apply ((*>), (<*))
 
 import Data.String as S
 import Data.URI.Common (parseSubDelims, parsePCTEncoded, parseUnreserved, joinWith, rxPat)

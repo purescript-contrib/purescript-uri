@@ -16,7 +16,6 @@ module Data.URI.Path
 import Prelude
 
 import Control.Alt ((<|>))
-import Control.Bind ((=<<))
 
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), fromMaybe)
