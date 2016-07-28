@@ -20,8 +20,8 @@
     "purescript-globals": "^1.0.0",
     "purescript-integers": "^1.0.0",
     "purescript-maps": "^1.1.0",
-    "purescript-pathy": "https://github.com/slamdata/purescript-pathy.git#master",
+    "purescript-pathy": "^2.0.0",
     "purescript-string-parsers": "^1.0.1",
-    "purescript-unfoldable": "1.0.0"
+    "purescript-unfoldable": "^1.0.0"
   }
 }

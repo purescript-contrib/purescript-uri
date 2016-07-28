@@ -2,7 +2,6 @@ module Test.Main where
 
 import Prelude
 
-import Control.Apply ((*>))
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console as C
 import Control.Monad.Eff.Exception as E

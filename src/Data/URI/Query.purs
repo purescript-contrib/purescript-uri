@@ -7,7 +7,6 @@ module Data.URI.Query
 import Prelude
 
 import Control.Alt ((<|>))
-import Control.Apply ((*>))
 
 import Data.Either (fromRight)
 import Data.List (List(..))
@@ -60,4 +59,3 @@ rgxSpace = unsafePartial $ fromRight $ Rgx.regex "%20" (Rgx.noFlags { global = t
 
 rgxPlus ∷ Rgx.Regex
 rgxPlus = unsafePartial $ fromRight $ Rgx.regex "\\+" (Rgx.noFlags { global = true })
-

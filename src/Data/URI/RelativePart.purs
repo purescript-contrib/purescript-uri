@@ -6,7 +6,6 @@ module Data.URI.RelativePart
 import Prelude
 
 import Control.Alt ((<|>))
-import Control.Apply ((*>))
 
 import Data.Array (catMaybes)
 import Data.Maybe (Maybe(..))

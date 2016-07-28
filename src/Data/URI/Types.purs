@@ -3,6 +3,7 @@ module Data.URI.Types where
 import Prelude
 
 import Data.Either (Either)
+import Data.Generic (class Generic)
 import Data.Maybe (Maybe)
 import Data.Path.Pathy (Path, File, Dir, Abs, Rel, Sandboxed, Unsandboxed)
 import Data.StrMap (StrMap)
@@ -78,6 +79,7 @@ instance showRelativeRef ∷ Show RelativeRef where
 
 derive instance eqURIScheme ∷ Eq URIScheme
 derive instance ordURIScheme ∷ Ord URIScheme
+derive instance genericURIScheme ∷ Generic URIScheme
 
 instance showURIScheme ∷ Show URIScheme where
   show (URIScheme s) = "URIScheme " <> show s
@@ -94,12 +96,14 @@ instance showRelativePart ∷ Show RelativePart where
 
 derive instance eqAuthority ∷ Eq Authority
 derive instance ordAuthority ∷ Ord Authority
+derive instance genericAuthority ∷ Generic Authority
 
 instance showAuthority ∷ Show Authority where
   show (Authority userinfo hosts) = "Authority (" <> show userinfo <> ") " <> show hosts
 
 derive instance eqHost ∷ Eq Host
 derive instance ordHost ∷ Ord Host
+derive instance genericQuery ∷ Generic Host
 
 instance showHost ∷ Show Host where
   show (IPv6Address ip) = "IPv6Address " <> show ip
