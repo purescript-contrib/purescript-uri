@@ -1,6 +1,7 @@
 module Test.Main where
 
 import Prelude
+import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Data.Either (isLeft, Either(..))
@@ -23,7 +24,7 @@ testRunParseURIRefFailes :: forall a. String -> TestSuite a
 testRunParseURIRefFailes uri =
   test ("failes to parse: " <> uri) (assert ("parse should fail for: " <> uri) <<< isLeft <<< runParseURIRef $ uri)
 
-main :: forall eff. Eff ( console :: CONSOLE , testOutput :: TESTOUTPUT | eff ) Unit
+main :: forall eff. Eff ( console :: CONSOLE , testOutput :: TESTOUTPUT, avar :: AVAR | eff ) Unit
 main = runTest $ suite "Data.URI" do
   suite "runParseURIRef" do
     testRunParseURIRefParses

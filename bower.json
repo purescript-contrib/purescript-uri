@@ -25,6 +25,6 @@
     "purescript-unfoldable": "^1.0.0"
   },
   "devDependencies": {
-    "purescript-test-unit": "7.0.0"
+    "purescript-test-unit": "9.0.0"
   }
 }
