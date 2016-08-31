@@ -23,5 +23,8 @@
     "purescript-pathy": "^2.0.0",
     "purescript-string-parsers": "^1.0.1",
     "purescript-unfoldable": "^1.0.0"
+  },
+  "devDependencies": {
+    "purescript-test-unit": "7.0.0"
   }
 }
