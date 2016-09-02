@@ -11,6 +11,7 @@ import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
 import Data.StrMap (empty, fromFoldable, fromList)
 import Data.Tuple (Tuple(Tuple))
 import Data.URI (Authority(Authority), HierarchicalPart(HierarchicalPart), Host(IPv4Address, NameAddress, IPv6Address), Query(Query), RelativePart(RelativePart), RelativeRef(RelativeRef), URI(URI), URIScheme(URIScheme), runParseURIRef)
+import Data.URI.Query (printQuery)
 import Test.Unit (suite, test, TestSuite)
 import Test.Unit.Assert (assert, equal)
 import Test.Unit.Console (TESTOUTPUT)
@@ -18,11 +19,15 @@ import Test.Unit.Main (runTest)
 
 testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
 testRunParseURIRefParses uri expected =
-  test ("parses: " <> uri) (equal (Right expected) (runParseURIRef uri))
+  test
+    ("parses: " <> uri)
+    (equal (Right expected) (runParseURIRef uri))
 
 testRunParseURIRefFailes :: forall a. String -> TestSuite a
 testRunParseURIRefFailes uri =
-  test ("failes to parse: " <> uri) (assert ("parse should fail for: " <> uri) <<< isLeft <<< runParseURIRef $ uri)
+  test
+    ("failes to parse: " <> uri)
+    (assert ("parse should fail for: " <> uri) <<< isLeft <<< runParseURIRef $ uri)
 
 main :: forall eff. Eff ( console :: CONSOLE , testOutput :: TESTOUTPUT, avar :: AVAR | eff ) Unit
 main = runTest $ suite "Data.URI" do
@@ -271,3 +276,6 @@ main = runTest $ suite "Data.URI" do
     testRunParseURIRefFailes "mailto:fred@example.com"
     testRunParseURIRefFailes "/top_story.htm"
 
+    test "query with empty value is printed correctly" $ do
+      let query = Query <<< fromFoldable $ [ Tuple "empty" Nothing, Tuple "non-empty" (Just "1") ]
+      equal "test" (printQuery query)
