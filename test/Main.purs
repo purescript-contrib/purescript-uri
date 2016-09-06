@@ -275,7 +275,3 @@ main = runTest $ suite "Data.URI" do
     testRunParseURIRefFailes "mailto:John.Doe@example.com"
     testRunParseURIRefFailes "mailto:fred@example.com"
     testRunParseURIRefFailes "/top_story.htm"
-
-    test "query with empty value is printed correctly" $ do
-      let query = Query <<< fromFoldable $ [ Tuple "empty" Nothing, Tuple "non-empty" (Just "1") ]
-      equal "test" (printQuery query)
