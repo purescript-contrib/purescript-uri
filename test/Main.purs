@@ -11,6 +11,7 @@ import Data.Maybe (Maybe(Nothing, Just))
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
 import Data.Tuple (Tuple(Tuple))
 import Data.URI (Authority(Authority), HierarchicalPart(HierarchicalPart), Host(IPv4Address, NameAddress, IPv6Address), Query(Query), RelativePart(RelativePart), RelativeRef(RelativeRef), URI(URI), URIScheme(URIScheme), runParseURIRef)
+import Data.URI.Query (printQuery)
 import Test.Unit (suite, test, TestSuite)
 import Test.Unit.Assert (assert, equal)
 import Test.Unit.Console (TESTOUTPUT)
@@ -27,6 +28,12 @@ testRunParseURIRefFailes uri =
   test
     ("failes to parse: " <> uri)
     (assert ("parse should fail for: " <> uri) <<< isLeft <<< runParseURIRef $ uri)
+
+testQuerySerialization :: forall a. Query -> String -> TestSuite a
+testQuerySerialization query expected =
+  test
+    ("query " <> show query <> " serializes.")
+    (equal expected (printQuery query))
 
 main :: forall eff. Eff ( console :: CONSOLE , testOutput :: TESTOUTPUT, avar :: AVAR | eff ) Unit
 main = runTest $ suite "Data.URI" do
@@ -274,3 +281,9 @@ main = runTest $ suite "Data.URI" do
     testRunParseURIRefFailes "mailto:John.Doe@example.com"
     testRunParseURIRefFailes "mailto:fred@example.com"
     testRunParseURIRefFailes "/top_story.htm"
+
+    testQuerySerialization
+      (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
+      "?key1=value1&key2=value2&key1=value3"
+    testQuerySerialization (Query Nil) ""
+
