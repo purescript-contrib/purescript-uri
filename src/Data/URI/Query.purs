@@ -12,7 +12,6 @@ import Data.Either (fromRight)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.String.Regex as Rgx
-import Data.StrMap (StrMap, fromList, toList)
 import Data.Tuple (Tuple(..))
 import Data.URI.Common (joinWith, rxPat, parsePChar, wrapParser)
 import Data.URI.Types (Query(..))
@@ -29,8 +28,8 @@ parseQuery ∷ Parser Query
 parseQuery = Query <$> (wrapParser parseParts $
   try (joinWith "" <$> many (parsePChar <|> string "/" <|> string "?")))
 
-parseParts ∷ Parser (StrMap (Maybe String))
-parseParts = fromList <$> sepBy parsePart (string ";" <|> string "&")
+parseParts ∷ Parser (List (Tuple String (Maybe String)))
+parseParts = sepBy parsePart (string ";" <|> string "&")
 
 parsePart ∷ Parser (Tuple String (Maybe String))
 parsePart = do
@@ -40,7 +39,7 @@ parsePart = do
 
 printQuery ∷ Query → String
 printQuery (Query m) =
-  case toList m of
+  case m of
     Nil → ""
     items → "?" <> joinWith "&" (printPart <$> items)
   where

@@ -1,17 +1,16 @@
 module Test.Main where
 
 import Prelude
+import Control.Alternative (empty)
 import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Data.Either (isLeft, Either(..))
-import Data.List (singleton)
+import Data.List (List(Nil), singleton, (:))
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
-import Data.StrMap (empty, fromFoldable, fromList)
 import Data.Tuple (Tuple(Tuple))
 import Data.URI (Authority(Authority), HierarchicalPart(HierarchicalPart), Host(IPv4Address, NameAddress, IPv6Address), Query(Query), RelativePart(RelativePart), RelativeRef(RelativeRef), URI(URI), URIScheme(URIScheme), runParseURIRef)
-import Data.URI.Query (printQuery)
 import Test.Unit (suite, test, TestSuite)
 import Test.Unit.Assert (assert, equal)
 import Test.Unit.Console (TESTOUTPUT)
@@ -40,7 +39,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority Nothing []))
             (Just (Left rootDir)))
-          (Just (Query (fromFoldable [Tuple "q" (Just "foo"), Tuple "var.bar" (Just "baz")])))
+          (Just (Query (Tuple "q" (Just "foo") : Tuple "var.bar" (Just "baz") : Nil)))
           Nothing))
     testRunParseURIRefParses
       "mongodb://localhost"
@@ -86,7 +85,7 @@ main = runTest $ suite "Data.URI" do
             (Just (Right (rootDir </> file "authdb"))))
           (Just
             (Query
-              (fromFoldable [Tuple "replicaSet" (Just "test"), Tuple "connectTimeoutMS" (Just "300000")])))
+              (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
           Nothing))
     testRunParseURIRefParses
       "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
@@ -96,7 +95,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority (Just "foo:bar") [(Tuple (NameAddress "db1.example.net") (Just 6)),(Tuple (NameAddress "db2.example.net") (Just 2500))]))
             (Just (Right (rootDir </> file "authdb"))))
-          (Just (Query (fromFoldable [ Tuple "replicaSet" (Just "test"), Tuple "connectTimeoutMS" (Just "300000")])))
+          (Just (Query (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
           Nothing))
     testRunParseURIRefParses
       "mongodb://192.168.0.1"
@@ -207,7 +206,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (IPv6Address "2001:db8::7") Nothing)]))
             (Just (Right (rootDir </> file "c=GB"))))
-          (Just (Query (fromList <<< singleton $ (Tuple "objectClass?one" Nothing))))
+          (Just (Query (singleton $ (Tuple "objectClass?one" Nothing))))
           Nothing))
     testRunParseURIRefParses
       "telnet://192.0.2.16:80/"
@@ -225,7 +224,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Just (URIScheme "foo"))
           (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just 8042))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
-          (Just (Query (fromFoldable [ Tuple "name" (Just "ferret") ])))
+          (Just (Query (singleton (Tuple "name" (Just "ferret")))))
           (Just "nose")))
     testRunParseURIRefParses
       "foo://info.example.com?fred"
@@ -235,7 +234,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress "info.example.com") Nothing)]))
             Nothing)
-          (Just (Query (fromList <<< singleton $ Tuple "fred" Nothing)))
+          (Just (Query (singleton $ Tuple "fred" Nothing)))
           Nothing))
     testRunParseURIRefParses
       "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"

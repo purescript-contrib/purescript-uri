@@ -1,12 +1,11 @@
 module Data.URI.Types where
 
 import Prelude
-
 import Data.Either (Either)
 import Data.Generic (class Generic)
+import Data.List (List)
 import Data.Maybe (Maybe)
 import Data.Path.Pathy (Path, File, Dir, Abs, Rel, Sandboxed, Unsandboxed)
-import Data.StrMap (StrMap)
 import Data.Tuple (Tuple)
 
 -- | A generic URI
@@ -57,7 +56,7 @@ data Host
 type Port = Int
 
 -- | The query component of a URI.
-newtype Query = Query (StrMap (Maybe String))
+newtype Query = Query (List (Tuple String (Maybe String)))
 
 -- | The hash fragment of a URI.
 type Fragment = String
