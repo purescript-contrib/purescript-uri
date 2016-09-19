@@ -33,7 +33,7 @@ parseParts = sepBy parsePart (string ";" <|> string "&")
 
 parsePart ∷ Parser (Tuple String (Maybe String))
 parsePart = do
-  key ← rxPat "[^=]+"
+  key ← rxPat "[^=;&]+"
   value ← optionMaybe $ string "=" *> rxPat "[^;&]*"
   pure $ Tuple (prettyDecodeURI key) (prettyDecodeURI <$> value)
 
