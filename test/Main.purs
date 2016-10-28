@@ -1,71 +1,315 @@
 module Test.Main where
 
 import Prelude
-
+import Control.Alternative (empty)
+import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console as C
-import Control.Monad.Eff.Exception as E
+import Control.Monad.Eff.Console (CONSOLE)
+import Data.Either (isLeft, Either(..))
+import Data.List (List(Nil), singleton, (:))
+import Data.Maybe (Maybe(Nothing, Just))
+import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
+import Data.Tuple (Tuple(Tuple))
+import Data.URI (Authority(Authority), HierarchicalPart(HierarchicalPart), Host(IPv4Address, NameAddress, IPv6Address), Query(Query), RelativePart(RelativePart), RelativeRef(RelativeRef), URI(URI), URIScheme(URIScheme), runParseURIRef)
+import Data.URI.Query (parseQuery, printQuery)
+import Test.Unit (suite, test, TestSuite)
+import Test.Unit.Assert (assert, equal)
+import Test.Unit.Console (TESTOUTPUT)
+import Test.Unit.Main (runTest)
+import Text.Parsing.StringParser (runParser)
 
-import Data.Either (Either(..))
-import Data.URI (printURIRef, runParseURIRef)
-import Data.URI.Types (URIRef)
+testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
+testRunParseURIRefParses uri expected =
+  test
+    ("parses: " <> uri)
+    (equal (Right expected) (runParseURIRef uri))
 
-import Text.Parsing.StringParser (ParseError)
+testRunParseURIRefFailes :: forall a. String -> TestSuite a
+testRunParseURIRefFailes uri =
+  test
+    ("failes to parse: " <> uri)
+    (assert ("parse should fail for: " <> uri) <<< isLeft <<< runParseURIRef $ uri)
 
-type Test = Eff (console ∷ C.CONSOLE, err ∷ E.EXCEPTION) Unit
+testPrintQuerySerializes :: forall a. Query -> String -> TestSuite a
+testPrintQuerySerializes query expected =
+  test
+    ("serializes: " <> show query)
+    (equal expected (printQuery query))
 
-main ∷ Test
-main = do
-  test runParseURIRef "sql2:///?q=foo&var.bar=baz"
-  test runParseURIRef "mongodb://localhost"
-  test runParseURIRef "http://en.wikipedia.org/wiki/URI_scheme"
-  test runParseURIRef "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"
-  test runParseURIRef "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
-  test runParseURIRef "mongodb://foo:bar@db1.example.net:666,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
-  test runParseURIRef "mongodb://192.168.0.1"
-  test runParseURIRef "mongodb://192.168.0.1,192.168.0.2"
-  test runParseURIRef "mongodb://sysop:moon@localhost"
-  test runParseURIRef "mongodb://sysop:moon@localhost"
-  test runParseURIRef "mongodb://sysop:moon@localhost/"
-  test runParseURIRef "mongodb://sysop:moon@localhost/records"
-  test runParseURIRef "foo://[2001:cdba:0000:0000:0000:0000:3257:9652]"
-  test runParseURIRef "foo://[FE80::0202:B3FF:FE1E:8329]"
-  test runParseURIRef "foo://[2001:db8::1]:80"
-  test runParseURIRef "ftp://ftp.is.co.za/rfc/rfc1808.txt"
-  test runParseURIRef "http://www.ietf.org/rfc/rfc2396.txt"
-  test runParseURIRef "ldap://[2001:db8::7]/c=GB?objectClass?one"
-  test runParseURIRef "telnet://192.0.2.16:80/"
-  test runParseURIRef "foo://example.com:8042/over/there?name=ferret#nose"
-  test runParseURIRef "foo://info.example.com?fred"
-  test runParseURIRef "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
-  test runParseURIRef "../top_story.htm"
-  test runParseURIRef "top_story.htm"
+testParseQueryParses :: forall a. String -> Query -> TestSuite a
+testParseQueryParses uri query =
+  test
+    ("parses: \"" <> uri <> "\"")
+    (equal (Right query) (runParser parseQuery uri))
 
-  C.log "\nFailing test cases: "
-  testFails runParseURIRef "news:comp.infosystems.www.servers.unix"
-  testFails runParseURIRef "tel:+1-816-555-1212"
-  testFails runParseURIRef "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
-  testFails runParseURIRef "mailto:John.Doe@example.com"
-  testFails runParseURIRef "mailto:fred@example.com"
-  testFails runParseURIRef "/top_story.htm"
+main :: forall eff. Eff ( console :: CONSOLE , testOutput :: TESTOUTPUT, avar :: AVAR | eff ) Unit
+main = runTest $ suite "Data.URI" do
+  suite "runParseURIRef" do
+    testRunParseURIRefParses
+      "sql2:///?q=foo&var.bar=baz"
+      (Left
+        (URI
+          (Just (URIScheme "sql2"))
+          (HierarchicalPart
+            (Just (Authority Nothing []))
+            (Just (Left rootDir)))
+          (Just (Query (Tuple "q" (Just "foo") : Tuple "var.bar" (Just "baz") : Nil)))
+          Nothing))
+    testRunParseURIRefParses
+      "mongodb://localhost"
+      (Left
+        (URI
+          (Just (URIScheme "mongodb"))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress "localhost") Nothing)]))
+            Nothing)
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "http://en.wikipedia.org/wiki/URI_scheme"
+      (Left
+        (URI
+          (Just (URIScheme "http"))
+          (HierarchicalPart
+            (Just (Authority Nothing [Tuple (NameAddress "en.wikipedia.org") Nothing]))
+            ((Just (Right ((rootDir </> dir "wiki") </> file "URI_scheme")))))
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"
+      (Left
+        (URI
+          (Just (URIScheme "http"))
+          (HierarchicalPart
+            (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
+            ((Just (Left rootDir))))
+          ((Just (Query empty)))
+          ((Just "?sort=asc&q=path%3A%2F&salt=1177214"))))
+    testRunParseURIRefParses
+      "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
+      (Left
+        (URI
+          (Just (URIScheme "mongodb"))
+          (HierarchicalPart
+            (Just
+              (Authority
+                (Just "foo:bar")
+                [ Tuple (NameAddress "db1.example.net") Nothing
+                , Tuple (NameAddress "db2.example.net") (Just 2500)]))
+            (Just (Right (rootDir </> file "authdb"))))
+          (Just
+            (Query
+              (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
+          Nothing))
+    testRunParseURIRefParses
+      "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
+      (Left
+        (URI
+          (Just (URIScheme "mongodb"))
+          (HierarchicalPart
+            (Just (Authority (Just "foo:bar") [(Tuple (NameAddress "db1.example.net") (Just 6)),(Tuple (NameAddress "db2.example.net") (Just 2500))]))
+            (Just (Right (rootDir </> file "authdb"))))
+          (Just (Query (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
+          Nothing))
+    testRunParseURIRefParses
+      "mongodb://192.168.0.1"
+      (Left
+        (URI
+          (Just (URIScheme "mongodb"))
+          (HierarchicalPart (Just (Authority Nothing [(Tuple (IPv4Address "192.168.0.1") Nothing)])) Nothing)
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "mongodb://192.168.0.1,192.168.0.2"
+      (Left
+        (URI
+          (Just (URIScheme "mongodb"))
+          (HierarchicalPart
+            (Just
+              (Authority
+                Nothing
+                [ Tuple (IPv4Address "192.168.0.1") Nothing
+                , Tuple (IPv4Address "192.168.0.2") Nothing
+                ]))
+            Nothing)
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "mongodb://sysop:moon@localhost"
+      (Left
+        (URI
+          (Just (URIScheme "mongodb"))
+          (HierarchicalPart
+            (Just(Authority (Just "sysop:moon") [(Tuple (NameAddress "localhost") Nothing)]))
+            Nothing)
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "mongodb://sysop:moon@localhost/"
+      (Left
+        (URI
+          (Just (URIScheme "mongodb"))
+          (HierarchicalPart
+            (Just (Authority (Just "sysop:moon") [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Left rootDir)))
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "mongodb://sysop:moon@localhost/records"
+      (Left
+        (URI
+          (Just (URIScheme "mongodb"))
+          (HierarchicalPart
+            (Just (Authority (Just "sysop:moon") [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Right (rootDir </> file "records"))))
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "foo://[2001:cdba:0000:0000:0000:0000:3257:9652]"
+      (Left
+        (URI
+          (Just (URIScheme "foo"))
+          (HierarchicalPart
+            (Just (Authority Nothing [Tuple (IPv6Address "2001:cdba:0000:0000:0000:0000:3257:9652") Nothing]))
+            Nothing)
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "foo://[FE80::0202:B3FF:FE1E:8329]"
+      (Left
+        (URI
+          (Just (URIScheme "foo"))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (IPv6Address "FE80::0202:B3FF:FE1E:8329") Nothing)]))
+            Nothing)
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "foo://[2001:db8::1]:80"
+      (Left
+        (URI
+          (Just (URIScheme "foo"))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (IPv6Address "2001:db8::1") (Just 80))]))
+            Nothing)
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "ftp://ftp.is.co.za/rfc/rfc1808.txt"
+      (Left
+        (URI
+          (Just (URIScheme "ftp"))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress "ftp.is.co.za") Nothing)]))
+            (Just (Right ((rootDir </> dir "rfc") </> file "rfc1808.txt"))))
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "http://www.ietf.org/rfc/rfc2396.txt"
+      (Left
+        (URI
+          (Just (URIScheme "http"))
+          (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "www.ietf.org") Nothing)])) (Just (Right ((rootDir </> dir "rfc") </> file "rfc2396.txt"))))
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "ldap://[2001:db8::7]/c=GB?objectClass?one"
+      (Left
+        (URI
+          (Just (URIScheme "ldap"))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (IPv6Address "2001:db8::7") Nothing)]))
+            (Just (Right (rootDir </> file "c=GB"))))
+          (Just (Query (singleton $ (Tuple "objectClass?one" Nothing))))
+          Nothing))
+    testRunParseURIRefParses
+      "telnet://192.0.2.16:80/"
+      (Left
+        (URI
+          (Just (URIScheme "telnet"))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (IPv4Address "192.0.2.16") (Just 80))]))
+            (Just (Left rootDir)))
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "foo://example.com:8042/over/there?name=ferret#nose"
+      (Left
+        (URI
+          (Just (URIScheme "foo"))
+          (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just 8042))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
+          (Just (Query (singleton (Tuple "name" (Just "ferret")))))
+          (Just "nose")))
+    testRunParseURIRefParses
+      "foo://info.example.com?fred"
+      (Left
+        (URI
+          (Just (URIScheme "foo"))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress "info.example.com") Nothing)]))
+            Nothing)
+          (Just (Query (singleton $ Tuple "fred" Nothing)))
+          Nothing))
+    testRunParseURIRefParses
+      "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
+      (Left
+        (URI
+          (Just (URIScheme "ftp"))
+          (HierarchicalPart
+            (Just
+              (Authority
+                (Just "cnn.example.com&story=breaking_news")
+                [(Tuple (IPv4Address "10.0.0.1") Nothing)]))
+            (Just (Right (rootDir </> file "top_story.htm"))))
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "../top_story.htm"
+      (Right
+        (RelativeRef
+          (RelativePart
+            Nothing
+            (Just (Right ((parentDir' currentDir) </> file "top_story.htm"))))
+          Nothing
+          Nothing))
+    testRunParseURIRefParses
+      "top_story.htm"
+      (Right
+        (RelativeRef
+          (RelativePart
+            Nothing
+            (Just (Right (currentDir </> file "top_story.htm"))))
+          Nothing
+          Nothing))
 
-testCommon
-  ∷ (String → Test)
-  → (String → Test)
-  → (String → Either ParseError URIRef)
-  → String
-  → Test
-testCommon leftMsg rightMsg f s = do
-  C.log $ "\nTrying to parse " <> s <> ""
-  case f s of
-    Left err → leftMsg $ "  Parse failed: " <> show err
-    Right x → do
-      rightMsg $ "      printURI: " <> printURIRef x
-        <> "\n          show: " <> show x
+    testRunParseURIRefFailes  "news:comp.infosystems.www.servers.unix"
+    testRunParseURIRefFailes "tel:+1-816-555-1212"
+    testRunParseURIRefFailes "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
+    testRunParseURIRefFailes "mailto:John.Doe@example.com"
+    testRunParseURIRefFailes "mailto:fred@example.com"
+    testRunParseURIRefFailes "/top_story.htm"
+
+  suite "printQuery" do
+    testPrintQuerySerializes
+      (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
+      "?key1=value1&key2=value2&key1=value3"
+    testPrintQuerySerializes (Query Nil) ""
+    testPrintQuerySerializes
+      (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
+      "?key1=&key2="
+    testPrintQuerySerializes
+      (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
+      "?key1&key2"
+
+  suite "parseQuery" do
+    testParseQueryParses
+      "key1=value1&key2=value2&key1=value3"
+      (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
+    testParseQueryParses
+      "key1&key2"
+      (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
+    testParseQueryParses
+      "key1=&key2="
+      (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
 
 
-test ∷ (String → Either ParseError URIRef) → String → Test
-test = testCommon (\x → C.error x *> (E.throwException $ E.error x)) C.log
-
-testFails ∷ (String → Either ParseError URIRef) → String → Test
-testFails = testCommon C.log (\x → C.error x *> (E.throwException $ E.error x))

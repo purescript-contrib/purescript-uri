@@ -1,12 +1,11 @@
 module Data.URI.Types where
 
 import Prelude
-
 import Data.Either (Either)
 import Data.Generic (class Generic)
+import Data.List (List)
 import Data.Maybe (Maybe)
 import Data.Path.Pathy (Path, File, Dir, Abs, Rel, Sandboxed, Unsandboxed)
-import Data.StrMap (StrMap)
 import Data.Tuple (Tuple)
 
 -- | A generic URI
@@ -57,7 +56,7 @@ data Host
 type Port = Int
 
 -- | The query component of a URI.
-newtype Query = Query (StrMap (Maybe String))
+newtype Query = Query (List (Tuple String (Maybe String)))
 
 -- | The hash fragment of a URI.
 type Fragment = String
@@ -65,52 +64,52 @@ type Fragment = String
 derive instance eqURI ∷ Eq URI
 
 instance showURI ∷ Show URI where
-  show (URI s h q f) = "URI (" <> show s <> ") (" <> show h <> ") (" <> show q <> ") (" <> show f <> ")"
+  show (URI s h q f) = "(URI " <> show s <> " " <> show h <> " " <> show q <> " " <> show f <> ")"
 
 derive instance eqAbsoluteURI ∷ Eq AbsoluteURI
 
 instance showAbsoluteURI ∷ Show AbsoluteURI where
-  show (AbsoluteURI s h q) = "AbsoluteURI (" <> show s <> ") (" <> show h <> ") (" <> show q <> ")"
+  show (AbsoluteURI s h q) = "(AbsoluteURI " <> show s <> " " <> show h <> " " <> show q <> ")"
 
 derive instance eqRelativeRef ∷ Eq RelativeRef
 
 instance showRelativeRef ∷ Show RelativeRef where
-  show (RelativeRef r q f) = "RelativeRef (" <> show r <> ") (" <> show q <> ") (" <> show f <> ")"
+  show (RelativeRef r q f) = "(RelativeRef " <> show r <> " " <> show q <> " " <> show f <> ")"
 
 derive instance eqURIScheme ∷ Eq URIScheme
 derive instance ordURIScheme ∷ Ord URIScheme
 derive instance genericURIScheme ∷ Generic URIScheme
 
 instance showURIScheme ∷ Show URIScheme where
-  show (URIScheme s) = "URIScheme " <> show s
+  show (URIScheme s) = "(URIScheme " <> show s <> ")"
 
 derive instance eqHierarchicalPart ∷ Eq HierarchicalPart
 
 instance showHierarchicalPart ∷ Show HierarchicalPart where
-  show (HierarchicalPart authority path) = "HierarchicalPart (" <> show authority <> ") (" <> show path <> ")"
+  show (HierarchicalPart authority path) = "(HierarchicalPart " <> show authority <> " " <> show path <> ")"
 
 derive instance eqRelativePart ∷ Eq RelativePart
 
 instance showRelativePart ∷ Show RelativePart where
-  show (RelativePart authority path) = "RelativePart (" <> show authority <> ") (" <> show path <> ")"
+  show (RelativePart authority path) = "(RelativePart " <> show authority <> " " <> show path <> ")"
 
 derive instance eqAuthority ∷ Eq Authority
 derive instance ordAuthority ∷ Ord Authority
 derive instance genericAuthority ∷ Generic Authority
 
 instance showAuthority ∷ Show Authority where
-  show (Authority userinfo hosts) = "Authority (" <> show userinfo <> ") " <> show hosts
+  show (Authority userinfo hosts) = "(Authority " <> show userinfo <> " " <> show hosts <> ")"
 
 derive instance eqHost ∷ Eq Host
 derive instance ordHost ∷ Ord Host
 derive instance genericQuery ∷ Generic Host
 
 instance showHost ∷ Show Host where
-  show (IPv6Address ip) = "IPv6Address " <> show ip
-  show (IPv4Address ip) = "IPv4Address " <> show ip
-  show (NameAddress name) = "NameAddress " <> show name
+  show (IPv6Address ip) = "(IPv6Address " <> show ip <> ")"
+  show (IPv4Address ip) = "(IPv4Address " <> show ip <> ")"
+  show (NameAddress name) = "(NameAddress " <> show name <> ")"
 
 derive instance eqQuery ∷ Eq Query
 
 instance showQuery ∷ Show Query where
-  show (Query m) = "Query (" <> show m <> ")"
+  show (Query m) = "(Query (" <> show m <> "))"

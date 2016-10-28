@@ -17,11 +17,14 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-globals": "^1.0.0",
-    "purescript-integers": "^1.0.0",
-    "purescript-maps": "^1.1.0",
-    "purescript-pathy": "^2.0.0",
-    "purescript-string-parsers": "^1.0.1",
-    "purescript-unfoldable": "^1.0.0"
+    "purescript-globals": "^2.0.0",
+    "purescript-integers": "^2.0.0",
+    "purescript-maps": "^2.0.0",
+    "purescript-pathy": "^3.0.0",
+    "purescript-string-parsers": "^2.0.0",
+    "purescript-unfoldable": "^2.0.0"
+  },
+  "devDependencies": {
+    "purescript-test-unit": "10.0.1"
   }
 }
