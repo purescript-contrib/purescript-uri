@@ -94,4 +94,4 @@ printPath = either printPath' printPath'
 printPath' ∷ ∀ a' b s'. Path a' b s' → String
 printPath' path =
   let printed = unsafePrintPath path
-  in fromMaybe printed $ Str.stripPrefix "./" printed
+  in fromMaybe printed $ Str.stripPrefix (Str.Pattern "./") printed
