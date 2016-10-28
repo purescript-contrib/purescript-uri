@@ -1,10 +1,12 @@
 module Data.URI.Types where
 
 import Prelude
+
 import Data.Either (Either)
 import Data.Generic (class Generic)
 import Data.List (List)
 import Data.Maybe (Maybe)
+import Data.Newtype (class Newtype)
 import Data.Path.Pathy (Path, File, Dir, Abs, Rel, Sandboxed, Unsandboxed)
 import Data.Tuple (Tuple)
 
@@ -76,8 +78,9 @@ derive instance eqRelativeRef ∷ Eq RelativeRef
 instance showRelativeRef ∷ Show RelativeRef where
   show (RelativeRef r q f) = "(RelativeRef " <> show r <> " " <> show q <> " " <> show f <> ")"
 
-derive instance eqURIScheme ∷ Eq URIScheme
-derive instance ordURIScheme ∷ Ord URIScheme
+derive instance newtypeURIScheme ∷ Newtype URIScheme _
+derive newtype instance eqURIScheme ∷ Eq URIScheme
+derive newtype instance ordURIScheme ∷ Ord URIScheme
 derive instance genericURIScheme ∷ Generic URIScheme
 
 instance showURIScheme ∷ Show URIScheme where
@@ -109,7 +112,9 @@ instance showHost ∷ Show Host where
   show (IPv4Address ip) = "(IPv4Address " <> show ip <> ")"
   show (NameAddress name) = "(NameAddress " <> show name <> ")"
 
-derive instance eqQuery ∷ Eq Query
+derive instance newtypeQuery ∷ Newtype Query _
+derive newtype instance eqQuery ∷ Eq Query
+derive newtype instance ordQuery ∷ Ord Query
 
 instance showQuery ∷ Show Query where
-  show (Query m) = "(Query (" <> show m <> "))"
+  show (Query m) = "(Query " <> show m <> ")"
