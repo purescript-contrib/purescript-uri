@@ -44,7 +44,7 @@ parsePathAbEmpty p
 
 parsePathAbsolute ∷ ∀ p. Parser p → Parser p
 parsePathAbsolute p = wrapParser p $ do
-  string "/"
+  _ <- string "/"
   start ← parseSegmentNonZero
   rest ← joinWith "" <$> many (append <$> string "/" <*> parseSegment)
   pure $ "/" <> start <> rest
