@@ -4,15 +4,25 @@ import Prelude
 import Control.Alternative (empty)
 import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE)
+import Control.Monad.Eff.Random (RANDOM)
+import Data.Array as A
 import Data.Either (isLeft, Either(..))
-import Data.List (List(Nil), singleton, (:))
+import Data.Foldable (findMap)
+import Data.List (List(..), singleton, (:))
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
-import Data.Tuple (Tuple(Tuple))
+import Data.Tuple (Tuple(..), snd)
 import Data.URI (Authority(Authority), HierarchicalPart(HierarchicalPart), Host(IPv4Address, NameAddress, IPv6Address), Query(Query), RelativePart(RelativePart), RelativeRef(RelativeRef), URI(URI), URIScheme(URIScheme), runParseURIRef)
+import Data.URI.Host as Host
+import Data.URI.Host.Gen as Host.Gen
 import Data.URI.Query (parseQuery, printQuery)
-import Test.Unit (suite, test, TestSuite)
+import Test.StrongCheck ((===))
+import Test.StrongCheck as SC
+import Test.StrongCheck.Gen as SCG
+import Test.StrongCheck.LCG as SCL
+import Test.Unit (Test, suite, test, TestSuite, success, failure)
 import Test.Unit.Assert (assert, equal)
 import Test.Unit.Console (TESTOUTPUT)
 import Test.Unit.Main (runTest)
@@ -42,8 +52,17 @@ testParseQueryParses uri query =
     ("parses: \"" <> uri <> "\"")
     (equal (Right query) (runParser parseQuery uri))
 
-main :: forall eff. Eff ( console :: CONSOLE , testOutput :: TESTOUTPUT, avar :: AVAR | eff ) Unit
+main :: forall eff. Eff ( console :: CONSOLE , testOutput :: TESTOUTPUT, avar :: AVAR, random :: RANDOM | eff ) Unit
 main = runTest $ suite "Data.URI" do
+
+  suite "property tests" do
+    test "parseIPv4Address / printHost roundtrip" do
+      forAll do
+        ipv4 <- Host.Gen.genIPv4
+        let printed = Host.printHost ipv4
+        let parsed = runParser Host.parseIPv4Address printed
+        pure $ pure ipv4 === parsed
+
   suite "runParseURIRef" do
     testRunParseURIRefParses
       "sql2:///?q=foo&var.bar=baz"
@@ -312,4 +331,25 @@ main = runTest $ suite "Data.URI" do
       "key1=&key2="
       (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
 
+forAll :: forall e prop. SC.Testable prop => SCG.Gen prop -> Test (random :: RANDOM | e)
+forAll = quickCheck
 
+quickCheck :: forall e prop. SC.Testable prop => prop -> Test (random :: RANDOM | e)
+quickCheck = quickCheck' 100
+
+quickCheck' :: forall e prop. SC.Testable prop => Int -> prop -> Test (random :: RANDOM | e)
+quickCheck' tries prop = do
+  seed <- liftEff $ SCL.randomSeed
+  let
+    results = SC.quickCheckPure tries seed prop
+    successes = A.length $ A.filter ((_ == SC.Success) <<< snd) $ results
+    findErr = findMap case _ of
+      Tuple seed' (SC.Failed msg) -> Just (Tuple seed' msg)
+      _ -> Nothing
+  case findErr results of
+    Nothing ->
+      success
+    Just (Tuple seed' msg) ->
+      failure $
+        show (tries - successes) <> "/" <> show tries <> " tests failed: "
+          <> msg <> " (seed " <> show (SCL.runSeed seed') <> ")"
