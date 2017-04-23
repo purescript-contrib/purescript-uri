@@ -22,7 +22,8 @@
     "purescript-maps": "^3.0.0",
     "purescript-pathy": "^4.0.0",
     "purescript-string-parsers": "^3.0.0",
-    "purescript-unfoldable": "^3.0.0"
+    "purescript-unfoldable": "^3.0.0",
+    "purescript-generics": "^4.0.0"
   },
   "devDependencies": {
     "purescript-test-unit": "11.0.0"
