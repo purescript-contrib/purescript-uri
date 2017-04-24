@@ -55,13 +55,18 @@ testParseQueryParses uri query =
 main :: forall eff. Eff ( console :: CONSOLE , testOutput :: TESTOUTPUT, avar :: AVAR, random :: RANDOM | eff ) Unit
 main = runTest $ suite "Data.URI" do
 
-  suite "property tests" do
+  suite "parseIPv4Address" do
+
     test "parseIPv4Address / printHost roundtrip" do
       forAll do
         ipv4 <- Host.Gen.genIPv4
         let printed = Host.printHost ipv4
         let parsed = runParser Host.parseIPv4Address printed
         pure $ pure ipv4 === parsed
+
+    test "0-lead octets should not parse" do
+      assert ("parse should fail for 192.168.001.1") $
+        isLeft $ runParser Host.parseIPv4Address "192.168.001.1"
 
   suite "runParseURIRef" do
     testRunParseURIRefParses

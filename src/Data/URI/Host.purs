@@ -36,7 +36,7 @@ parseIPv4Address = IPv4Address <$> parse <?> "IPv4 address"
     pure $ show o1 <> "." <> show o2 <> "." <> show o3 <> "." <> show o4
   octet ∷ Parser Int
   octet = do
-    s <- rxPat "[0-9]{1,3}"
+    s <- rxPat "0|([1-9][0-9]{0,2})"
     case Int.fromString s of
       Just n | n >= 0 && n <= 255 -> pure n
       _ -> fail "Invalid IPv4 address octet"
