@@ -7,7 +7,6 @@ import Prelude
 
 import Control.Alt ((<|>))
 
-import Data.String as S
 import Data.Int as Int
 import Data.Maybe (Maybe (Just))
 import Data.URI.Common (parseSubDelims, parsePCTEncoded, parseUnreserved, joinWith, rxPat)
