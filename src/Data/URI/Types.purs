@@ -6,6 +6,7 @@ import Data.Either (Either)
 import Data.Generic (class Generic)
 import Data.List (List)
 import Data.Maybe (Maybe)
+import Data.Monoid (class Monoid)
 import Data.Newtype (class Newtype)
 import Data.Path.Pathy (Path, File, Dir, Abs, Rel, Sandboxed, Unsandboxed)
 import Data.Tuple (Tuple)
@@ -115,6 +116,8 @@ instance showHost ∷ Show Host where
 derive instance newtypeQuery ∷ Newtype Query _
 derive newtype instance eqQuery ∷ Eq Query
 derive newtype instance ordQuery ∷ Ord Query
+derive newtype instance semigroupQuery ∷ Semigroup Query
+derive newtype instance monoidQuery ∷ Monoid Query
 
 instance showQuery ∷ Show Query where
   show (Query m) = "(Query " <> show m <> ")"
