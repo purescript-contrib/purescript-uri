@@ -23,25 +23,25 @@ printURIRef = either printURI printRelativeRef
 
 printURI ∷ URI → String
 printURI (URI s h q f) =
-  encodeURI $ S.joinWith "" $ catMaybes
+  S.joinWith "" $ catMaybes
     [ printScheme <$> s
-    , Just (printHierPart h)
+    , Just (encodeURI (printHierPart h))
     , printQuery <$> q
     , ("#" <> _) <$> f
     ]
 
 printAbsoluteURI ∷ AbsoluteURI → String
 printAbsoluteURI (AbsoluteURI s h q) =
-  encodeURI $ S.joinWith "" $ catMaybes
+  S.joinWith "" $ catMaybes
     [ printScheme <$> s
-    , Just (printHierPart h)
+    , Just (encodeURI (printHierPart h))
     , printQuery <$> q
     ]
 
 printRelativeRef ∷ RelativeRef → String
 printRelativeRef (RelativeRef h q f) =
-  encodeURI $ S.joinWith "" $ catMaybes
-    [ Just (printRelativePart h)
+  S.joinWith "" $ catMaybes
+    [ Just (encodeURI (printRelativePart h))
     , printQuery <$> q
     , ("#" <> _) <$> f
     ]
