@@ -30,4 +30,8 @@ parser = withAuth <|> withoutAuth
 
 print ∷ RelativePart → String
 print (RelativePart a p) =
-  "//" <> S.joinWith "" (catMaybes [Authority.print <$> a, printPath <$> p])
+  S.joinWith "" $
+    catMaybes
+      [ (\auth → "//" <> Authority.print auth) <$> a
+      , printPath <$> p
+      ]

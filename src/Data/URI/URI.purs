@@ -29,8 +29,7 @@ parser = URI
 print ∷ URI → String
 print (URI s h q f) =
   S.joinWith "" $ catMaybes
-    [ Scheme.print <$> s
-    , Just "//"
+    [ (\scheme → Scheme.print scheme <> "//") <$> s
     , Just (HPart.print h)
     , Query.print <$> q
     , (\frag → "#" <> Fragment.print frag) <$> f

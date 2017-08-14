@@ -21,6 +21,7 @@ import Data.Path.Pathy (Path, parseAbsDir, parseRelDir, parseAbsFile, parseRelFi
 import Data.String as Str
 import Data.URI (URIPath, URIPathRel, URIPathAbs)
 import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parsePChar, parseSubDelims, parseUnreserved, wrapParser)
+import Global (encodeURI)
 import Text.Parsing.StringParser (Parser(..), ParseError(..), try)
 import Text.Parsing.StringParser.Combinators (many, many1)
 import Text.Parsing.StringParser.String (string)
@@ -91,4 +92,4 @@ printPath = either printPath' printPath'
 printPath' ∷ ∀ a' b s'. Path a' b s' → String
 printPath' path =
   let printed = unsafePrintPath path
-  in fromMaybe printed $ Str.stripPrefix (Str.Pattern "./") printed
+  in encodeURI $ fromMaybe printed $ Str.stripPrefix (Str.Pattern "./") printed
