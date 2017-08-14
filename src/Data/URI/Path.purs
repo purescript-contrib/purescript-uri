@@ -10,20 +10,17 @@ module Data.URI.Path
   , parseURIPathAbs
   , parseURIPathRel
   , printPath
-  , module Data.URI.Types
   ) where
 
 import Prelude
 
 import Control.Alt ((<|>))
-
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Path.Pathy (Path, parseAbsDir, parseRelDir, parseAbsFile, parseRelFile, sandbox, rootDir, (</>), unsafePrintPath)
 import Data.String as Str
-import Data.URI.Common (parseSubDelims, parsePCTEncoded, parseUnreserved, joinWith, parsePChar, wrapParser)
-import Data.URI.Types (URIPath, URIPathRel, URIPathAbs)
-
+import Data.URI (URIPath, URIPathRel, URIPathAbs)
+import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parsePChar, parseSubDelims, parseUnreserved, wrapParser)
 import Text.Parsing.StringParser (Parser(..), ParseError(..), try)
 import Text.Parsing.StringParser.Combinators (many, many1)
 import Text.Parsing.StringParser.String (string)
@@ -62,15 +59,15 @@ parsePathRootless p = wrapParser p $
     <*> (joinWith "" <$> many (append <$> string "/" <*> parseSegment))
 
 parseSegment ∷ Parser String
-parseSegment = joinWith "" <$> many parsePChar
+parseSegment = joinWith "" <$> many (parsePChar decodePCT)
 
 parseSegmentNonZero ∷ Parser String
-parseSegmentNonZero = joinWith "" <$> many1 parsePChar
+parseSegmentNonZero = joinWith "" <$> many1 (parsePChar decodePCT)
 
 parseSegmentNonZeroNoColon ∷ Parser String
 parseSegmentNonZeroNoColon =
   joinWith "" <$> many1
-    (parseUnreserved <|> parsePCTEncoded <|> parseSubDelims <|> string "@")
+    (parseUnreserved <|> parsePCTEncoded decodePCT <|> parseSubDelims <|> string "@")
 
 parseURIPathAbs ∷ Parser URIPathAbs
 parseURIPathAbs = Parser \{ str: str, pos: i } →

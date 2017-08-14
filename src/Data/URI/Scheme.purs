@@ -1,19 +1,13 @@
-module Data.URI.Scheme
-  ( module Data.URI.Scheme
-  , module Data.URI.Types
-  ) where
+module Data.URI.Scheme where
 
 import Prelude
 
-import Data.Maybe (Maybe)
+import Data.URI (Scheme(..))
 import Data.URI.Common (rxPat)
-import Data.URI.Types (URIScheme(..))
-
 import Text.Parsing.StringParser (Parser)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
 
-parseScheme ∷ Parser (Maybe URIScheme)
-parseScheme = optionMaybe (URIScheme <$> rxPat "[a-z][a-z0-9+\\.\\-]+")
+parser ∷ Parser Scheme
+parser = Scheme <$> rxPat "[a-z][a-z0-9+\\.\\-]+"
 
-printScheme ∷ URIScheme → String
-printScheme (URIScheme s) = s <> ":"
+print ∷ Scheme → String
+print (Scheme s) = s <> ":"

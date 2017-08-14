@@ -3,7 +3,6 @@ module Data.URI.Common where
 import Prelude
 
 import Control.Alt ((<|>))
-
 import Data.Array (fromFoldable)
 import Data.Either (Either(..), fromRight)
 import Data.List (List)
@@ -12,8 +11,8 @@ import Data.String as S
 import Data.String.Regex (Regex, regex)
 import Data.String.Regex.Flags as RXF
 import Data.Unfoldable (replicateA)
+import Global (decodeURI, decodeURIComponent)
 import Partial.Unsafe (unsafePartial)
-
 import Text.Parsing.StringParser (ParseError(..), Parser(..), unParser)
 import Text.Parsing.StringParser.String (string)
 
@@ -29,14 +28,14 @@ rxPat rx =
 
 wrapParser ∷ ∀ a. Parser a → Parser String → Parser a
 wrapParser outer inner = Parser \ps → do
-  r <- unParser inner ps
-  r' <- unParser outer {str : r.result, pos: 0}
+  r ← unParser inner ps
+  r' ← unParser outer {str : r.result, pos: 0}
   pure { result: r'.result, suffix: r.suffix }
 
-parsePChar ∷ Parser String
-parsePChar
+parsePChar ∷ (PCTEncoded → String) → Parser String
+parsePChar f
   = parseUnreserved
-  <|> parsePCTEncoded
+  <|> parsePCTEncoded f
   <|> parseSubDelims
   <|> string ":"
   <|> string "@"
@@ -44,8 +43,16 @@ parsePChar
 parseUnreserved ∷ Parser String
 parseUnreserved = rxPat "[0-9a-z\\-\\._~]+"
 
-parsePCTEncoded ∷ Parser String
-parsePCTEncoded = rxPat "%[0-9a-f]{2}"
+newtype PCTEncoded = PCTEncoded String
+
+decodePCT ∷ PCTEncoded → String
+decodePCT (PCTEncoded s) = decodeURI s
+
+decodePCTComponent ∷ PCTEncoded → String
+decodePCTComponent (PCTEncoded s) = decodeURIComponent s
+
+parsePCTEncoded ∷ (PCTEncoded → String) → Parser String
+parsePCTEncoded f = f <<< PCTEncoded <$> rxPat "(%[0-9a-f]{2})+"
 
 parseSubDelims ∷ Parser String
 parseSubDelims = rxPat "[!$&'()*+;=]"
