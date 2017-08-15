@@ -343,6 +343,32 @@ main = runTest $ suite "Data.URI" do
           Nothing
           Nothing))
     testIsoURIRef
+      "couchbase://localhost/testBucket?password=&docTypeKey="
+      (Left
+        (URI
+          (Just (Scheme "couchbase"))
+          (HierarchicalPart
+            (Just
+              (Authority
+                Nothing
+                [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Right (rootDir </> file "testBucket"))))
+          (Just (Query (Tuple "password" (Just "") : Tuple "docTypeKey" (Just "") : Nil)))
+          Nothing))
+    testIsoURIRef
+      "couchbase://localhost:99999/testBucket?password=pass&docTypeKey=type&queryTimeoutSeconds=20"
+      (Left
+        (URI
+          (Just (Scheme "couchbase"))
+          (HierarchicalPart
+            (Just
+              (Authority
+                Nothing
+                [(Tuple (NameAddress "localhost") (Just (Port 99999)))]))
+            (Just (Right (rootDir </> file "testBucket"))))
+          (Just (Query (Tuple "password" (Just "pass") : Tuple "docTypeKey" (Just "type") : Tuple "queryTimeoutSeconds" (Just "20") : Nil)))
+          Nothing))
+    testIsoURIRef
       "http://www.example.com/some%20invented/url%20with%20spaces.html"
       (Left
         (URI
