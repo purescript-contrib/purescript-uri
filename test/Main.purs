@@ -2,7 +2,6 @@ module Test.Main where
 
 import Prelude
 
-import Control.Alternative (empty)
 import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
@@ -12,6 +11,7 @@ import Control.Monad.Eff.Random (RANDOM)
 import Data.Either (isLeft, Either(..))
 import Data.List (List(..), singleton, (:))
 import Data.Maybe (Maybe(Nothing, Just))
+import Data.Monoid (mempty)
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
 import Data.Tuple (Tuple(..))
 import Data.URI (AbsoluteURI(..), Authority(..), Fragment(..), HierarchicalPart(..), Host(..), Port(..), Query(..), RelativePart(..), RelativeRef(..), Scheme(..), URI(..), UserInfo(..))
@@ -379,6 +379,16 @@ main = runTest $ suite "Data.URI" do
             ((Just (Right ((rootDir </> dir "some invented") </> file "url with spaces.html")))))
           Nothing
           Nothing))
+    testIsoURIRef
+      "http://localhost:53174/metadata/fs/test/%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23?"
+      (Left
+        (URI
+          (Just (Scheme "http"))
+          (HierarchicalPart
+            (Just (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 53174))]))
+            ((Just (Right (rootDir </> dir "metadata" </> dir "fs" </> dir "test" </> file "Пациенты# #")))))
+          (Just mempty)
+          Nothing))
 
     -- Not an iso in this case as the printed path is normalised
     testRunParseURIRefParses
@@ -389,7 +399,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
             ((Just (Left rootDir))))
-          ((Just (Query empty)))
+          ((Just mempty))
           ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
     testPrinter
       URIRef.print
@@ -400,7 +410,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
             ((Just (Left rootDir))))
-          ((Just (Query empty)))
+          ((Just mempty))
           ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
 
     testRunParseURIRefFailes "news:comp.infosystems.www.servers.unix"
