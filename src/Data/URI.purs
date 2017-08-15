@@ -7,6 +7,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.List (List)
 import Data.Maybe (Maybe)
+import Data.Monoid (class Monoid)
 import Data.Newtype (class Newtype)
 import Data.Path.Pathy (Path, File, Dir, Abs, Rel, Sandboxed, Unsandboxed)
 import Data.Tuple (Tuple)
@@ -51,8 +52,8 @@ type URIRef = Either URI RelativeRef
 -- | The scheme part of an absolute URI. For example: `http`, `ftp`, `git`.
 newtype Scheme = Scheme String
 
-derive instance eqScheme ∷ Eq Scheme
-derive instance ordScheme ∷ Ord Scheme
+derive newtype instance eqScheme ∷ Eq Scheme
+derive newtype instance ordScheme ∷ Ord Scheme
 derive instance genericScheme ∷ Generic Scheme _
 derive instance newtypeScheme ∷ Newtype Scheme _
 instance showScheme ∷ Show Scheme where show = genericShow
@@ -85,8 +86,8 @@ instance showAuthority ∷ Show Authority where show = genericShow
 -- | The user info part of an `Authority`. For example: `user`, `foo:bar`.
 newtype UserInfo = UserInfo String
 
-derive instance eqUserInfo ∷ Eq UserInfo
-derive instance ordUserInfo ∷ Ord UserInfo
+derive newtype instance eqUserInfo ∷ Eq UserInfo
+derive newtype instance ordUserInfo ∷ Ord UserInfo
 derive instance genericUserInfo ∷ Generic UserInfo _
 derive instance newtypeUserInfo ∷ Newtype UserInfo _
 instance showUserInfo ∷ Show UserInfo where show = genericShow
@@ -105,8 +106,8 @@ instance showHost ∷ Show Host where show = genericShow
 -- | A port number.
 newtype Port = Port Int
 
-derive instance eqPort ∷ Eq Port
-derive instance ordPort ∷ Ord Port
+derive newtype instance eqPort ∷ Eq Port
+derive newtype instance ordPort ∷ Ord Port
 derive instance genericPort ∷ Generic Port _
 derive instance newtypePort ∷ Newtype Port _
 instance showPort ∷ Show Port where show = genericShow
@@ -114,17 +115,19 @@ instance showPort ∷ Show Port where show = genericShow
 -- | The query component of a URI.
 newtype Query = Query (List (Tuple String (Maybe String)))
 
-derive instance eqQuery ∷ Eq Query
-derive instance ordQuery ∷ Ord Query
+derive newtype instance eqQuery ∷ Eq Query
+derive newtype instance ordQuery ∷ Ord Query
 derive instance genericQuery ∷ Generic Query _
 derive instance newtypeQuery ∷ Newtype Query _
 instance showQuery ∷ Show Query where show = genericShow
+derive newtype instance semigroupQuery ∷ Semigroup Query
+derive newtype instance monoidQuery ∷ Monoid Query
 
 -- | The hash fragment of a URI.
 newtype Fragment = Fragment String
 
-derive instance eqFragment ∷ Eq Fragment
-derive instance ordFragment ∷ Ord Fragment
+derive newtype instance eqFragment ∷ Eq Fragment
+derive newtype instance ordFragment ∷ Ord Fragment
 derive instance genericFragment ∷ Generic Fragment _
 derive instance newtypeFragment ∷ Newtype Fragment _
 instance showFragment ∷ Show Fragment where show = genericShow
