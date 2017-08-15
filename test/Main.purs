@@ -14,7 +14,8 @@ import Data.List (List(..), singleton, (:))
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
 import Data.Tuple (Tuple(..))
-import Data.URI (Authority(..), Fragment(..), HierarchicalPart(..), Host(..), Port(..), Query(..), RelativePart(..), RelativeRef(..), Scheme(..), URI(..), UserInfo(..))
+import Data.URI (AbsoluteURI(..), Authority(..), Fragment(..), HierarchicalPart(..), Host(..), Port(..), Query(..), RelativePart(..), RelativeRef(..), Scheme(..), URI(..), UserInfo(..))
+import Data.URI.AbsoluteURI as AbsoluteURI
 import Data.URI.Authority as Authority
 import Data.URI.Host as Host
 import Data.URI.Host.Gen as Host.Gen
@@ -342,32 +343,32 @@ main = runTest $ suite "Data.URI" do
             (Just (Right (currentDir </> file "top_story.htm"))))
           Nothing
           Nothing))
-    testIsoURIRef
+    testIso
+      AbsoluteURI.parser
+      AbsoluteURI.print
       "couchbase://localhost/testBucket?password=&docTypeKey="
-      (Left
-        (URI
-          (Just (Scheme "couchbase"))
-          (HierarchicalPart
-            (Just
-              (Authority
-                Nothing
-                [(Tuple (NameAddress "localhost") Nothing)]))
-            (Just (Right (rootDir </> file "testBucket"))))
-          (Just (Query (Tuple "password" (Just "") : Tuple "docTypeKey" (Just "") : Nil)))
-          Nothing))
-    testIsoURIRef
+      (AbsoluteURI
+        (Just (Scheme "couchbase"))
+        (HierarchicalPart
+          (Just
+            (Authority
+              Nothing
+              [(Tuple (NameAddress "localhost") Nothing)]))
+          (Just (Right (rootDir </> file "testBucket"))))
+        (Just (Query (Tuple "password" (Just "") : Tuple "docTypeKey" (Just "") : Nil))))
+    testIso
+      AbsoluteURI.parser
+      AbsoluteURI.print
       "couchbase://localhost:99999/testBucket?password=pass&docTypeKey=type&queryTimeoutSeconds=20"
-      (Left
-        (URI
-          (Just (Scheme "couchbase"))
-          (HierarchicalPart
-            (Just
-              (Authority
-                Nothing
-                [(Tuple (NameAddress "localhost") (Just (Port 99999)))]))
-            (Just (Right (rootDir </> file "testBucket"))))
-          (Just (Query (Tuple "password" (Just "pass") : Tuple "docTypeKey" (Just "type") : Tuple "queryTimeoutSeconds" (Just "20") : Nil)))
-          Nothing))
+      (AbsoluteURI
+        (Just (Scheme "couchbase"))
+        (HierarchicalPart
+          (Just
+            (Authority
+              Nothing
+              [(Tuple (NameAddress "localhost") (Just (Port 99999)))]))
+          (Just (Right (rootDir </> file "testBucket"))))
+        (Just (Query (Tuple "password" (Just "pass") : Tuple "docTypeKey" (Just "type") : Tuple "queryTimeoutSeconds" (Just "20") : Nil))))
     testIsoURIRef
       "http://www.example.com/some%20invented/url%20with%20spaces.html"
       (Left

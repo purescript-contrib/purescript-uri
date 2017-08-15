@@ -20,14 +20,14 @@ parse = runParser parser
 parser ∷ Parser AbsoluteURI
 parser = AbsoluteURI
   <$> (optionMaybe Scheme.parser <* string ":")
-  <*> HPart.parser
+  <*> (string "//" *> HPart.parser)
   <*> optionMaybe (string "?" *> Query.parser)
   <* eof
 
 print ∷ AbsoluteURI → String
 print (AbsoluteURI s h q) =
   S.joinWith "" $ catMaybes
-    [ Scheme.print <$> s
+    [ (\scheme → Scheme.print scheme <> "//") <$> s
     , Just (HPart.print h)
     , Query.print <$> q
     ]
