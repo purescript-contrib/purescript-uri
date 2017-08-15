@@ -1,28 +1,22 @@
-module Data.URI.HierarchicalPart
-  ( module Data.URI.HierarchicalPart
-  , module Data.URI.Types
-  ) where
+module Data.URI.HierarchicalPart where
 
 import Prelude
 
 import Control.Alt ((<|>))
-
 import Data.Array (catMaybes)
 import Data.Maybe (Maybe(..))
 import Data.String as S
-import Data.URI.Authority (printAuthority, parseAuthority)
+import Data.URI (HierarchicalPart(..))
+import Data.URI.Authority as Authority
 import Data.URI.Path (printPath, parseURIPathAbs, parsePathRootless, parsePathAbsolute, parsePathAbEmpty)
-import Data.URI.Types (Authority(..), HierarchicalPart(..))
-
 import Text.Parsing.StringParser (Parser)
-import Text.Parsing.StringParser.String (string)
 
-parseHierarchicalPart ∷ Parser HierarchicalPart
-parseHierarchicalPart = withAuth <|> withoutAuth
+parser ∷ Parser HierarchicalPart
+parser = withAuth <|> withoutAuth
   where
   withAuth =
-    HierarchicalPart
-      <$> Just <$> (string "//" *> parseAuthority)
+    HierarchicalPart <<< Just
+      <$> Authority.parser
       <*> parsePathAbEmpty parseURIPathAbs
 
   withoutAuth = HierarchicalPart Nothing <$> noAuthPath
@@ -32,9 +26,6 @@ parseHierarchicalPart = withAuth <|> withoutAuth
     <|> (Just <$> parsePathRootless parseURIPathAbs)
     <|> pure Nothing
 
-printHierPart ∷ HierarchicalPart → String
-printHierPart (HierarchicalPart a p) =
-  S.joinWith "" $ catMaybes
-    [ printAuthority <$> a
-    , printPath <$> p
-    ]
+print ∷ HierarchicalPart → String
+print (HierarchicalPart a p) =
+  S.joinWith "" (catMaybes [Authority.print <$> a, printPath <$> p])

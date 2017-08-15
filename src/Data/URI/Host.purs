@@ -1,31 +1,29 @@
-module Data.URI.Host
-  ( module Data.URI.Host
-  , module Data.URI.Types
-  ) where
+module Data.URI.Host where
 
 import Prelude
 
 import Control.Alt ((<|>))
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
-import Data.URI.Common (parseSubDelims, parsePCTEncoded, parseUnreserved, joinWith, rxPat)
-import Data.URI.Types (Host(..))
+import Data.URI (Host(..))
+import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parseSubDelims, parseUnreserved, rxPat)
+import Global (encodeURI)
 import Text.Parsing.StringParser (Parser, try, fail)
 import Text.Parsing.StringParser.Combinators ((<?>), many1)
 import Text.Parsing.StringParser.String (string, char)
 
-parseHost ∷ Parser Host
-parseHost = parseIPv6Address <|> parseIPv4Address <|> parseRegName
+parser ∷ Parser Host
+parser = ipv6AddressParser <|> ipv4AddressParser <|> try regNameParser
 
 -- TODO: this is much too forgiving right now
-parseIPv6Address ∷ Parser Host
-parseIPv6Address = IPv6Address <$> (string "[" *> rxPat "[a-f0-9\\.:]+" <* string "]") <?> "IPv6 address"
+ipv6AddressParser ∷ Parser Host
+ipv6AddressParser = IPv6Address <$> (string "[" *> rxPat "[a-f0-9\\.:]+" <* string "]") <?> "IPv6 address"
 
-parseIPv4Address ∷ Parser Host
-parseIPv4Address = IPv4Address <$> parse <?> "IPv4 address"
+ipv4AddressParser ∷ Parser Host
+ipv4AddressParser = IPv4Address <$> addr <?> "IPv4 address"
   where
-  parse ∷ Parser String
-  parse = do
+  addr ∷ Parser String
+  addr = do
     o1 <- octet
     _ <- char '.'
     o2 <- octet
@@ -41,13 +39,12 @@ parseIPv4Address = IPv4Address <$> parse <?> "IPv4 address"
       Just n | n >= 0 && n <= 255 -> pure n
       _ -> fail "Invalid IPv4 address octet"
 
-parseRegName ∷ Parser Host
-parseRegName =
-  NameAddress
-    <$> try (joinWith ""
-      <$> many1 (parseUnreserved <|> parsePCTEncoded <|> parseSubDelims))
+regNameParser ∷ Parser Host
+regNameParser = NameAddress <<< joinWith "" <$> many1 p
+  where
+  p = parseUnreserved <|> parsePCTEncoded decodePCT <|> parseSubDelims
 
-printHost ∷ Host → String
-printHost (IPv6Address i) = "[" <> i <> "]"
-printHost (IPv4Address i) = i
-printHost (NameAddress i) = i
+print ∷ Host → String
+print (IPv6Address i) = "[" <> i <> "]"
+print (IPv4Address i) = i
+print (NameAddress i) = encodeURI i

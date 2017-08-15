@@ -10,20 +10,18 @@ module Data.URI.Path
   , parseURIPathAbs
   , parseURIPathRel
   , printPath
-  , module Data.URI.Types
   ) where
 
 import Prelude
 
 import Control.Alt ((<|>))
-
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Path.Pathy (Path, parseAbsDir, parseRelDir, parseAbsFile, parseRelFile, sandbox, rootDir, (</>), unsafePrintPath)
+import Data.Path.Pathy (Path, Escaper(..), parseAbsDir, parseRelDir, parseAbsFile, parseRelFile, sandbox, rootDir, (</>), unsafePrintPath')
 import Data.String as Str
-import Data.URI.Common (parseSubDelims, parsePCTEncoded, parseUnreserved, joinWith, parsePChar, wrapParser)
-import Data.URI.Types (URIPath, URIPathRel, URIPathAbs)
-
+import Data.URI (URIPath, URIPathRel, URIPathAbs)
+import Data.URI.Common (PCTEncoded, decodePCT, joinWith, parsePCTEncoded, parsePChar, parseSubDelims, parseUnreserved, wrapParser)
+import Global (encodeURI)
 import Text.Parsing.StringParser (Parser(..), ParseError(..), try)
 import Text.Parsing.StringParser.Combinators (many, many1)
 import Text.Parsing.StringParser.String (string)
@@ -62,15 +60,15 @@ parsePathRootless p = wrapParser p $
     <*> (joinWith "" <$> many (append <$> string "/" <*> parseSegment))
 
 parseSegment ∷ Parser String
-parseSegment = joinWith "" <$> many parsePChar
+parseSegment = joinWith "" <$> many (parsePChar decoder)
 
 parseSegmentNonZero ∷ Parser String
-parseSegmentNonZero = joinWith "" <$> many1 parsePChar
+parseSegmentNonZero = joinWith "" <$> many1 (parsePChar decoder)
 
 parseSegmentNonZeroNoColon ∷ Parser String
 parseSegmentNonZeroNoColon =
   joinWith "" <$> many1
-    (parseUnreserved <|> parsePCTEncoded <|> parseSubDelims <|> string "@")
+    (parseUnreserved <|> parsePCTEncoded decoder <|> parseSubDelims <|> string "@")
 
 parseURIPathAbs ∷ Parser URIPathAbs
 parseURIPathAbs = Parser \{ str: str, pos: i } →
@@ -93,5 +91,12 @@ printPath = either printPath' printPath'
 
 printPath' ∷ ∀ a' b s'. Path a' b s' → String
 printPath' path =
-  let printed = unsafePrintPath path
+  let printed = unsafePrintPath' escaper path
   in fromMaybe printed $ Str.stripPrefix (Str.Pattern "./") printed
+
+decoder ∷ PCTEncoded → String
+decoder = Str.replaceAll (Str.Pattern "%23") (Str.Replacement "#") <<< decodePCT
+
+escaper ∷ Escaper
+escaper = Escaper $
+  Str.replaceAll (Str.Pattern "#") (Str.Replacement "%23") <<< encodeURI

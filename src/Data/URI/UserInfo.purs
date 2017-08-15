@@ -1,20 +1,22 @@
-module Data.URI.UserInfo
-  ( module Data.URI.UserInfo
-  , module Data.URI.Types
-  ) where
+module Data.URI.UserInfo where
 
 import Prelude
 
 import Control.Alt ((<|>))
-
-import Data.URI.Common (parseSubDelims, parsePCTEncoded, parseUnreserved, joinWith)
-import Data.URI.Types (UserInfo)
-
-import Text.Parsing.StringParser (Parser, try)
+import Data.URI (UserInfo(..))
+import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parseSubDelims, parseUnreserved)
+import Global (encodeURI)
+import Text.Parsing.StringParser (Parser)
 import Text.Parsing.StringParser.Combinators (many1)
 import Text.Parsing.StringParser.String (string)
 
-parseUserInfo ∷ Parser UserInfo
-parseUserInfo = try ((joinWith "" <$> many1 p) <* string "@")
+parser ∷ Parser UserInfo
+parser = UserInfo <<< joinWith "" <$> many1 p
   where
-  p = parseUnreserved <|> parsePCTEncoded <|> parseSubDelims <|> string ":"
+  p = parseUnreserved
+    <|> parsePCTEncoded decodePCT
+    <|> parseSubDelims
+    <|> string ":"
+
+print ∷ UserInfo → String
+print (UserInfo u) = encodeURI u

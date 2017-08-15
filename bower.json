@@ -23,10 +23,10 @@
     "purescript-pathy": "^4.0.0",
     "purescript-string-parsers": "^3.0.0",
     "purescript-unfoldable": "^3.0.0",
-    "purescript-generics": "^4.0.0"
+    "purescript-generics-rep": "^5.2.0"
   },
   "devDependencies": {
     "purescript-test-unit": "11.0.0",
-    "purescript-strongcheck": "^3.1.0"
+    "purescript-quickcheck": "^4.4.0"
   }
 }
