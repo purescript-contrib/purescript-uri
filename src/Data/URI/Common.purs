@@ -78,14 +78,15 @@ anyMatch rx = Parser \{ str: str, pos: i } → case match1From rx i str of
   Nothing → Left { error: (ParseError $ "Expected " <> show rx), pos: i }
 
 match1From ∷ RX.Regex → Int → String → Maybe String
-match1From rx =
-  match1FromImpl Just Nothing (RX.source rx) (RX.renderFlags $ RX.flags rx)
+match1From rx' n str =
+  case RX.regex (RX.source rx') (RXF.global <> RX.flags rx') of
+    Left _ -> Nothing
+    Right rx -> match1FromImpl Just Nothing rx n str
 
 foreign import match1FromImpl
   ∷ (∀ a. a → Maybe a)
   → (∀ a. Maybe a)
-  → String
-  → String
+  → RX.Regex
   → Int
   → String
   → (Maybe String)
