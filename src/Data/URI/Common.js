@@ -8,9 +8,8 @@ exports.match1FromImpl = function (just) {
     return function (rx) {
       return function (i) {
         return function (str) {
-          rx.lastIndex = i;
-          var result = rx.exec(str);
-          return result && result.index === i ? just(result[0]) : nothing;
+          var result = rx.exec(str.slice(i));
+          return result && result.index === 0 ? just(result[0]) : nothing;
         };
       };
     };
