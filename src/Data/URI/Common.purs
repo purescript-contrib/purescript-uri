@@ -81,12 +81,11 @@ match1From ∷ RX.Regex → Int → String → Maybe String
 match1From rx' n str =
   case RX.regex (RX.source rx') (RXF.global <> RX.flags rx') of
     Left _ -> Nothing
-    Right rx -> match1FromImpl Just Nothing rx n str
+    Right rx -> match1FromImpl Just Nothing rx (S.drop n str)
 
 foreign import match1FromImpl
   ∷ (∀ a. a → Maybe a)
   → (∀ a. Maybe a)
   → RX.Regex
-  → Int
   → String
   → (Maybe String)
