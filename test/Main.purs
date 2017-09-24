@@ -13,10 +13,13 @@ import Data.List (List(..), singleton, (:))
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Monoid (mempty)
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
+import Data.String.Regex (Regex, regex)
+import Data.String.Regex.Flags (global, noFlags)
 import Data.Tuple (Tuple(..))
 import Data.URI (AbsoluteURI(..), Authority(..), Fragment(..), HierarchicalPart(..), Host(..), Port(..), Query(..), RelativePart(..), RelativeRef(..), Scheme(..), URI(..), UserInfo(..))
 import Data.URI.AbsoluteURI as AbsoluteURI
 import Data.URI.Authority as Authority
+import Data.URI.Common as Common
 import Data.URI.Host as Host
 import Data.URI.Host.Gen as Host.Gen
 import Data.URI.Port as Port
@@ -73,6 +76,22 @@ testParseQueryParses uri query =
   test
     ("parses: \"" <> uri <> "\"")
     (equal (Right query) (runParser Query.parser uri))
+
+testMatch1FromMatches :: forall a. Either String Regex -> Int -> String -> Maybe String -> TestSuite a
+testMatch1FromMatches rx' n str expected = case rx' of
+  Left error -> test "faulty regex given" (assert error false)
+  Right rx ->
+    test
+      ("matches: " <> show rx <> " at " <> show n <> " in " <> show str)
+      (equal expected $ Common.match1From rx n str)
+
+testMatch1FromMisses :: forall a. Either String Regex -> Int -> String -> TestSuite a
+testMatch1FromMisses rx' n str = case rx' of
+  Left error -> test "faulty regex given" (assert error false)
+  Right rx ->
+    test
+    ("does not match: " <> show rx <> " at " <> show n <> " in " <> show str)
+    (equal Nothing $ Common.match1From rx n str)
 
 main :: forall eff. Eff (console :: CONSOLE, testOutput :: TESTOUTPUT, avar :: AVAR, exception :: EXCEPTION, random :: RANDOM | eff) Unit
 main = runTest $ suite "Data.URI" do
@@ -442,6 +461,17 @@ main = runTest $ suite "Data.URI" do
     testParseQueryParses
       "key1=&key2="
       (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
+
+  suite "Common.match1From" do
+    testMatch1FromMisses (regex "key1" noFlags) 0 ""
+    testMatch1FromMisses (regex "key1" noFlags) 1 "key1"
+    testMatch1FromMisses (regex "key1" noFlags) 1 "key1=&key1="
+    testMatch1FromMisses (regex "key1" global) 1 "key1=&key1="
+    testMatch1FromMisses (regex "key1|key2" noFlags) 1 "key1=&key2="
+
+    testMatch1FromMatches (regex "key1" noFlags) 0 "key1" (Just "key1")
+    testMatch1FromMatches (regex "key1" noFlags) 6 "key1=&key1=" (Just "key1")
+    testMatch1FromMatches (regex "key1|key2" noFlags) 6 "key1=&key2=" (Just "key2")
 
 forAll :: forall eff prop. QC.Testable prop => QCG.Gen prop -> Test (console :: CONSOLE, random :: RANDOM, exception :: EXCEPTION | eff)
 forAll = quickCheck
