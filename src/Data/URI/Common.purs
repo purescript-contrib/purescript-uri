@@ -3,7 +3,8 @@ module Data.URI.Common where
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array (fromFoldable)
+import Control.MonadZero (guard)
+import Data.Array (fromFoldable, head)
 import Data.Either (Either(..), fromRight)
 import Data.List (List)
 import Data.Maybe (Maybe(..))
@@ -78,12 +79,12 @@ anyMatch rx = Parser \{ str: str, pos: i } → case match1From rx i str of
   Nothing → Left { error: (ParseError $ "Expected " <> show rx), pos: i }
 
 match1From ∷ RX.Regex → Int → String → Maybe String
-match1From = match1FromImpl Just Nothing
-
-foreign import match1FromImpl
-  ∷ (∀ a. a → Maybe a)
-  → (∀ a. Maybe a)
-  → RX.Regex
-  → Int
-  → String
-  → (Maybe String)
+match1From rx' n str' =
+  case RX.regex (RX.source rx') (RXF.global <> RX.flags rx') of
+    Left _ -> Nothing
+    Right rx -> do
+      let str = S.drop n str'
+      i <- RX.search rx str
+      guard $ i == 0
+      matches <- RX.match rx str
+      join $ head matches
