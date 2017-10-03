@@ -16,12 +16,12 @@ parser ∷ Parser Query
 parser = Query <$> (wrapParser parseParts $ try (joinWith "" <$> many parseFragmentOrQuery))
 
 parseParts ∷ Parser (List (Tuple String (Maybe String)))
-parseParts = sepBy parsePart (string ";" <|> string "&")
+parseParts = sepBy parsePart $ string "&"
 
 parsePart ∷ Parser (Tuple String (Maybe String))
 parsePart = do
-  key ← rxPat "[^=;&]+"
-  value ← optionMaybe $ string "=" *> rxPat "[^;&]*"
+  key ← rxPat "[^=&]+"
+  value ← optionMaybe $ string "=" *> rxPat "[^&]*"
   pure $ Tuple key value
 
 print ∷ Query → String
