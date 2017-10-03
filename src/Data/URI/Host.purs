@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Int as Int
+import Data.Lens (Prism', prism')
 import Data.Maybe (Maybe(..))
 import Data.URI (Host(..))
 import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parseSubDelims, parseUnreserved, rxPat)
@@ -48,3 +49,18 @@ print ∷ Host → String
 print (IPv6Address i) = "[" <> i <> "]"
 print (IPv4Address i) = i
 print (NameAddress i) = encodeURI i
+
+_IPv6Address ∷ Prism' Host String
+_IPv6Address = prism' IPv6Address case _ of
+  IPv6Address s → Just s
+  _ → Nothing
+
+_IPv4Address ∷ Prism' Host String
+_IPv4Address = prism' IPv4Address case _ of
+  IPv4Address s → Just s
+  _ → Nothing
+
+_NameAddress ∷ Prism' Host String
+_NameAddress = prism' NameAddress case _ of
+  NameAddress s → Just s
+  _ → Nothing

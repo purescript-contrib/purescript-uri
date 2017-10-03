@@ -3,10 +3,11 @@ module Data.URI.Authority where
 import Prelude
 
 import Data.Array (fromFoldable)
-import Data.Maybe (maybe)
+import Data.Lens (Lens', lens)
+import Data.Maybe (Maybe, maybe)
 import Data.String as S
 import Data.Tuple (Tuple(..))
-import Data.URI (Authority(..))
+import Data.URI (Authority(..), Host, Port, UserInfo)
 import Data.URI.Host as Host
 import Data.URI.Port as Port
 import Data.URI.UserInfo as UserInfo
@@ -29,3 +30,15 @@ print (Authority ui hs) =
     maybe "" (\u → UserInfo.print u <> "@") ui
   printHostAndPort (Tuple h p) =
     Host.print h <> maybe "" (\n → ":" <> Port.print n) p
+
+_userInfo ∷ Lens' Authority (Maybe UserInfo)
+_userInfo =
+  lens
+    (\(Authority ui _) → ui)
+    (\(Authority _ hs) ui → Authority ui hs)
+
+_hosts ∷ Lens' Authority (Array (Tuple Host (Maybe Port)))
+_hosts =
+  lens
+    (\(Authority _ hs) → hs)
+    (\(Authority ui _) hs → Authority ui hs)

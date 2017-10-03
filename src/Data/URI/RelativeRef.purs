@@ -4,9 +4,10 @@ import Prelude
 
 import Data.Array (catMaybes)
 import Data.Either (Either)
+import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.String as S
-import Data.URI (RelativeRef(..))
+import Data.URI (Fragment, Query, RelativePart, RelativeRef(..))
 import Data.URI.Fragment as Fragment
 import Data.URI.Query as Query
 import Data.URI.RelativePart as RPart
@@ -31,3 +32,21 @@ print (RelativeRef h q f) =
     , Query.print <$> q
     , (\frag → "#" <> Fragment.print frag) <$> f
     ]
+
+_relPart ∷ Lens' RelativeRef RelativePart
+_relPart =
+  lens
+    (\(RelativeRef r _ _) → r)
+    (\(RelativeRef _ q f) r → RelativeRef r q f)
+
+_query ∷ Lens' RelativeRef (Maybe Query)
+_query =
+  lens
+    (\(RelativeRef _ q _) → q)
+    (\(RelativeRef r _ f) q → RelativeRef r q f)
+
+_fragment ∷ Lens' RelativeRef (Maybe Fragment)
+_fragment =
+  lens
+    (\(RelativeRef _ _ f) → f)
+    (\(RelativeRef r q _) f → RelativeRef r q f)
