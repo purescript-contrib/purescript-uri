@@ -4,9 +4,10 @@ import Prelude
 
 import Data.Array (catMaybes)
 import Data.Either (Either)
+import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.String as S
-import Data.URI (URI(..))
+import Data.URI (Fragment, HierarchicalPart, Query, Scheme, URI(..))
 import Data.URI.Fragment as Fragment
 import Data.URI.HierarchicalPart as HPart
 import Data.URI.Query as Query
@@ -34,3 +35,27 @@ print (URI s h q f) =
     , Query.print <$> q
     , (\frag → "#" <> Fragment.print frag) <$> f
     ]
+
+_scheme ∷ Lens' URI (Maybe Scheme)
+_scheme =
+  lens
+    (\(URI s _ _ _) → s)
+    (\(URI _ h q f) s → URI s h q f)
+
+_hierPart ∷ Lens' URI HierarchicalPart
+_hierPart =
+  lens
+    (\(URI _ h _ _) → h)
+    (\(URI s _ q f) h → URI s h q f)
+
+_query ∷ Lens' URI (Maybe Query)
+_query =
+  lens
+    (\(URI _ _ q _) → q)
+    (\(URI s h _ f) q → URI s h q f)
+
+_fragment ∷ Lens' URI (Maybe Fragment)
+_fragment =
+  lens
+    (\(URI _ _ _ f) → f)
+    (\(URI s h q _) f → URI s h q f)
