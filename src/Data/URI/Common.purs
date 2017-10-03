@@ -12,7 +12,7 @@ import Data.String as S
 import Data.String.Regex as RX
 import Data.String.Regex.Flags as RXF
 import Data.Unfoldable (replicateA)
-import Global (decodeURI, decodeURIComponent, encodeURIComponent)
+import Global (decodeURI, decodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.StringParser (ParseError(..), Parser(..), unParser)
 import Text.Parsing.StringParser.String (string)
@@ -43,21 +43,6 @@ parsePChar f
 
 parseUnreserved ∷ Parser String
 parseUnreserved = rxPat "[0-9a-z\\-\\._~]+"
-
-parseFragmentOrQuery ∷ Parser String
-parseFragmentOrQuery = parsePChar decodePCTComponent <|> string "/" <|> string "?"
-
-printFragmentOrQuery ∷ String → String
-printFragmentOrQuery = S.joinWith "" <<< map printChar <<< S.split (S.Pattern "")
-  where
-  -- Fragments & queries have a bunch of characters that don't need escaping
-  printChar ∷ String → String
-  printChar s
-    | RX.test rxPrintable s = s
-    | otherwise = encodeURIComponent s
-
-rxPrintable ∷ RX.Regex
-rxPrintable = unsafePartial fromRight $ RX.regex "[$&+;=/?:@]" RXF.global
 
 newtype PCTEncoded = PCTEncoded String
 
