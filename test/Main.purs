@@ -432,6 +432,15 @@ main = runTest $ suite "Data.URI" do
               (Just (Right (rootDir </> file "top_story.htm"))))
           Nothing
           Nothing))
+    testIsoURIRef
+      "../top_story.htm"
+      (Right
+        (RelativeRef
+          (RelativePart
+            Nothing
+            (Just (Right (parentDir' currentDir </> file "top_story.htm"))))
+          Nothing
+          Nothing))
 
     -- Not an iso in this case as the printed path is normalised
     testRunParseURIRefParses
