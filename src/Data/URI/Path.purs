@@ -1,5 +1,8 @@
 module Data.URI.Path
-  ( parsePath
+  ( URIPath
+  , URIPathAbs
+  , URIPathRel
+  , parsePath
   , parsePathAbEmpty
   , parsePathAbsolute
   , parsePathNoScheme
@@ -17,14 +20,23 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Path.Pathy (Path, Escaper(..), parseAbsDir, parseRelDir, parseAbsFile, parseRelFile, sandbox, rootDir, (</>), unsafePrintPath')
+import Data.Path.Pathy (Abs, Dir, Escaper(..), File, Path, Rel, Sandboxed, Unsandboxed, parseAbsDir, parseAbsFile, parseRelDir, parseRelFile, rootDir, sandbox, unsafePrintPath', (</>))
 import Data.String as Str
-import Data.URI (URIPath, URIPathRel, URIPathAbs)
 import Data.URI.Common (PCTEncoded, decodePCT, joinWith, parsePCTEncoded, parsePChar, parseSubDelims, parseUnreserved, wrapParser)
 import Global (encodeURI)
 import Text.Parsing.StringParser (Parser(..), ParseError(..), try)
 import Text.Parsing.StringParser.Combinators (many, many1)
 import Text.Parsing.StringParser.String (string)
+
+-- | A general URI path, can be used to represent relative or absolute paths
+-- | that are sandboxed or unsandboxed.
+type URIPath a s = Either (Path a Dir s) (Path a File s)
+
+-- | The path part for a generic or absolute URI.
+type URIPathAbs = URIPath Abs Sandboxed
+
+-- | The path part for a relative reference.
+type URIPathRel = URIPath Rel Unsandboxed
 
 parsePath ∷ ∀ p. Parser p → Parser (Maybe p)
 parsePath p

@@ -1,19 +1,42 @@
-module Data.URI.AbsoluteURI where
+module Data.URI.AbsoluteURI
+  ( AbsoluteURI(..)
+  , parse
+  , parser
+  , print
+  , _scheme
+  , _hierPart
+  , _query
+  , module Data.URI.HierarchicalPart
+  , module Data.URI.Query
+  , module Data.URI.Scheme
+  ) where
 
 import Prelude
 
 import Data.Array (catMaybes)
 import Data.Either (Either)
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.String as S
-import Data.URI (AbsoluteURI(..), HierarchicalPart, Query, Scheme)
 import Data.URI.HierarchicalPart as HPart
+import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), Host(..), Port(..), URIPath, URIPathAbs, URIPathRel, UserInfo(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.Query as Query
+import Data.URI.Query (Query(..))
 import Data.URI.Scheme as Scheme
+import Data.URI.Scheme (Scheme(..))
 import Text.Parsing.StringParser (ParseError, Parser, runParser)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
+
+-- | An absolute URI.
+data AbsoluteURI = AbsoluteURI (Maybe Scheme) HierarchicalPart (Maybe Query)
+
+derive instance eqAbsoluteURI ∷ Eq AbsoluteURI
+derive instance ordAbsoluteURI ∷ Ord AbsoluteURI
+derive instance genericAbsoluteURI ∷ Generic AbsoluteURI _
+instance showAbsoluteURI ∷ Show AbsoluteURI where show = genericShow
 
 parse ∷ String → Either ParseError AbsoluteURI
 parse = runParser parser
