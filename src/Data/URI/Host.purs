@@ -1,17 +1,39 @@
-module Data.URI.Host where
+module Data.URI.Host
+  ( Host(..)
+  , parser
+  , ipv6AddressParser
+  , ipv4AddressParser
+  , regNameParser
+  , print
+  , _IPv6Address
+  , _IPv4Address
+  , _NameAddress
+  ) where
 
 import Prelude
 
 import Control.Alt ((<|>))
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
 import Data.Int as Int
 import Data.Lens (Prism', prism')
 import Data.Maybe (Maybe(..))
-import Data.URI (Host(..))
 import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parseSubDelims, parseUnreserved, rxPat)
 import Global (encodeURI)
 import Text.Parsing.StringParser (Parser, try, fail)
 import Text.Parsing.StringParser.Combinators ((<?>), many1)
 import Text.Parsing.StringParser.String (string, char)
+
+-- | A host address.
+data Host
+  = IPv6Address String
+  | IPv4Address String
+  | NameAddress String
+
+derive instance eqHost ∷ Eq Host
+derive instance ordHost ∷ Ord Host
+derive instance genericHost ∷ Generic Host _
+instance showHost ∷ Show Host where show = genericShow
 
 parser ∷ Parser Host
 parser = ipv6AddressParser <|> ipv4AddressParser <|> try regNameParser

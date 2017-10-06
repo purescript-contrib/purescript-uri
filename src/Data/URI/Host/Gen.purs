@@ -4,7 +4,7 @@ import Prelude
 
 import Control.Monad.Gen as Gen
 import Data.String as S
-import Data.URI (Host(..))
+import Data.URI.Host (Host(..))
 
 genIPv4 :: forall m. Gen.MonadGen m => m Host
 genIPv4 = do
