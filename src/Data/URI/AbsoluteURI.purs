@@ -20,7 +20,7 @@ parse = runParser parser
 
 parser ∷ Parser AbsoluteURI
 parser = AbsoluteURI
-  <$> (optionMaybe Scheme.parser <* string ":")
+  <$> (optionMaybe Scheme.parser)
   <*> (string "//" *> HPart.parser)
   <*> optionMaybe Query.parser
   <* eof

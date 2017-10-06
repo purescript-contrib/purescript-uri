@@ -110,8 +110,8 @@ main = runTest $ suite "Data.URI" do
         isLeft $ runParser Host.ipv4AddressParser "192.168.001.1"
 
   suite "Scheme parser" do
-    testRunParseSuccess Scheme.parser "http" (Scheme "http")
-    testRunParseSuccess Scheme.parser "git+ssh" (Scheme "git+ssh")
+    testRunParseSuccess Scheme.parser "http:" (Scheme "http")
+    testRunParseSuccess Scheme.parser "git+ssh:" (Scheme "git+ssh")
 
   suite "UserInfo parser" do
     testRunParseSuccess UserInfo.parser "user" (UserInfo "user")

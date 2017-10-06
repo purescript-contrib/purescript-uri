@@ -21,7 +21,7 @@ parse = runParser parser
 
 parser ∷ Parser URI
 parser = URI
-  <$> (optionMaybe Scheme.parser <* string ":")
+  <$> (optionMaybe Scheme.parser)
   <*> (string "//" *> HPart.parser)
   <*> optionMaybe Query.parser
   <*> optionMaybe Fragment.parser
