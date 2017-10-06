@@ -456,16 +456,16 @@ main = runTest $ suite "Data.URI" do
 
   suite "Query.parser" do
     testParseQueryParses
-      "key1=value1&key2=value2&key1=value3"
+      "?key1=value1&key2=value2&key1=value3"
       (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
     testParseQueryParses
-      "key1&key2"
+      "?key1&key2"
       (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
     testParseQueryParses
-      "key1=&key2="
+      "?key1=&key2="
       (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
     testParseQueryParses
-      "key1=foo%3Bbar"
+      "?key1=foo%3Bbar"
       (Query (Tuple "key1" (Just "foo;bar") : Nil))
 
   suite "Common.match1From" do

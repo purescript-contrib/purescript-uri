@@ -21,7 +21,7 @@ parse = runParser parser
 parser ∷ Parser RelativeRef
 parser = RelativeRef
   <$> RPart.parser
-  <*> optionMaybe (string "?" *> Query.parser)
+  <*> optionMaybe Query.parser
   <*> optionMaybe (string "#" *> try Fragment.parser)
   <* eof
 

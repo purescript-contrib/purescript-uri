@@ -22,7 +22,7 @@ parser ∷ Parser AbsoluteURI
 parser = AbsoluteURI
   <$> (optionMaybe Scheme.parser <* string ":")
   <*> (string "//" *> HPart.parser)
-  <*> optionMaybe (string "?" *> Query.parser)
+  <*> optionMaybe Query.parser
   <* eof
 
 print ∷ AbsoluteURI → String
