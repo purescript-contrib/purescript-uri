@@ -17,6 +17,7 @@ import Text.Parsing.StringParser.String (string)
 
 parser ∷ Parser Authority
 parser = do
+  _ ← string "//"
   ui ← optionMaybe $ try (UserInfo.parser <* string "@")
   hosts ← flip sepBy (string ",") $
     Tuple <$> Host.parser <*> optionMaybe (string ":" *> Port.parser)
@@ -24,7 +25,7 @@ parser = do
 
 print ∷ Authority → String
 print (Authority ui hs) =
-  printUserInfo <> S.joinWith "," (printHostAndPort <$> hs)
+  "//" <> printUserInfo <> S.joinWith "," (printHostAndPort <$> hs)
   where
   printUserInfo =
     maybe "" (\u → UserInfo.print u <> "@") ui

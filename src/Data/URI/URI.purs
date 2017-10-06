@@ -14,7 +14,7 @@ import Data.URI.Query as Query
 import Data.URI.Scheme as Scheme
 import Text.Parsing.StringParser (Parser, ParseError, runParser)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
-import Text.Parsing.StringParser.String (string, eof)
+import Text.Parsing.StringParser.String (eof)
 
 parse ∷ String → Either ParseError URI
 parse = runParser parser
@@ -22,7 +22,7 @@ parse = runParser parser
 parser ∷ Parser URI
 parser = URI
   <$> (optionMaybe Scheme.parser)
-  <*> (string "//" *> HPart.parser)
+  <*> HPart.parser
   <*> optionMaybe Query.parser
   <*> optionMaybe Fragment.parser
   <* eof
@@ -30,7 +30,7 @@ parser = URI
 print ∷ URI → String
 print (URI s h q f) =
   S.joinWith "" $ catMaybes
-    [ (\scheme → Scheme.print scheme <> "//") <$> s
+    [ Scheme.print <$> s
     , Just (HPart.print h)
     , Query.print <$> q
     , Fragment.print <$> f

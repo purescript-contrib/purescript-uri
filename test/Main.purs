@@ -59,10 +59,10 @@ testIsoURIRef = testIso URIRef.parser URIRef.print
 testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
 testRunParseURIRefParses = testRunParseSuccess URIRef.parser
 
-testRunParseURIRefFailes :: forall a. String -> TestSuite a
-testRunParseURIRefFailes uri =
+testRunParseURIRefFails :: forall a. String -> TestSuite a
+testRunParseURIRefFails uri =
   test
-    ("failes to parse: " <> uri)
+    ("fails to parse: " <> uri)
     (assert ("parse should fail for: " <> uri) <<< isLeft <<< URIRef.parse $ uri)
 
 testPrintQuerySerializes :: forall a. Query -> String -> TestSuite a
@@ -132,8 +132,14 @@ main = runTest $ suite "Data.URI" do
     testRunParseSuccess Port.parser "63174" (Port 63174)
 
   suite "Authority parser" do
-    testRunParseSuccess Authority.parser "localhost" (Authority Nothing [Tuple (NameAddress "localhost") Nothing])
-    testRunParseSuccess Authority.parser "localhost:3000" (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 3000))])
+    testRunParseSuccess
+      Authority.parser
+      "//localhost"
+      (Authority Nothing [Tuple (NameAddress "localhost") Nothing])
+    testRunParseSuccess
+      Authority.parser
+      "//localhost:3000"
+      (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 3000))])
 
   suite "URIRef.parse" do
     testIsoURIRef
@@ -416,6 +422,16 @@ main = runTest $ suite "Data.URI" do
             ((Just (Right (rootDir </> dir "metadata" </> dir "fs" </> dir "test" </> file "Пациенты# #")))))
           (Just mempty)
           Nothing))
+    testIsoURIRef
+      "/top_story.htm"
+      (Left
+        (URI
+          Nothing
+            (HierarchicalPart
+              Nothing
+              (Just (Right (rootDir </> file "top_story.htm"))))
+          Nothing
+          Nothing))
 
     -- Not an iso in this case as the printed path is normalised
     testRunParseURIRefParses
@@ -440,12 +456,11 @@ main = runTest $ suite "Data.URI" do
           ((Just mempty))
           ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
 
-    testRunParseURIRefFailes "news:comp.infosystems.www.servers.unix"
-    testRunParseURIRefFailes "tel:+1-816-555-1212"
-    testRunParseURIRefFailes "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
-    testRunParseURIRefFailes "mailto:John.Doe@example.com"
-    testRunParseURIRefFailes "mailto:fred@example.com"
-    testRunParseURIRefFailes "/top_story.htm"
+    testRunParseURIRefFails "news:comp.infosystems.www.servers.unix"
+    testRunParseURIRefFails "tel:+1-816-555-1212"
+    testRunParseURIRefFails "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
+    testRunParseURIRefFails "mailto:John.Doe@example.com"
+    testRunParseURIRefFails "mailto:fred@example.com"
 
   suite "Query.print" do
     testPrintQuerySerializes
