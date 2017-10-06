@@ -12,28 +12,28 @@ import Data.URI.Fragment as Fragment
 import Data.URI.HierarchicalPart as HPart
 import Data.URI.Query as Query
 import Data.URI.Scheme as Scheme
-import Text.Parsing.StringParser (Parser, ParseError, runParser, try)
+import Text.Parsing.StringParser (Parser, ParseError, runParser)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
-import Text.Parsing.StringParser.String (string, eof)
+import Text.Parsing.StringParser.String (eof)
 
 parse ∷ String → Either ParseError URI
 parse = runParser parser
 
 parser ∷ Parser URI
 parser = URI
-  <$> (optionMaybe Scheme.parser <* string ":")
-  <*> (string "//" *> HPart.parser)
-  <*> optionMaybe (string "?" *> Query.parser)
-  <*> optionMaybe (string "#" *> try Fragment.parser)
+  <$> optionMaybe Scheme.parser
+  <*> HPart.parser
+  <*> optionMaybe Query.parser
+  <*> optionMaybe Fragment.parser
   <* eof
 
 print ∷ URI → String
 print (URI s h q f) =
   S.joinWith "" $ catMaybes
-    [ (\scheme → Scheme.print scheme <> "//") <$> s
+    [ Scheme.print <$> s
     , Just (HPart.print h)
     , Query.print <$> q
-    , (\frag → "#" <> Fragment.print frag) <$> f
+    , Fragment.print <$> f
     ]
 
 _scheme ∷ Lens' URI (Maybe Scheme)

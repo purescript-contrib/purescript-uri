@@ -59,10 +59,10 @@ testIsoURIRef = testIso URIRef.parser URIRef.print
 testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
 testRunParseURIRefParses = testRunParseSuccess URIRef.parser
 
-testRunParseURIRefFailes :: forall a. String -> TestSuite a
-testRunParseURIRefFailes uri =
+testRunParseURIRefFails :: forall a. String -> TestSuite a
+testRunParseURIRefFails uri =
   test
-    ("failes to parse: " <> uri)
+    ("fails to parse: " <> uri)
     (assert ("parse should fail for: " <> uri) <<< isLeft <<< URIRef.parse $ uri)
 
 testPrintQuerySerializes :: forall a. Query -> String -> TestSuite a
@@ -110,8 +110,8 @@ main = runTest $ suite "Data.URI" do
         isLeft $ runParser Host.ipv4AddressParser "192.168.001.1"
 
   suite "Scheme parser" do
-    testRunParseSuccess Scheme.parser "http" (Scheme "http")
-    testRunParseSuccess Scheme.parser "git+ssh" (Scheme "git+ssh")
+    testRunParseSuccess Scheme.parser "http:" (Scheme "http")
+    testRunParseSuccess Scheme.parser "git+ssh:" (Scheme "git+ssh")
 
   suite "UserInfo parser" do
     testRunParseSuccess UserInfo.parser "user" (UserInfo "user")
@@ -132,8 +132,14 @@ main = runTest $ suite "Data.URI" do
     testRunParseSuccess Port.parser "63174" (Port 63174)
 
   suite "Authority parser" do
-    testRunParseSuccess Authority.parser "localhost" (Authority Nothing [Tuple (NameAddress "localhost") Nothing])
-    testRunParseSuccess Authority.parser "localhost:3000" (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 3000))])
+    testRunParseSuccess
+      Authority.parser
+      "//localhost"
+      (Authority Nothing [Tuple (NameAddress "localhost") Nothing])
+    testRunParseSuccess
+      Authority.parser
+      "//localhost:3000"
+      (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 3000))])
 
   suite "URIRef.parse" do
     testIsoURIRef
@@ -322,6 +328,14 @@ main = runTest $ suite "Data.URI" do
           (Just (Query (singleton (Tuple "name" (Just "ferret")))))
           (Just (Fragment "nose"))))
     testIsoURIRef
+      "foo://example.com:8042/over/there?name=ferret#"
+      (Left
+        (URI
+          (Just (Scheme "foo"))
+          (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
+          (Just (Query (singleton (Tuple "name" (Just "ferret")))))
+          (Just (Fragment ""))))
+    testIsoURIRef
       "foo://info.example.com?fred"
       (Left
         (URI
@@ -408,6 +422,25 @@ main = runTest $ suite "Data.URI" do
             ((Just (Right (rootDir </> dir "metadata" </> dir "fs" </> dir "test" </> file "Пациенты# #")))))
           (Just mempty)
           Nothing))
+    testIsoURIRef
+      "/top_story.htm"
+      (Left
+        (URI
+          Nothing
+            (HierarchicalPart
+              Nothing
+              (Just (Right (rootDir </> file "top_story.htm"))))
+          Nothing
+          Nothing))
+    testIsoURIRef
+      "../top_story.htm"
+      (Right
+        (RelativeRef
+          (RelativePart
+            Nothing
+            (Just (Right (parentDir' currentDir </> file "top_story.htm"))))
+          Nothing
+          Nothing))
 
     -- Not an iso in this case as the printed path is normalised
     testRunParseURIRefParses
@@ -432,12 +465,11 @@ main = runTest $ suite "Data.URI" do
           ((Just mempty))
           ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
 
-    testRunParseURIRefFailes "news:comp.infosystems.www.servers.unix"
-    testRunParseURIRefFailes "tel:+1-816-555-1212"
-    testRunParseURIRefFailes "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
-    testRunParseURIRefFailes "mailto:John.Doe@example.com"
-    testRunParseURIRefFailes "mailto:fred@example.com"
-    testRunParseURIRefFailes "/top_story.htm"
+    testRunParseURIRefFails "news:comp.infosystems.www.servers.unix"
+    testRunParseURIRefFails "tel:+1-816-555-1212"
+    testRunParseURIRefFails "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
+    testRunParseURIRefFails "mailto:John.Doe@example.com"
+    testRunParseURIRefFails "mailto:fred@example.com"
 
   suite "Query.print" do
     testPrintQuerySerializes
@@ -456,16 +488,16 @@ main = runTest $ suite "Data.URI" do
 
   suite "Query.parser" do
     testParseQueryParses
-      "key1=value1&key2=value2&key1=value3"
+      "?key1=value1&key2=value2&key1=value3"
       (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
     testParseQueryParses
-      "key1&key2"
+      "?key1&key2"
       (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
     testParseQueryParses
-      "key1=&key2="
+      "?key1=&key2="
       (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
     testParseQueryParses
-      "key1=foo%3Bbar"
+      "?key1=foo%3Bbar"
       (Query (Tuple "key1" (Just "foo;bar") : Nil))
 
   suite "Common.match1From" do

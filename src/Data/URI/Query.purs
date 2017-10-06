@@ -19,7 +19,7 @@ import Text.Parsing.StringParser.Combinators (optionMaybe, sepBy)
 import Text.Parsing.StringParser.String (string)
 
 parser ∷ Parser Query
-parser = Query <$> wrapParser parseParts (try (rxPat "[^#]*"))
+parser = string "?" *> (Query <$> wrapParser parseParts (try (rxPat "[^#]*")))
 
 parseParts ∷ Parser (List (Tuple String (Maybe String)))
 parseParts = sepBy parsePart (string ";" <|> string "&")
