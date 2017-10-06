@@ -16,11 +16,13 @@ import Text.Parsing.StringParser.Combinators (many)
 import Text.Parsing.StringParser.String (string)
 
 parser ∷ Parser Fragment
-parser = Fragment <<< joinWith ""
-  <$> many (parsePChar decodePCTComponent <|> string "/" <|> string "?")
+parser = string "#" *>
+  (Fragment <<< joinWith ""
+    <$> many (parsePChar decodePCTComponent <|> string "/" <|> string "?"))
 
 print ∷ Fragment → String
-print (Fragment f) = S.joinWith "" $ map printChar $ S.split (S.Pattern "") f
+print (Fragment f) =
+  "#" <> S.joinWith "" (map printChar $ S.split (S.Pattern "") f)
   where
   -- Fragments & queries have a bunch of characters that don't need escaping
   printChar ∷ String → String
