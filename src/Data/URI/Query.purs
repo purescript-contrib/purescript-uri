@@ -70,4 +70,4 @@ printQueryPart = S.joinWith "" <<< map printChar <<< S.split (S.Pattern "")
     | otherwise = encodeURIComponent s
 
 rxPrintable ∷ RX.Regex
-rxPrintable = unsafePartial fromRight $ RX.regex "[$+=/?:@]" RXF.global
+rxPrintable = unsafePartial fromRight $ RX.regex "[$+/?:@]" RXF.global
