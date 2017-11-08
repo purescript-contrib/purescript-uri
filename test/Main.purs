@@ -475,6 +475,9 @@ main = runTest $ suite "Data.URI" do
     testPrintQuerySerializes
       (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
       "?key1=value1&key2=value2&key1=value3"
+    testPrintQuerySerializes
+      (Query (Tuple "k=ey" (Just "value=1") : Nil))
+      "?k%3Dey=value%3D1"
     testPrintQuerySerializes (Query Nil) "?"
     testPrintQuerySerializes
       (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
