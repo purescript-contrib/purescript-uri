@@ -36,7 +36,7 @@ derive instance genericHost ∷ Generic Host _
 instance showHost ∷ Show Host where show = genericShow
 
 parser ∷ Parser Host
-parser = ipv6AddressParser <|> ipv4AddressParser <|> try regNameParser
+parser = try ipv6AddressParser <|> try ipv4AddressParser <|> regNameParser
 
 -- TODO: this is much too forgiving right now
 ipv6AddressParser ∷ Parser Host

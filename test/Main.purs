@@ -163,6 +163,16 @@ main = runTest $ suite "Data.URI" do
           Nothing
           Nothing))
     testIsoURIRef
+      "https://1a.example.com"
+      (Left
+        (URI
+          (Just (Scheme "https"))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress "1a.example.com") Nothing)]))
+            Nothing)
+          Nothing
+          Nothing))
+    testIsoURIRef
       "http://en.wikipedia.org/wiki/URI_scheme"
       (Left
         (URI
