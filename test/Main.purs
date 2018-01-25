@@ -114,10 +114,12 @@ main = runTest $ suite "Data.URI" do
     testRunParseSuccess Scheme.parser "git+ssh:" (Scheme "git+ssh")
 
   suite "UserInfo parser" do
-    testRunParseSuccess UserInfo.parser "user" (UserInfo "user")
-    testRunParseSuccess UserInfo.parser "spaced%20user" (UserInfo "spaced user")
-    testRunParseSuccess UserInfo.parser "user:password" (UserInfo "user:password")
-    testRunParseSuccess UserInfo.parser "spaced%20user:password%25%C2%A3" (UserInfo "spaced user:password%£")
+    testRunParseSuccess UserInfo.parser "user" (UserInfo { username: "user", password: "" })
+    testRunParseSuccess UserInfo.parser "%40:%40" (UserInfo { username: "@", password: "@" })
+    testRunParseSuccess UserInfo.parser "%3A:%3A" (UserInfo { username: ":", password: ":" })
+    testRunParseSuccess UserInfo.parser "spaced%20user" (UserInfo { username: "spaced user", password: "" })
+    testRunParseSuccess UserInfo.parser "user:password" (UserInfo { username: "user", password: "password" })
+    testRunParseSuccess UserInfo.parser "spaced%20user:password%25%C2%A3" (UserInfo { username: "spaced user", password: "password%£" })
 
   suite "Host parser" do
     testRunParseSuccess Host.parser "localhost" (NameAddress "localhost")
@@ -190,7 +192,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just
               (Authority
-                (Just (UserInfo "foo:bar"))
+                (Just (UserInfo { username: "foo", password: "bar" }))
                 [ Tuple (NameAddress "db1.example.net") Nothing
                 , Tuple (NameAddress "db2.example.net") (Just (Port 2500))]))
             (Just (Right (rootDir </> file "authdb"))))
@@ -204,7 +206,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Just (Scheme "mongodb"))
           (HierarchicalPart
-            (Just (Authority (Just (UserInfo "foo:bar")) [(Tuple (NameAddress "db1.example.net") (Just (Port 6))),(Tuple (NameAddress "db2.example.net") (Just (Port 2500)))]))
+            (Just (Authority (Just (UserInfo { username: "foo", password: "bar" })) [(Tuple (NameAddress "db1.example.net") (Just (Port 6))),(Tuple (NameAddress "db2.example.net") (Just (Port 2500)))]))
             (Just (Right (rootDir </> file "authdb"))))
           (Just (Query (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
           Nothing))
@@ -237,7 +239,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Just (Scheme "mongodb"))
           (HierarchicalPart
-            (Just(Authority (Just (UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just(Authority (Just (UserInfo { username: "sysop", password: "moon" })) [(Tuple (NameAddress "localhost") Nothing)]))
             Nothing)
           Nothing
           Nothing))
@@ -247,7 +249,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Just (Scheme "mongodb"))
           (HierarchicalPart
-            (Just (Authority (Just (UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Authority (Just (UserInfo { username: "sysop", password: "moon" })) [(Tuple (NameAddress "localhost") Nothing)]))
             (Just (Left rootDir)))
           Nothing
           Nothing))
@@ -257,7 +259,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Just (Scheme "mongodb"))
           (HierarchicalPart
-            (Just (Authority (Just (UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Authority (Just (UserInfo { username: "sysop", password: "moon" })) [(Tuple (NameAddress "localhost") Nothing)]))
             (Just (Right (rootDir </> file "records"))))
           Nothing
           Nothing))
@@ -363,7 +365,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just
               (Authority
-                (Just (UserInfo "cnn.example.com&story=breaking_news"))
+                (Just (UserInfo { username: "cnn.example.com&story=breaking_news", password: "" }))
                 [(Tuple (IPv4Address "10.0.0.1") Nothing)]))
             (Just (Right (rootDir </> file "top_story.htm"))))
           Nothing
