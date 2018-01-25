@@ -115,6 +115,7 @@ main = runTest $ suite "Data.URI" do
 
   suite "UserInfo parser" do
     testRunParseSuccess UserInfo.parser "user" (UserInfo "user")
+    testRunParseSuccess UserInfo.parser "u%40ser" (UserInfo "u@ser")
     testRunParseSuccess UserInfo.parser "spaced%20user" (UserInfo "spaced user")
     testRunParseSuccess UserInfo.parser "user:password" (UserInfo "user:password")
     testRunParseSuccess UserInfo.parser "spaced%20user:password%25%C2%A3" (UserInfo "spaced user:password%£")
