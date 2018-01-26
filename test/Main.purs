@@ -146,7 +146,7 @@ main = runTest $ suite "Data.URI" do
       "sql2:///?q=foo&var.bar=baz"
       (Left
         (URI
-          (Just (Scheme "sql2"))
+          (Scheme "sql2")
           (HierarchicalPart
             (Just (Authority Nothing []))
             (Just (Left rootDir)))
@@ -156,7 +156,7 @@ main = runTest $ suite "Data.URI" do
       "mongodb://localhost"
       (Left
         (URI
-          (Just (Scheme "mongodb"))
+          (Scheme "mongodb")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress "localhost") Nothing)]))
             Nothing)
@@ -166,7 +166,7 @@ main = runTest $ suite "Data.URI" do
       "https://1a.example.com"
       (Left
         (URI
-          (Just (Scheme "https"))
+          (Scheme "https")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress "1a.example.com") Nothing)]))
             Nothing)
@@ -176,7 +176,7 @@ main = runTest $ suite "Data.URI" do
       "http://en.wikipedia.org/wiki/URI_scheme"
       (Left
         (URI
-          (Just (Scheme "http"))
+          (Scheme "http")
           (HierarchicalPart
             (Just (Authority Nothing [Tuple (NameAddress "en.wikipedia.org") Nothing]))
             ((Just (Right ((rootDir </> dir "wiki") </> file "URI_scheme")))))
@@ -186,7 +186,7 @@ main = runTest $ suite "Data.URI" do
       "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
       (Left
         (URI
-          (Just (Scheme "mongodb"))
+          (Scheme "mongodb")
           (HierarchicalPart
             (Just
               (Authority
@@ -202,7 +202,7 @@ main = runTest $ suite "Data.URI" do
       "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
       (Left
         (URI
-          (Just (Scheme "mongodb"))
+          (Scheme "mongodb")
           (HierarchicalPart
             (Just (Authority (Just (UserInfo "foo:bar")) [(Tuple (NameAddress "db1.example.net") (Just (Port 6))),(Tuple (NameAddress "db2.example.net") (Just (Port 2500)))]))
             (Just (Right (rootDir </> file "authdb"))))
@@ -212,7 +212,7 @@ main = runTest $ suite "Data.URI" do
       "mongodb://192.168.0.1"
       (Left
         (URI
-          (Just (Scheme "mongodb"))
+          (Scheme "mongodb")
           (HierarchicalPart (Just (Authority Nothing [(Tuple (IPv4Address "192.168.0.1") Nothing)])) Nothing)
           Nothing
           Nothing))
@@ -220,7 +220,7 @@ main = runTest $ suite "Data.URI" do
       "mongodb://192.168.0.1,192.168.0.2"
       (Left
         (URI
-          (Just (Scheme "mongodb"))
+          (Scheme "mongodb")
           (HierarchicalPart
             (Just
               (Authority
@@ -235,7 +235,7 @@ main = runTest $ suite "Data.URI" do
       "mongodb://sysop:moon@localhost"
       (Left
         (URI
-          (Just (Scheme "mongodb"))
+          (Scheme "mongodb")
           (HierarchicalPart
             (Just(Authority (Just (UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
             Nothing)
@@ -245,7 +245,7 @@ main = runTest $ suite "Data.URI" do
       "mongodb://sysop:moon@localhost/"
       (Left
         (URI
-          (Just (Scheme "mongodb"))
+          (Scheme "mongodb")
           (HierarchicalPart
             (Just (Authority (Just (UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
             (Just (Left rootDir)))
@@ -255,7 +255,7 @@ main = runTest $ suite "Data.URI" do
       "mongodb://sysop:moon@localhost/records"
       (Left
         (URI
-          (Just (Scheme "mongodb"))
+          (Scheme "mongodb")
           (HierarchicalPart
             (Just (Authority (Just (UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
             (Just (Right (rootDir </> file "records"))))
@@ -265,7 +265,7 @@ main = runTest $ suite "Data.URI" do
       "foo://[2001:cdba:0000:0000:0000:0000:3257:9652]"
       (Left
         (URI
-          (Just (Scheme "foo"))
+          (Scheme "foo")
           (HierarchicalPart
             (Just (Authority Nothing [Tuple (IPv6Address "2001:cdba:0000:0000:0000:0000:3257:9652") Nothing]))
             Nothing)
@@ -275,7 +275,7 @@ main = runTest $ suite "Data.URI" do
       "foo://[FE80::0202:B3FF:FE1E:8329]"
       (Left
         (URI
-          (Just (Scheme "foo"))
+          (Scheme "foo")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (IPv6Address "FE80::0202:B3FF:FE1E:8329") Nothing)]))
             Nothing)
@@ -285,7 +285,7 @@ main = runTest $ suite "Data.URI" do
       "foo://[2001:db8::1]:80"
       (Left
         (URI
-          (Just (Scheme "foo"))
+          (Scheme "foo")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (IPv6Address "2001:db8::1") (Just (Port 80)))]))
             Nothing)
@@ -295,7 +295,7 @@ main = runTest $ suite "Data.URI" do
       "ftp://ftp.is.co.za/rfc/rfc1808.txt"
       (Left
         (URI
-          (Just (Scheme "ftp"))
+          (Scheme "ftp")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress "ftp.is.co.za") Nothing)]))
             (Just (Right ((rootDir </> dir "rfc") </> file "rfc1808.txt"))))
@@ -305,7 +305,7 @@ main = runTest $ suite "Data.URI" do
       "http://www.ietf.org/rfc/rfc2396.txt"
       (Left
         (URI
-          (Just (Scheme "http"))
+          (Scheme "http")
           (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "www.ietf.org") Nothing)])) (Just (Right ((rootDir </> dir "rfc") </> file "rfc2396.txt"))))
           Nothing
           Nothing))
@@ -313,7 +313,7 @@ main = runTest $ suite "Data.URI" do
       "ldap://[2001:db8::7]/c=GB?objectClass?one"
       (Left
         (URI
-          (Just (Scheme "ldap"))
+          (Scheme "ldap")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (IPv6Address "2001:db8::7") Nothing)]))
             (Just (Right (rootDir </> file "c=GB"))))
@@ -323,7 +323,7 @@ main = runTest $ suite "Data.URI" do
       "telnet://192.0.2.16:80/"
       (Left
         (URI
-          (Just (Scheme "telnet"))
+          (Scheme "telnet")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (IPv4Address "192.0.2.16") (Just (Port 80)))]))
             (Just (Left rootDir)))
@@ -333,7 +333,7 @@ main = runTest $ suite "Data.URI" do
       "foo://example.com:8042/over/there?name=ferret#nose"
       (Left
         (URI
-          (Just (Scheme "foo"))
+          (Scheme "foo")
           (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
           (Just (Query (singleton (Tuple "name" (Just "ferret")))))
           (Just (Fragment "nose"))))
@@ -341,7 +341,7 @@ main = runTest $ suite "Data.URI" do
       "foo://example.com:8042/over/there?name=ferret#"
       (Left
         (URI
-          (Just (Scheme "foo"))
+          (Scheme "foo")
           (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
           (Just (Query (singleton (Tuple "name" (Just "ferret")))))
           (Just (Fragment ""))))
@@ -349,7 +349,7 @@ main = runTest $ suite "Data.URI" do
       "foo://info.example.com?fred"
       (Left
         (URI
-          (Just (Scheme "foo"))
+          (Scheme "foo")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress "info.example.com") Nothing)]))
             Nothing)
@@ -359,7 +359,7 @@ main = runTest $ suite "Data.URI" do
       "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
       (Left
         (URI
-          (Just (Scheme "ftp"))
+          (Scheme "ftp")
           (HierarchicalPart
             (Just
               (Authority
@@ -391,7 +391,7 @@ main = runTest $ suite "Data.URI" do
       AbsoluteURI.print
       "couchbase://localhost/testBucket?password=&docTypeKey="
       (AbsoluteURI
-        (Just (Scheme "couchbase"))
+        (Scheme "couchbase")
         (HierarchicalPart
           (Just
             (Authority
@@ -404,7 +404,7 @@ main = runTest $ suite "Data.URI" do
       AbsoluteURI.print
       "couchbase://localhost:99999/testBucket?password=pass&docTypeKey=type&queryTimeoutSeconds=20"
       (AbsoluteURI
-        (Just (Scheme "couchbase"))
+        (Scheme "couchbase")
         (HierarchicalPart
           (Just
             (Authority
@@ -416,7 +416,7 @@ main = runTest $ suite "Data.URI" do
       "http://www.example.com/some%20invented/url%20with%20spaces.html"
       (Left
         (URI
-          (Just (Scheme "http"))
+          (Scheme "http")
           (HierarchicalPart
             (Just (Authority Nothing [Tuple (NameAddress "www.example.com") Nothing]))
             ((Just (Right ((rootDir </> dir "some invented") </> file "url with spaces.html")))))
@@ -426,22 +426,21 @@ main = runTest $ suite "Data.URI" do
       "http://localhost:53174/metadata/fs/test/%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23?"
       (Left
         (URI
-          (Just (Scheme "http"))
+          (Scheme "http")
           (HierarchicalPart
             (Just (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 53174))]))
             ((Just (Right (rootDir </> dir "metadata" </> dir "fs" </> dir "test" </> file "Пациенты# #")))))
           (Just mempty)
           Nothing))
-    testIsoURIRef
-      "/top_story.htm"
-      (Left
-        (URI
-          Nothing
-            (HierarchicalPart
-              Nothing
-              (Just (Right (rootDir </> file "top_story.htm"))))
-          Nothing
-          Nothing))
+    -- testIsoURIRef
+    --   "/top_story.htm"
+    --   (Right
+    --     (RelativeRef
+    --       (RelativePart
+    --         Nothing
+    --         (Just (Right (rootDir </> file "top_story.htm"))))
+    --       Nothing
+    --       Nothing))
     testIsoURIRef
       "../top_story.htm"
       (Right
@@ -457,7 +456,7 @@ main = runTest $ suite "Data.URI" do
       "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"
       (Left
         (URI
-          (Just (Scheme "http"))
+          (Scheme "http")
           (HierarchicalPart
             (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
             ((Just (Left rootDir))))
@@ -468,7 +467,7 @@ main = runTest $ suite "Data.URI" do
       "http://local.slamdata.com/?#?sort=asc&q=path:/&salt=1177214"
       (Left
         (URI
-          (Just (Scheme "http"))
+          (Scheme "http")
           (HierarchicalPart
             (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
             ((Just (Left rootDir))))

@@ -35,7 +35,7 @@ import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
 
 -- | A generic URI
-data URI = URI (Maybe Scheme) HierarchicalPart (Maybe Query) (Maybe Fragment)
+data URI = URI Scheme HierarchicalPart (Maybe Query) (Maybe Fragment)
 
 derive instance eqURI ∷ Eq URI
 derive instance ordURI ∷ Ord URI
@@ -47,7 +47,7 @@ parse = runParser parser
 
 parser ∷ Parser URI
 parser = URI
-  <$> optionMaybe Scheme.parser
+  <$> Scheme.parser
   <*> HPart.parser
   <*> optionMaybe Query.parser
   <*> optionMaybe Fragment.parser
@@ -56,13 +56,13 @@ parser = URI
 print ∷ URI → String
 print (URI s h q f) =
   S.joinWith "" $ catMaybes
-    [ Scheme.print <$> s
+    [ Just (Scheme.print s)
     , Just (HPart.print h)
     , Query.print <$> q
     , Fragment.print <$> f
     ]
 
-_scheme ∷ Lens' URI (Maybe Scheme)
+_scheme ∷ Lens' URI Scheme
 _scheme =
   lens
     (\(URI s _ _ _) → s)

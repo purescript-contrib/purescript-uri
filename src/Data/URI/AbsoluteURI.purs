@@ -31,7 +31,7 @@ import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
 
 -- | An absolute URI.
-data AbsoluteURI = AbsoluteURI (Maybe Scheme) HierarchicalPart (Maybe Query)
+data AbsoluteURI = AbsoluteURI Scheme HierarchicalPart (Maybe Query)
 
 derive instance eqAbsoluteURI ∷ Eq AbsoluteURI
 derive instance ordAbsoluteURI ∷ Ord AbsoluteURI
@@ -43,7 +43,7 @@ parse = runParser parser
 
 parser ∷ Parser AbsoluteURI
 parser = AbsoluteURI
-  <$> optionMaybe Scheme.parser
+  <$> Scheme.parser
   <*> HPart.parser
   <*> optionMaybe Query.parser
   <* eof
@@ -51,12 +51,12 @@ parser = AbsoluteURI
 print ∷ AbsoluteURI → String
 print (AbsoluteURI s h q) =
   S.joinWith "" $ catMaybes
-    [ Scheme.print <$> s
+    [ Just (Scheme.print s)
     , Just (HPart.print h)
     , Query.print <$> q
     ]
 
-_scheme ∷ Lens' AbsoluteURI (Maybe Scheme)
+_scheme ∷ Lens' AbsoluteURI Scheme
 _scheme =
   lens
     (\(AbsoluteURI s _ _) → s)
