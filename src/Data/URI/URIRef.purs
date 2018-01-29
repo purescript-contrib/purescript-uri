@@ -21,7 +21,7 @@ parser
   → Parser (URIRef userInfo absPath relPath query fragment)
 parser parseUserInfo parseAbsPath parseRelPath parseQuery parseFragment
   = (Left <$> try (URI.parser parseUserInfo parseAbsPath parseQuery parseFragment))
-  -- <|> (Right <$> RelativeRef.parser parseUserInfo parseRelPath parseQuery parseFragment)
+  <|> (Right <$> RelativeRef.parser parseUserInfo parseRelPath parseQuery parseFragment)
 
 print
   ∷ ∀ userInfo absPath relPath query fragment

@@ -41,9 +41,7 @@ import Text.Parsing.StringParser (Parser(..), ParseError(..), runParser)
 
 idp ∷ Parser String
 idp = Parser case _ of
-  { str, pos }
-    | String.null str → Left { pos, error: ParseError "empty string" }
-    | otherwise → Right { result: str, suffix: { str, pos: pos + String.length str }}
+  { str, pos } → Right { result: str, suffix: { str, pos: pos + String.length str }}
 
 testPrinter :: forall a b. Show b => (b -> String) -> String -> b -> TestSuite a
 testPrinter f expected uri =
@@ -494,10 +492,46 @@ main = runTest $ suite "Data.URI" do
   --         ((Just mempty))
   --         ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
 
-    -- testRunParseURIRefFails "news:comp.infosystems.www.servers.unix"
-    -- testRunParseURIRefFails "tel:+1-816-555-1212"
-    -- testRunParseURIRefFails "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
-    -- testRunParseURIRefFails "mailto:John.Doe@example.com"
+    testIsoURIRef
+      "news:comp.infosystems.www.servers.unix"
+      (Left
+        (URI
+          (Scheme "news")
+          (HierarchicalPart
+            Nothing
+            (Just "comp.infosystems.www.servers.unix"))
+          Nothing
+          Nothing))
+    testIsoURIRef
+      "tel:+1-816-555-1212"
+      (Left
+        (URI
+          (Scheme "tel")
+          (HierarchicalPart
+            Nothing
+            (Just "+1-816-555-1212"))
+          Nothing
+          Nothing))
+    testIsoURIRef
+      "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
+      (Left
+        (URI
+          (Scheme "urn")
+          (HierarchicalPart
+            Nothing
+            (Just "oasis:names:specification:docbook:dtd:xml:4.1.2"))
+          Nothing
+          Nothing))
+    testIsoURIRef
+      "mailto:John.Doe@example.com"
+      (Left
+        (URI
+          (Scheme "mailto")
+          (HierarchicalPart
+            Nothing
+            (Just "John.Doe@example.com"))
+          Nothing
+          Nothing))
     testIsoURIRef
       "mailto:fred@example.com"
       (Left
@@ -509,48 +543,48 @@ main = runTest $ suite "Data.URI" do
           Nothing
           Nothing))
 
-  -- suite "Query.print" do
-  --   testPrintQuerySerializes
-  --     (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
-  --     "?key1=value1&key2=value2&key1=value3"
-  --   testPrintQuerySerializes
-  --     (Query (Tuple "k=ey" (Just "value=1") : Nil))
-  --     "?k%3Dey=value%3D1"
-  --   testPrintQuerySerializes (Query Nil) "?"
-  --   testPrintQuerySerializes
-  --     (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
-  --     "?key1=&key2="
-  --   testPrintQuerySerializes
-  --     (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
-  --     "?key1&key2"
-  --   testPrintQuerySerializes
-  --     (Query (Tuple "key1" (Just "foo;bar") : Nil))
-  --     "?key1=foo%3Bbar"
-  --
-  -- suite "Query.parser" do
-  --   testParseQueryParses
-  --     "?key1=value1&key2=value2&key1=value3"
-  --     (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
-  --   testParseQueryParses
-  --     "?key1&key2"
-  --     (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
-  --   testParseQueryParses
-  --     "?key1=&key2="
-  --     (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
-  --   testParseQueryParses
-  --     "?key1=foo%3Bbar"
-  --     (Query (Tuple "key1" (Just "foo;bar") : Nil))
-  --
-  -- suite "Common.match1From" do
-  --   testMatch1FromMisses (regex "key1" noFlags) 0 ""
-  --   testMatch1FromMisses (regex "key1" noFlags) 1 "key1"
-  --   testMatch1FromMisses (regex "key1" noFlags) 1 "key1=&key1="
-  --   testMatch1FromMisses (regex "key1" global) 1 "key1=&key1="
-  --   testMatch1FromMisses (regex "key1|key2" noFlags) 1 "key1=&key2="
-  --
-  --   testMatch1FromMatches (regex "key1" noFlags) 0 "key1" (Just "key1")
-  --   testMatch1FromMatches (regex "key1" noFlags) 6 "key1=&key1=" (Just "key1")
-  --   testMatch1FromMatches (regex "key1|key2" noFlags) 6 "key1=&key2=" (Just "key2")
+  suite "Query.print" do
+    testPrintQuerySerializes
+      (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
+      "?key1=value1&key2=value2&key1=value3"
+    testPrintQuerySerializes
+      (Query (Tuple "k=ey" (Just "value=1") : Nil))
+      "?k%3Dey=value%3D1"
+    testPrintQuerySerializes (Query Nil) "?"
+    testPrintQuerySerializes
+      (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
+      "?key1=&key2="
+    testPrintQuerySerializes
+      (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
+      "?key1&key2"
+    testPrintQuerySerializes
+      (Query (Tuple "key1" (Just "foo;bar") : Nil))
+      "?key1=foo%3Bbar"
+
+  suite "Query.parser" do
+    testParseQueryParses
+      "?key1=value1&key2=value2&key1=value3"
+      (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
+    testParseQueryParses
+      "?key1&key2"
+      (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
+    testParseQueryParses
+      "?key1=&key2="
+      (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
+    testParseQueryParses
+      "?key1=foo%3Bbar"
+      (Query (Tuple "key1" (Just "foo;bar") : Nil))
+
+  suite "Common.match1From" do
+    testMatch1FromMisses (regex "key1" noFlags) 0 ""
+    testMatch1FromMisses (regex "key1" noFlags) 1 "key1"
+    testMatch1FromMisses (regex "key1" noFlags) 1 "key1=&key1="
+    testMatch1FromMisses (regex "key1" global) 1 "key1=&key1="
+    testMatch1FromMisses (regex "key1|key2" noFlags) 1 "key1=&key2="
+
+    testMatch1FromMatches (regex "key1" noFlags) 0 "key1" (Just "key1")
+    testMatch1FromMatches (regex "key1" noFlags) 6 "key1=&key1=" (Just "key1")
+    testMatch1FromMatches (regex "key1|key2" noFlags) 6 "key1=&key2=" (Just "key2")
 
 forAll :: forall eff prop. QC.Testable prop => QCG.Gen prop -> Test (console :: CONSOLE, random :: RANDOM, exception :: EXCEPTION | eff)
 forAll = quickCheck

@@ -48,7 +48,7 @@ parser parseUserInfo parsePath parseQuery parseFragment = URI
   <*> HPart.parser parseUserInfo parsePath
   <*> optionMaybe (Query.parser' parseQuery)
   <*> optionMaybe (Fragment.parser' parseFragment)
-  -- <* eof
+  <* eof
 
 print
   ∷ ∀ userInfo path query fragment
