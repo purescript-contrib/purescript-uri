@@ -10,7 +10,7 @@ import Data.Newtype (class Newtype)
 import Data.String as S
 import Data.String.Regex as RX
 import Data.String.Regex.Flags as RXF
-import Data.URI.Common (decodePCTComponent, joinWith, parsePChar)
+import Data.URI.Common (decodePCTComponent, joinWith, parsePChar, wrapParser)
 import Global (encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.StringParser (Parser)
@@ -26,10 +26,18 @@ derive instance genericFragment ∷ Generic Fragment _
 derive instance newtypeFragment ∷ Newtype Fragment _
 instance showFragment ∷ Show Fragment where show = genericShow
 
+parser' ∷ ∀ f. Parser f → Parser f
+parser' parseF = string "#" *>
+  wrapParser parseF (joinWith ""
+    <$> many (parsePChar decodePCTComponent <|> string "/" <|> string "?"))
+
 parser ∷ Parser Fragment
 parser = string "#" *>
   (Fragment <<< joinWith ""
     <$> many (parsePChar decodePCTComponent <|> string "/" <|> string "?"))
+
+print' ∷ ∀ f. (f → String) → f → String
+print' printF f = "#" <> printF f
 
 print ∷ Fragment → String
 print (Fragment f) =

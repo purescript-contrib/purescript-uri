@@ -1,7 +1,9 @@
 module Data.URI.Query
   ( Query(..)
   , parser
+  , parser'
   , print
+  , print'
   ) where
 
 import Prelude
@@ -36,6 +38,9 @@ instance showQuery ∷ Show Query where show = genericShow
 derive newtype instance semigroupQuery ∷ Semigroup Query
 derive newtype instance monoidQuery ∷ Monoid Query
 
+parser' ∷ ∀ q. Parser q → Parser q
+parser' parseQ = string "?" *> (wrapParser parseQ (try (rxPat "[^#]*")))
+
 parser ∷ Parser Query
 parser = string "?" *> (Query <$> wrapParser parseParts (try (rxPat "[^#]*")))
 
@@ -47,6 +52,9 @@ parsePart = do
   key ← decodeURIComponent <$> rxPat "[^=;&]+"
   value ← optionMaybe $ decodeURIComponent <$> (string "=" *> rxPat "[^;&]*")
   pure $ Tuple key value
+
+print' ∷ ∀ q. (q → String) → q → String
+print' printQ q = "?" <> printQ q
 
 print ∷ Query → String
 print (Query m) =

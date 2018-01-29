@@ -13,18 +13,21 @@ import Data.List (List(..), singleton, (:))
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Monoid (mempty)
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
+import Data.String as String
 import Data.String.Regex (Regex, regex)
 import Data.String.Regex.Flags (global, noFlags)
 import Data.Tuple (Tuple(..))
-import Data.URI (AbsoluteURI(..), Authority(..), Fragment(..), HierarchicalPart(..), Host(..), Port(..), Query(..), RelativePart(..), RelativeRef(..), Scheme(..), URI(..), UserInfo(..))
+import Data.URI (AbsoluteURI(..), Authority(..), Fragment(..), HierarchicalPart(..), Host(..), Port(..), Query(..), RelativePart(..), RelativeRef(..), Scheme(..), URI(..), UserInfo(..), URIRef)
 import Data.URI.AbsoluteURI as AbsoluteURI
 import Data.URI.Authority as Authority
 import Data.URI.Common as Common
 import Data.URI.Host as Host
 import Data.URI.Host.Gen as Host.Gen
+import Data.URI.Fragment as Fragment
 import Data.URI.Port as Port
 import Data.URI.Query as Query
 import Data.URI.Scheme as Scheme
+import Data.URI.URI as URI
 import Data.URI.URIRef as URIRef
 import Data.URI.UserInfo as UserInfo
 import Test.QuickCheck ((===))
@@ -34,7 +37,13 @@ import Test.Unit (Test, suite, test, TestSuite)
 import Test.Unit.Assert (assert, equal)
 import Test.Unit.Console (TESTOUTPUT)
 import Test.Unit.Main (runTest)
-import Text.Parsing.StringParser (Parser, runParser)
+import Text.Parsing.StringParser (Parser(..), ParseError(..), runParser)
+
+idp ∷ Parser String
+idp = Parser case _ of
+  { str, pos }
+    | String.null str → Left { pos, error: ParseError "empty string" }
+    | otherwise → Right { result: str, suffix: { str, pos: pos + String.length str }}
 
 testPrinter :: forall a b. Show b => (b -> String) -> String -> b -> TestSuite a
 testPrinter f expected uri =
@@ -53,17 +62,20 @@ testIso p f uri expected = do
   testRunParseSuccess p uri expected
   testPrinter f uri expected
 
-testIsoURIRef :: forall a. String -> Either URI RelativeRef -> TestSuite a
-testIsoURIRef = testIso URIRef.parser URIRef.print
+testIsoURI :: forall a. String -> URI.URI String String String String -> TestSuite a
+testIsoURI = testIso (URI.parser idp idp idp idp) (URI.print id id id id)
 
-testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
-testRunParseURIRefParses = testRunParseSuccess URIRef.parser
+testIsoURIRef :: forall a. String -> URIRef.URIRef String String String String String -> TestSuite a
+testIsoURIRef = testIso (URIRef.parser idp idp idp idp idp) (URIRef.print id id id id id)
+
+-- testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
+-- testRunParseURIRefParses = testRunParseSuccess URIRef.parser
 
 testRunParseURIRefFails :: forall a. String -> TestSuite a
 testRunParseURIRefFails uri =
   test
     ("fails to parse: " <> uri)
-    (assert ("parse should fail for: " <> uri) <<< isLeft <<< URIRef.parse $ uri)
+    (assert ("parse should fail for: " <> uri) <<< isLeft <<< runParser (URIRef.parser idp idp idp idp idp) $ uri)
 
 testPrintQuerySerializes :: forall a. Query -> String -> TestSuite a
 testPrintQuerySerializes query expected =
@@ -131,13 +143,16 @@ main = runTest $ suite "Data.URI" do
     testRunParseSuccess Port.parser "1234" (Port 1234)
     testRunParseSuccess Port.parser "63174" (Port 63174)
 
+  suite "Fragment' parser" do
+    testRunParseSuccess (Fragment.parser' idp) "#" ""
+
   suite "Authority parser" do
     testRunParseSuccess
-      Authority.parser
+      (Authority.parser idp)
       "//localhost"
       (Authority Nothing [Tuple (NameAddress "localhost") Nothing])
     testRunParseSuccess
-      Authority.parser
+      (Authority.parser idp)
       "//localhost:3000"
       (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 3000))])
 
@@ -149,8 +164,8 @@ main = runTest $ suite "Data.URI" do
           (Scheme "sql2")
           (HierarchicalPart
             (Just (Authority Nothing []))
-            (Just (Left rootDir)))
-          (Just (Query (Tuple "q" (Just "foo") : Tuple "var.bar" (Just "baz") : Nil)))
+            (Just "/"))
+          (Just "q=foo&var.bar=baz")
           Nothing))
     testIsoURIRef
       "mongodb://localhost"
@@ -179,7 +194,7 @@ main = runTest $ suite "Data.URI" do
           (Scheme "http")
           (HierarchicalPart
             (Just (Authority Nothing [Tuple (NameAddress "en.wikipedia.org") Nothing]))
-            ((Just (Right ((rootDir </> dir "wiki") </> file "URI_scheme")))))
+            (Just "/wiki/URI_scheme"))
           Nothing
           Nothing))
     testIsoURIRef
@@ -190,13 +205,11 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just
               (Authority
-                (Just (UserInfo "foo:bar"))
+                (Just "foo:bar")
                 [ Tuple (NameAddress "db1.example.net") Nothing
                 , Tuple (NameAddress "db2.example.net") (Just (Port 2500))]))
-            (Just (Right (rootDir </> file "authdb"))))
-          (Just
-            (Query
-              (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
+            (Just "/authdb"))
+          (Just "replicaSet=test&connectTimeoutMS=300000")
           Nothing))
     testIsoURIRef
       "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
@@ -204,9 +217,9 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "mongodb")
           (HierarchicalPart
-            (Just (Authority (Just (UserInfo "foo:bar")) [(Tuple (NameAddress "db1.example.net") (Just (Port 6))),(Tuple (NameAddress "db2.example.net") (Just (Port 2500)))]))
-            (Just (Right (rootDir </> file "authdb"))))
-          (Just (Query (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
+            (Just (Authority (Just "foo:bar") [(Tuple (NameAddress "db1.example.net") (Just (Port 6))),(Tuple (NameAddress "db2.example.net") (Just (Port 2500)))]))
+            (Just "/authdb"))
+          (Just "replicaSet=test&connectTimeoutMS=300000")
           Nothing))
     testIsoURIRef
       "mongodb://192.168.0.1"
@@ -237,7 +250,17 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "mongodb")
           (HierarchicalPart
-            (Just(Authority (Just (UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Authority (Just "sysop:moon") [(Tuple (NameAddress "localhost") Nothing)]))
+            Nothing)
+          Nothing
+          Nothing))
+    testIsoURIRef
+      "mongodb://user@localhost"
+      (Left
+        (URI
+          (Scheme "mongodb")
+          (HierarchicalPart
+            (Just (Authority (Just "user") [(Tuple (NameAddress "localhost") Nothing)]))
             Nothing)
           Nothing
           Nothing))
@@ -247,8 +270,8 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "mongodb")
           (HierarchicalPart
-            (Just (Authority (Just (UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
-            (Just (Left rootDir)))
+            (Just (Authority (Just "sysop:moon") [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just "/"))
           Nothing
           Nothing))
     testIsoURIRef
@@ -257,8 +280,8 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "mongodb")
           (HierarchicalPart
-            (Just (Authority (Just (UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
-            (Just (Right (rootDir </> file "records"))))
+            (Just (Authority (Just "sysop:moon") [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just "/records"))
           Nothing
           Nothing))
     testIsoURIRef
@@ -298,7 +321,7 @@ main = runTest $ suite "Data.URI" do
           (Scheme "ftp")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress "ftp.is.co.za") Nothing)]))
-            (Just (Right ((rootDir </> dir "rfc") </> file "rfc1808.txt"))))
+            (Just "/rfc/rfc1808.txt"))
           Nothing
           Nothing))
     testIsoURIRef
@@ -306,7 +329,9 @@ main = runTest $ suite "Data.URI" do
       (Left
         (URI
           (Scheme "http")
-          (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "www.ietf.org") Nothing)])) (Just (Right ((rootDir </> dir "rfc") </> file "rfc2396.txt"))))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress "www.ietf.org") Nothing)]))
+            (Just "/rfc/rfc2396.txt"))
           Nothing
           Nothing))
     testIsoURIRef
@@ -316,8 +341,8 @@ main = runTest $ suite "Data.URI" do
           (Scheme "ldap")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (IPv6Address "2001:db8::7") Nothing)]))
-            (Just (Right (rootDir </> file "c=GB"))))
-          (Just (Query (singleton $ (Tuple "objectClass?one" Nothing))))
+            (Just "/c=GB"))
+          (Just "objectClass?one")
           Nothing))
     testIsoURIRef
       "telnet://192.0.2.16:80/"
@@ -326,7 +351,7 @@ main = runTest $ suite "Data.URI" do
           (Scheme "telnet")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (IPv4Address "192.0.2.16") (Just (Port 80)))]))
-            (Just (Left rootDir)))
+            (Just "/"))
           Nothing
           Nothing))
     testIsoURIRef
@@ -334,17 +359,21 @@ main = runTest $ suite "Data.URI" do
       (Left
         (URI
           (Scheme "foo")
-          (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
-          (Just (Query (singleton (Tuple "name" (Just "ferret")))))
-          (Just (Fragment "nose"))))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just (Port 8042)))]))
+            (Just "/over/there"))
+          (Just "name=ferret")
+          (Just "nose")))
     testIsoURIRef
       "foo://example.com:8042/over/there?name=ferret#"
       (Left
         (URI
           (Scheme "foo")
-          (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
-          (Just (Query (singleton (Tuple "name" (Just "ferret")))))
-          (Just (Fragment ""))))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just (Port 8042)))]))
+            (Just "/over/there"))
+          (Just "name=ferret")
+          (Just "")))
     testIsoURIRef
       "foo://info.example.com?fred"
       (Left
@@ -353,7 +382,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress "info.example.com") Nothing)]))
             Nothing)
-          (Just (Query (singleton $ Tuple "fred" Nothing)))
+          (Just "fred")
           Nothing))
     testIsoURIRef
       "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
@@ -363,9 +392,9 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just
               (Authority
-                (Just (UserInfo "cnn.example.com&story=breaking_news"))
+                (Just "cnn.example.com&story=breaking_news")
                 [(Tuple (IPv4Address "10.0.0.1") Nothing)]))
-            (Just (Right (rootDir </> file "top_story.htm"))))
+            (Just "/top_story.htm"))
           Nothing
           Nothing))
     testIsoURIRef
@@ -374,7 +403,7 @@ main = runTest $ suite "Data.URI" do
         (RelativeRef
           (RelativePart
             Nothing
-            (Just (Right ((parentDir' currentDir) </> file "top_story.htm"))))
+            (Just "../top_story.htm"))
           Nothing
           Nothing))
     testIsoURIRef
@@ -383,12 +412,21 @@ main = runTest $ suite "Data.URI" do
         (RelativeRef
           (RelativePart
             Nothing
-            (Just (Right (currentDir </> file "top_story.htm"))))
+            (Just "top_story.htm"))
+          Nothing
+          Nothing))
+    testIsoURIRef
+      "/top_story.htm"
+      (Right
+        (RelativeRef
+          (RelativePart
+            Nothing
+            (Just ("/top_story.htm")))
           Nothing
           Nothing))
     testIso
-      AbsoluteURI.parser
-      AbsoluteURI.print
+      (AbsoluteURI.parser idp idp idp)
+      (AbsoluteURI.print id id id)
       "couchbase://localhost/testBucket?password=&docTypeKey="
       (AbsoluteURI
         (Scheme "couchbase")
@@ -397,11 +435,11 @@ main = runTest $ suite "Data.URI" do
             (Authority
               Nothing
               [(Tuple (NameAddress "localhost") Nothing)]))
-          (Just (Right (rootDir </> file "testBucket"))))
-        (Just (Query (Tuple "password" (Just "") : Tuple "docTypeKey" (Just "") : Nil))))
+          (Just "/testBucket"))
+        (Just "password=&docTypeKey="))
     testIso
-      AbsoluteURI.parser
-      AbsoluteURI.print
+      (AbsoluteURI.parser idp idp idp)
+      (AbsoluteURI.print id id id)
       "couchbase://localhost:99999/testBucket?password=pass&docTypeKey=type&queryTimeoutSeconds=20"
       (AbsoluteURI
         (Scheme "couchbase")
@@ -410,118 +448,109 @@ main = runTest $ suite "Data.URI" do
             (Authority
               Nothing
               [(Tuple (NameAddress "localhost") (Just (Port 99999)))]))
-          (Just (Right (rootDir </> file "testBucket"))))
-        (Just (Query (Tuple "password" (Just "pass") : Tuple "docTypeKey" (Just "type") : Tuple "queryTimeoutSeconds" (Just "20") : Nil))))
-    testIsoURIRef
-      "http://www.example.com/some%20invented/url%20with%20spaces.html"
-      (Left
-        (URI
-          (Scheme "http")
-          (HierarchicalPart
-            (Just (Authority Nothing [Tuple (NameAddress "www.example.com") Nothing]))
-            ((Just (Right ((rootDir </> dir "some invented") </> file "url with spaces.html")))))
-          Nothing
-          Nothing))
-    testIsoURIRef
-      "http://localhost:53174/metadata/fs/test/%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23?"
-      (Left
-        (URI
-          (Scheme "http")
-          (HierarchicalPart
-            (Just (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 53174))]))
-            ((Just (Right (rootDir </> dir "metadata" </> dir "fs" </> dir "test" </> file "Пациенты# #")))))
-          (Just mempty)
-          Nothing))
+          (Just "/testBucket"))
+        (Just "password=pass&docTypeKey=type&queryTimeoutSeconds=20"))
     -- testIsoURIRef
-    --   "/top_story.htm"
-    --   (Right
-    --     (RelativeRef
-    --       (RelativePart
-    --         Nothing
-    --         (Just (Right (rootDir </> file "top_story.htm"))))
+    --   "http://www.example.com/some%20invented/url%20with%20spaces.html"
+    --   (Left
+    --     (URI
+    --       (Scheme "http")
+    --       (HierarchicalPart
+    --         (Just (Authority Nothing [Tuple (NameAddress "www.example.com") Nothing]))
+    --         ((Just "/some invented/url with spaces.html")))
     --       Nothing
     --       Nothing))
+  --   testIsoURIRef
+  --     "http://localhost:53174/metadata/fs/test/%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23?"
+  --     (Left
+  --       (URI
+  --         (Scheme "http")
+  --         (HierarchicalPart
+  --           (Just (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 53174))]))
+  --           ((Just (Right (rootDir </> dir "metadata" </> dir "fs" </> dir "test" </> file "Пациенты# #")))))
+  --         (Just mempty)
+  --         Nothing))
+  --
+  --   -- Not an iso in this case as the printed path is normalised
+  --   testRunParseURIRefParses
+  --     "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"
+  --     (Left
+  --       (URI
+  --         (Scheme "http")
+  --         (HierarchicalPart
+  --           (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
+  --           ((Just (Left rootDir))))
+  --         ((Just mempty))
+  --         ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
+  --   testPrinter
+  --     URIRef.print
+  --     "http://local.slamdata.com/?#?sort=asc&q=path:/&salt=1177214"
+  --     (Left
+  --       (URI
+  --         (Scheme "http")
+  --         (HierarchicalPart
+  --           (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
+  --           ((Just (Left rootDir))))
+  --         ((Just mempty))
+  --         ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
+
+    -- testRunParseURIRefFails "news:comp.infosystems.www.servers.unix"
+    -- testRunParseURIRefFails "tel:+1-816-555-1212"
+    -- testRunParseURIRefFails "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
+    -- testRunParseURIRefFails "mailto:John.Doe@example.com"
     testIsoURIRef
-      "../top_story.htm"
-      (Right
-        (RelativeRef
-          (RelativePart
+      "mailto:fred@example.com"
+      (Left
+        (URI
+          (Scheme "mailto")
+          (HierarchicalPart
             Nothing
-            (Just (Right (parentDir' currentDir </> file "top_story.htm"))))
+            (Just "fred@example.com"))
           Nothing
           Nothing))
 
-    -- Not an iso in this case as the printed path is normalised
-    testRunParseURIRefParses
-      "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"
-      (Left
-        (URI
-          (Scheme "http")
-          (HierarchicalPart
-            (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
-            ((Just (Left rootDir))))
-          ((Just mempty))
-          ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
-    testPrinter
-      URIRef.print
-      "http://local.slamdata.com/?#?sort=asc&q=path:/&salt=1177214"
-      (Left
-        (URI
-          (Scheme "http")
-          (HierarchicalPart
-            (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
-            ((Just (Left rootDir))))
-          ((Just mempty))
-          ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
-
-    testRunParseURIRefFails "news:comp.infosystems.www.servers.unix"
-    testRunParseURIRefFails "tel:+1-816-555-1212"
-    testRunParseURIRefFails "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
-    testRunParseURIRefFails "mailto:John.Doe@example.com"
-    testRunParseURIRefFails "mailto:fred@example.com"
-
-  suite "Query.print" do
-    testPrintQuerySerializes
-      (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
-      "?key1=value1&key2=value2&key1=value3"
-    testPrintQuerySerializes
-      (Query (Tuple "k=ey" (Just "value=1") : Nil))
-      "?k%3Dey=value%3D1"
-    testPrintQuerySerializes (Query Nil) "?"
-    testPrintQuerySerializes
-      (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
-      "?key1=&key2="
-    testPrintQuerySerializes
-      (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
-      "?key1&key2"
-    testPrintQuerySerializes
-      (Query (Tuple "key1" (Just "foo;bar") : Nil))
-      "?key1=foo%3Bbar"
-
-  suite "Query.parser" do
-    testParseQueryParses
-      "?key1=value1&key2=value2&key1=value3"
-      (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
-    testParseQueryParses
-      "?key1&key2"
-      (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
-    testParseQueryParses
-      "?key1=&key2="
-      (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
-    testParseQueryParses
-      "?key1=foo%3Bbar"
-      (Query (Tuple "key1" (Just "foo;bar") : Nil))
-
-  suite "Common.match1From" do
-    testMatch1FromMisses (regex "key1" noFlags) 0 ""
-    testMatch1FromMisses (regex "key1" noFlags) 1 "key1"
-    testMatch1FromMisses (regex "key1" noFlags) 1 "key1=&key1="
-    testMatch1FromMisses (regex "key1" global) 1 "key1=&key1="
-    testMatch1FromMisses (regex "key1|key2" noFlags) 1 "key1=&key2="
-
-    testMatch1FromMatches (regex "key1" noFlags) 0 "key1" (Just "key1")
-    testMatch1FromMatches (regex "key1" noFlags) 6 "key1=&key1=" (Just "key1")
-    testMatch1FromMatches (regex "key1|key2" noFlags) 6 "key1=&key2=" (Just "key2")
+  -- suite "Query.print" do
+  --   testPrintQuerySerializes
+  --     (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
+  --     "?key1=value1&key2=value2&key1=value3"
+  --   testPrintQuerySerializes
+  --     (Query (Tuple "k=ey" (Just "value=1") : Nil))
+  --     "?k%3Dey=value%3D1"
+  --   testPrintQuerySerializes (Query Nil) "?"
+  --   testPrintQuerySerializes
+  --     (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
+  --     "?key1=&key2="
+  --   testPrintQuerySerializes
+  --     (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
+  --     "?key1&key2"
+  --   testPrintQuerySerializes
+  --     (Query (Tuple "key1" (Just "foo;bar") : Nil))
+  --     "?key1=foo%3Bbar"
+  --
+  -- suite "Query.parser" do
+  --   testParseQueryParses
+  --     "?key1=value1&key2=value2&key1=value3"
+  --     (Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
+  --   testParseQueryParses
+  --     "?key1&key2"
+  --     (Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
+  --   testParseQueryParses
+  --     "?key1=&key2="
+  --     (Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
+  --   testParseQueryParses
+  --     "?key1=foo%3Bbar"
+  --     (Query (Tuple "key1" (Just "foo;bar") : Nil))
+  --
+  -- suite "Common.match1From" do
+  --   testMatch1FromMisses (regex "key1" noFlags) 0 ""
+  --   testMatch1FromMisses (regex "key1" noFlags) 1 "key1"
+  --   testMatch1FromMisses (regex "key1" noFlags) 1 "key1=&key1="
+  --   testMatch1FromMisses (regex "key1" global) 1 "key1=&key1="
+  --   testMatch1FromMisses (regex "key1|key2" noFlags) 1 "key1=&key2="
+  --
+  --   testMatch1FromMatches (regex "key1" noFlags) 0 "key1" (Just "key1")
+  --   testMatch1FromMatches (regex "key1" noFlags) 6 "key1=&key1=" (Just "key1")
+  --   testMatch1FromMatches (regex "key1|key2" noFlags) 6 "key1=&key2=" (Just "key2")
 
 forAll :: forall eff prop. QC.Testable prop => QCG.Gen prop -> Test (console :: CONSOLE, random :: RANDOM, exception :: EXCEPTION | eff)
 forAll = quickCheck

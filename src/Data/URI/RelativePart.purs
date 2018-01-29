@@ -5,7 +5,6 @@ module Data.URI.RelativePart
   , _authority
   , _path
   , module Data.URI.Authority
-  , module Data.URI.Path
   ) where
 
 import Prelude
@@ -19,49 +18,48 @@ import Data.Maybe (Maybe(..))
 import Data.String as S
 import Data.URI.Authority (Authority(..), Host(..), Port(..), UserInfo(..), _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
-import Data.URI.Path (URIPath, URIPathAbs, URIPathRel)
 import Data.URI.Path as Path
 import Text.Parsing.StringParser (Parser)
 
 -- | The "relative part" of a relative reference.
-data RelativePart = RelativePart (Maybe Authority) (Maybe URIPathRel)
+data RelativePart userInfo path = RelativePart (Maybe (Authority userInfo)) (Maybe path)
 
-derive instance eqRelativePart ∷ Eq RelativePart
-derive instance ordRelativePart ∷ Ord RelativePart
-derive instance genericRelativePart ∷ Generic RelativePart _
-instance showRelativePart ∷ Show RelativePart where show = genericShow
+derive instance eqRelativePart ∷ (Eq userInfo, Eq path) ⇒ Eq (RelativePart userInfo path)
+derive instance ordRelativePart ∷ (Ord userInfo, Ord path) ⇒ Ord (RelativePart userInfo path)
+derive instance genericRelativePart ∷ Generic (RelativePart userInfo path) _
+instance showRelativePart ∷ (Show userInfo, Show path) ⇒ Show (RelativePart userInfo path) where show = genericShow
 
-parser ∷ Parser RelativePart
-parser = withAuth <|> withoutAuth
+parser ∷ ∀ userInfo path. Parser userInfo → Parser path → Parser (RelativePart userInfo path)
+parser parseUserInfo parsePath = withAuth <|> withoutAuth
   where
 
   withAuth =
     RelativePart
-      <$> Just <$> Authority.parser
-      <*> Path.parsePathAbEmpty Path.parseURIPathRel
+      <$> Just <$> Authority.parser parseUserInfo
+      <*> Path.parsePathAbEmpty parsePath
 
   withoutAuth = RelativePart Nothing <$> noAuthPath
 
   noAuthPath
-      = (Just <$> Path.parsePathAbsolute Path.parseURIPathRel)
-    <|> (Just <$> Path.parsePathNoScheme Path.parseURIPathRel)
+      = (Just <$> Path.parsePathAbsolute parsePath)
+    <|> (Just <$> Path.parsePathNoScheme parsePath)
     <|> pure Nothing
 
-print ∷ RelativePart → String
-print (RelativePart a p) =
+print ∷ ∀ userInfo path. (userInfo → String) → (path → String) → RelativePart userInfo path → String
+print printUserInfo printPath (RelativePart a p) =
   S.joinWith "" $
     catMaybes
-      [ Authority.print <$> a
-      , Path.printPath <$> p
+      [ Authority.print printUserInfo <$> a
+      , printPath <$> p
       ]
 
-_authority ∷ Lens' RelativePart (Maybe Authority)
+_authority ∷ ∀ userInfo path. Lens' (RelativePart userInfo path) (Maybe (Authority userInfo))
 _authority =
   lens
     (\(RelativePart a _) → a)
     (\(RelativePart _ p) a → RelativePart a p)
 
-_path ∷ Lens' RelativePart (Maybe URIPathRel)
+_path ∷ ∀ userInfo path. Lens' (RelativePart userInfo path) (Maybe path)
 _path =
   lens
     (\(RelativePart _ p) → p)

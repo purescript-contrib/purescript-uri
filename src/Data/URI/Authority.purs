@@ -30,37 +30,37 @@ import Text.Parsing.StringParser.String (string)
 
 -- | The authority part of a URI. For example: `purescript.org`,
 -- | `localhost:3000`, `user@example.net`
-data Authority = Authority (Maybe UserInfo) (Array (Tuple Host (Maybe Port)))
+data Authority userInfo = Authority (Maybe userInfo) (Array (Tuple Host (Maybe Port)))
 
-derive instance eqAuthority ∷ Eq Authority
-derive instance ordAuthority ∷ Ord Authority
-derive instance genericAuthority ∷ Generic Authority _
-instance showAuthority ∷ Show Authority where show = genericShow
+derive instance eqAuthority ∷ Eq userInfo ⇒ Eq (Authority userInfo)
+derive instance ordAuthority ∷ Ord userInfo ⇒ Ord (Authority userInfo)
+derive instance genericAuthority ∷ Generic (Authority userInfo) _
+instance showAuthority ∷ Show userInfo ⇒ Show (Authority userInfo) where show = genericShow
 
-parser ∷ Parser Authority
-parser = do
+parser ∷ ∀ userInfo. Parser userInfo → Parser (Authority userInfo)
+parser parseUserInfo = do
   _ ← string "//"
-  ui ← optionMaybe $ try (UserInfo.parser <* string "@")
+  ui ← optionMaybe $ try (UserInfo.parser' parseUserInfo <* string "@")
   hosts ← flip sepBy (string ",") $
     Tuple <$> Host.parser <*> optionMaybe (string ":" *> Port.parser)
   pure $ Authority ui (fromFoldable hosts)
 
-print ∷ Authority → String
-print (Authority ui hs) =
-  "//" <> printUserInfo <> S.joinWith "," (printHostAndPort <$> hs)
+print ∷ ∀ userInfo. (userInfo → String) → Authority userInfo → String
+print printUserInfo (Authority ui hs) =
+  "//" <> printUserInfo' ui <> S.joinWith "," (printHostAndPort <$> hs)
   where
-  printUserInfo =
-    maybe "" (\u → UserInfo.print u <> "@") ui
+  printUserInfo' =
+    maybe "" (\u → printUserInfo u <> "@")
   printHostAndPort (Tuple h p) =
     Host.print h <> maybe "" (\n → ":" <> Port.print n) p
 
-_userInfo ∷ Lens' Authority (Maybe UserInfo)
+_userInfo ∷ ∀ userInfo. Lens' (Authority userInfo) (Maybe userInfo)
 _userInfo =
   lens
     (\(Authority ui _) → ui)
     (\(Authority _ hs) ui → Authority ui hs)
 
-_hosts ∷ Lens' Authority (Array (Tuple Host (Maybe Port)))
+_hosts ∷ ∀ userInfo. Lens' (Authority userInfo) (Array (Tuple Host (Maybe Port)))
 _hosts =
   lens
     (\(Authority _ hs) → hs)

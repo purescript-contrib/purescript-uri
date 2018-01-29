@@ -6,7 +6,7 @@ import Control.Alt ((<|>))
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Newtype (class Newtype)
-import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parseSubDelims, parseUnreserved)
+import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parseSubDelims, parseUnreserved, wrapParser)
 import Global (encodeURI)
 import Text.Parsing.StringParser (Parser)
 import Text.Parsing.StringParser.Combinators (many1)
@@ -25,6 +25,14 @@ parser ∷ Parser UserInfo
 parser = UserInfo <<< joinWith "" <$> many1 p
   where
   p = parseUnreserved
+    <|> parsePCTEncoded decodePCT
+    <|> parseSubDelims
+    <|> string ":"
+
+parser' ∷ ∀ userInfo. Parser userInfo → Parser userInfo
+parser' p = wrapParser p (joinWith "" <$> many1 p')
+  where
+  p' = parseUnreserved
     <|> parsePCTEncoded decodePCT
     <|> parseSubDelims
     <|> string ":"

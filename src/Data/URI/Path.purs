@@ -25,8 +25,9 @@ import Data.String as Str
 import Data.URI.Common (PCTEncoded, decodePCT, joinWith, parsePCTEncoded, parsePChar, parseSubDelims, parseUnreserved, wrapParser)
 import Global (encodeURI)
 import Text.Parsing.StringParser (Parser(..), ParseError(..), try)
-import Text.Parsing.StringParser.Combinators (many, many1)
+import Text.Parsing.StringParser.Combinators (many, many1, optionMaybe)
 import Text.Parsing.StringParser.String (string)
+import Debug.Trace
 
 -- | A general URI path, can be used to represent relative or absolute paths
 -- | that are sandboxed or unsandboxed.
@@ -47,14 +48,14 @@ parsePath p
   <|> pure Nothing
 
 parsePathAbEmpty ∷ ∀ p. Parser p → Parser (Maybe p)
-parsePathAbEmpty p
-  = try (Just <$> wrapParser p
-      (joinWith "" <$> many (append <$> string "/" <*> parseSegment)))
-  <|> pure Nothing
+parsePathAbEmpty p =
+  optionMaybe $ wrapParser p do
+    parts ← many1 (string "/" *> parseSegment)
+    pure ("/" <> joinWith "/" parts)
 
 parsePathAbsolute ∷ ∀ p. Parser p → Parser p
 parsePathAbsolute p = wrapParser p $ do
-  _ <- string "/"
+  _ ← string "/"
   start ← parseSegmentNonZero
   rest ← joinWith "" <$> many (append <$> string "/" <*> parseSegment)
   pure $ "/" <> start <> rest
