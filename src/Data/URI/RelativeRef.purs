@@ -25,64 +25,65 @@ import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
 
 -- | A relative reference for a URI.
-data RelativeRef userInfo path query fragment = RelativeRef (RelativePart userInfo path) (Maybe query) (Maybe fragment)
+data RelativeRef userInfo relPath query fragment = RelativeRef (RelativePart userInfo relPath) (Maybe query) (Maybe fragment)
 
-derive instance eqRelativeRef ∷ (Eq userInfo, Eq path, Eq query, Eq fragment) ⇒ Eq (RelativeRef userInfo path query fragment)
-derive instance ordRelativeRef ∷ (Ord userInfo, Ord path, Ord query, Ord fragment) ⇒ Ord (RelativeRef userInfo path query fragment)
-derive instance genericRelativeRef ∷ Generic (RelativeRef userInfo path query fragment) _
-instance showRelativeRef ∷ (Show userInfo, Show path, Show query, Show fragment) ⇒ Show (RelativeRef userInfo path query fragment) where show = genericShow
---
--- parse ∷ String → Either ParseError RelativeRef
--- parse = runParser parser
+derive instance eqRelativeRef ∷ (Eq userInfo, Eq relPath, Eq query, Eq fragment) ⇒ Eq (RelativeRef userInfo relPath query fragment)
+derive instance ordRelativeRef ∷ (Ord userInfo, Ord relPath, Ord query, Ord fragment) ⇒ Ord (RelativeRef userInfo relPath query fragment)
+derive instance genericRelativeRef ∷ Generic (RelativeRef userInfo relPath query fragment) _
+instance showRelativeRef ∷ (Show userInfo, Show relPath, Show query, Show fragment) ⇒ Show (RelativeRef userInfo relPath query fragment) where show = genericShow
 
 parser
-  ∷ ∀ userInfo path query fragment
-  . Parser userInfo
-  → Parser path
-  → Parser query
-  → Parser fragment
-  → Parser (RelativeRef userInfo path query fragment)
-parser parseUserInfo parsePath parseQuery parseFragment =
+  ∷ ∀ userInfo relPath query fragment r
+  . { parseUserInfo ∷ Parser userInfo
+    , parseRelPath ∷ Parser relPath
+    , parseQuery ∷ Parser query
+    , parseFragment ∷ Parser fragment
+    | r
+    }
+  → Parser (RelativeRef userInfo relPath query fragment)
+parser opts =
   RelativeRef
-    <$> RPart.parser parseUserInfo parsePath
-    <*> optionMaybe (Query.parser parseQuery)
-    <*> optionMaybe (Fragment.parser parseFragment)
+    <$> RPart.parser opts
+    <*> optionMaybe (Query.parser opts.parseQuery)
+    <*> optionMaybe (Fragment.parser opts.parseFragment)
     <* eof
 
 print
-  ∷ ∀ userInfo path query fragment
-  . (userInfo → String)
-  → (path → String)
-  → (query → String)
-  → (fragment → String)
-  → RelativeRef userInfo path query fragment
+  ∷ ∀ userInfo relPath query fragment r
+  . { printUserInfo ∷ userInfo → String
+    , printRelPath ∷ relPath → String
+    , printQuery ∷ query → String
+    , printFragment ∷ fragment → String
+    | r
+    }
+  → RelativeRef userInfo relPath query fragment
   → String
-print printUserInfo printPath printQuery printFragment (RelativeRef h q f) =
+print opts (RelativeRef h q f) =
   S.joinWith "" $ catMaybes
-    [ Just (RPart.print printUserInfo printPath h)
-    , Query.print printQuery <$> q
-    , Fragment.print printFragment <$> f
+    [ Just (RPart.print opts h)
+    , Query.print opts.printQuery <$> q
+    , Fragment.print opts.printFragment <$> f
     ]
 
 _relPart
-  ∷ ∀ userInfo path query fragment
-  . Lens' (RelativeRef userInfo path query fragment) (RelativePart userInfo path)
+  ∷ ∀ userInfo relPath query fragment
+  . Lens' (RelativeRef userInfo relPath query fragment) (RelativePart userInfo relPath)
 _relPart =
   lens
     (\(RelativeRef r _ _) → r)
     (\(RelativeRef _ q f) r → RelativeRef r q f)
 
 _query
-  ∷ ∀ userInfo path query fragment
-  . Lens' (RelativeRef userInfo path query fragment) (Maybe query)
+  ∷ ∀ userInfo relPath query fragment
+  . Lens' (RelativeRef userInfo relPath query fragment) (Maybe query)
 _query =
   lens
     (\(RelativeRef _ q _) → q)
     (\(RelativeRef r _ f) q → RelativeRef r q f)
 
 _fragment
-  ∷ ∀ userInfo path query fragment
-  . Lens' (RelativeRef userInfo path query fragment) (Maybe fragment)
+  ∷ ∀ userInfo relPath query fragment
+  . Lens' (RelativeRef userInfo relPath query fragment) (Maybe fragment)
 _fragment =
   lens
     (\(RelativeRef _ _ f) → f)

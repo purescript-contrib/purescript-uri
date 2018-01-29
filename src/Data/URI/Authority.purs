@@ -35,20 +35,27 @@ derive instance ordAuthority ∷ Ord userInfo ⇒ Ord (Authority userInfo)
 derive instance genericAuthority ∷ Generic (Authority userInfo) _
 instance showAuthority ∷ Show userInfo ⇒ Show (Authority userInfo) where show = genericShow
 
-parser ∷ ∀ userInfo. Parser userInfo → Parser (Authority userInfo)
-parser parseUserInfo = do
+parser
+  ∷ ∀ userInfo r
+  . { parseUserInfo ∷ Parser userInfo | r }
+  → Parser (Authority userInfo)
+parser opts = do
   _ ← string "//"
-  ui ← optionMaybe $ try (UserInfo.parser parseUserInfo <* string "@")
+  ui ← optionMaybe $ try (UserInfo.parser opts.parseUserInfo <* string "@")
   hosts ← flip sepBy (string ",") $
     Tuple <$> Host.parser <*> optionMaybe (string ":" *> Port.parser)
   pure $ Authority ui (fromFoldable hosts)
 
-print ∷ ∀ userInfo. (userInfo → String) → Authority userInfo → String
-print printUserInfo (Authority ui hs) =
-  "//" <> printUserInfo' ui <> S.joinWith "," (printHostAndPort <$> hs)
+print
+  ∷ ∀ userInfo r
+  . { printUserInfo ∷ userInfo → String | r }
+  → Authority userInfo
+  → String
+print opts (Authority ui hs) =
+  "//" <> printUserInfo ui <> S.joinWith "," (printHostAndPort <$> hs)
   where
-  printUserInfo' =
-    maybe "" (\u → printUserInfo u <> "@")
+  printUserInfo =
+    maybe "" (\u → opts.printUserInfo u <> "@")
   printHostAndPort (Tuple h p) =
     Host.print h <> maybe "" (\n → ":" <> Port.print n) p
 

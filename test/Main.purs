@@ -43,6 +43,20 @@ import Test.Unit.Console (TESTOUTPUT)
 import Test.Unit.Main (runTest)
 import Text.Parsing.StringParser (Parser, runParser)
 
+options ∷ Record (URIRef.URIRefOptions NU.UserInfo NP.URIPathAbs NP.URIPathRel NQ.Query NF.Fragment)
+options =
+  { parseUserInfo: NU.parser
+  , printUserInfo: NU.print
+  , parseHierPath: NP.parseURIPathAbs
+  , printHierPath: NP.printPath
+  , parseRelPath: NP.parseURIPathRel
+  , printRelPath: NP.printPath
+  , parseQuery: NQ.parser
+  , printQuery: NQ.print
+  , parseFragment: NF.parser
+  , printFragment: NF.print
+  }
+
 testPrinter :: forall a b. Show b => (b -> String) -> String -> b -> TestSuite a
 testPrinter f expected uri =
   test
@@ -61,10 +75,10 @@ testIso p f uri expected = do
   testPrinter f uri expected
 
 testIsoURI :: forall a. String -> URI.URI NU.UserInfo NP.URIPathAbs NQ.Query NF.Fragment -> TestSuite a
-testIsoURI = testIso (URI.parser NU.parser NP.parseURIPathAbs NQ.parser NF.parser) (URI.print NU.print NP.printPath NQ.print NF.print)
+testIsoURI = testIso (URI.parser options) (URI.print options)
 
 testIsoURIRef :: forall a. String -> URIRef.URIRef NU.UserInfo NP.URIPathAbs NP.URIPathRel NQ.Query NF.Fragment -> TestSuite a
-testIsoURIRef = testIso (URIRef.parser NU.parser NP.parseURIPathAbs NP.parseURIPathRel NQ.parser NF.parser) (URIRef.print NU.print NP.printPath NP.printPath NQ.print NF.print)
+testIsoURIRef = testIso (URIRef.parser options) (URIRef.print options)
 
 -- testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
 -- testRunParseURIRefParses = testRunParseSuccess URIRef.parser
@@ -73,7 +87,7 @@ testRunParseURIRefFails :: forall a. String -> TestSuite a
 testRunParseURIRefFails uri =
   test
     ("fails to parse: " <> uri)
-    (assert ("parse should fail for: " <> uri) <<< isLeft <<< runParser (URIRef.parser anyString anyString anyString anyString anyString) $ uri)
+    (assert ("parse should fail for: " <> uri) <<< isLeft <<< runParser (URIRef.parser options) $ uri)
 
 testPrintQuerySerializes :: forall a. NQ.Query -> String -> TestSuite a
 testPrintQuerySerializes query expected =
@@ -146,11 +160,11 @@ main = runTest $ suite "Data.URI" do
 
   suite "Authority parser" do
     testRunParseSuccess
-      (Authority.parser anyString)
+      (Authority.parser options)
       "//localhost"
       (Authority Nothing [Tuple (NameAddress "localhost") Nothing])
     testRunParseSuccess
-      (Authority.parser anyString)
+      (Authority.parser options)
       "//localhost:3000"
       (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 3000))])
 
@@ -400,8 +414,8 @@ main = runTest $ suite "Data.URI" do
           Nothing
           Nothing))
     testIso
-      (AbsoluteURI.parser NU.parser NP.parseURIPathAbs NQ.parser)
-      (AbsoluteURI.print NU.print NP.printPath NQ.print)
+      (AbsoluteURI.parser options)
+      (AbsoluteURI.print options)
       "couchbase://localhost/testBucket?password=&docTypeKey="
       (AbsoluteURI
         (Scheme "couchbase")
@@ -413,8 +427,8 @@ main = runTest $ suite "Data.URI" do
           (Just (Right (rootDir </> file "testBucket"))))
         (Just (NQ.Query (Tuple "password" (Just "") : Tuple "docTypeKey" (Just "") : Nil))))
     testIso
-      (AbsoluteURI.parser NU.parser NP.parseURIPathAbs NQ.parser)
-      (AbsoluteURI.print NU.print NP.printPath NQ.print)
+      (AbsoluteURI.parser options)
+      (AbsoluteURI.print options)
       "couchbase://localhost:99999/testBucket?password=pass&docTypeKey=type&queryTimeoutSeconds=20"
       (AbsoluteURI
         (Scheme "couchbase")

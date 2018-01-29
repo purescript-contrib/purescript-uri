@@ -22,43 +22,55 @@ import Data.URI.Path as Path
 import Text.Parsing.StringParser (Parser)
 
 -- | The "hierarchical part" of a generic or absolute URI.
-data HierarchicalPart userInfo path = HierarchicalPart (Maybe (Authority userInfo)) (Maybe path)
+data HierarchicalPart userInfo hierPath = HierarchicalPart (Maybe (Authority userInfo)) (Maybe hierPath)
 
-derive instance eqHierarchicalPart ∷ (Eq userInfo, Eq path) ⇒ Eq (HierarchicalPart userInfo path)
-derive instance ordHierarchicalPart ∷ (Ord userInfo, Ord path) ⇒ Ord (HierarchicalPart userInfo path)
-derive instance genericHierarchicalPart ∷ Generic (HierarchicalPart userInfo path) _
-instance showHierarchicalPart ∷ (Show userInfo, Show path) ⇒ Show (HierarchicalPart userInfo path) where show = genericShow
+derive instance eqHierarchicalPart ∷ (Eq userInfo, Eq hierPath) ⇒ Eq (HierarchicalPart userInfo hierPath)
+derive instance ordHierarchicalPart ∷ (Ord userInfo, Ord hierPath) ⇒ Ord (HierarchicalPart userInfo hierPath)
+derive instance genericHierarchicalPart ∷ Generic (HierarchicalPart userInfo hierPath) _
+instance showHierarchicalPart ∷ (Show userInfo, Show hierPath) ⇒ Show (HierarchicalPart userInfo hierPath) where show = genericShow
 
-parser ∷ ∀ userInfo path. Parser userInfo → Parser path → Parser (HierarchicalPart userInfo path)
-parser parseUserInfo parsePath = withAuth <|> withoutAuth
+parser
+  ∷ ∀ userInfo hierPath r
+  . { parseUserInfo ∷ Parser userInfo
+    , parseHierPath ∷ Parser hierPath
+    | r
+    }
+  → Parser (HierarchicalPart userInfo hierPath)
+parser opts = withAuth <|> withoutAuth
   where
   withAuth =
     HierarchicalPart <<< Just
-      <$> Authority.parser parseUserInfo
-      <*> Path.parsePathAbEmpty parsePath
+      <$> Authority.parser opts
+      <*> Path.parsePathAbEmpty opts.parseHierPath
 
   withoutAuth = HierarchicalPart Nothing <$> noAuthPath
 
   noAuthPath
-      = (Just <$> Path.parsePathAbsolute parsePath)
-    <|> (Just <$> Path.parsePathRootless parsePath)
+      = (Just <$> Path.parsePathAbsolute opts.parseHierPath)
+    <|> (Just <$> Path.parsePathRootless opts.parseHierPath)
     <|> pure Nothing
 
-print ∷ ∀ userInfo path. (userInfo → String) → (path → String) → HierarchicalPart userInfo path → String
-print printUserInfo printPath (HierarchicalPart a p) =
+print
+  ∷ ∀ userInfo hierPath r
+  . { printUserInfo ∷ userInfo → String
+    , printHierPath ∷ hierPath → String
+    | r
+    }
+  → HierarchicalPart userInfo hierPath → String
+print opts (HierarchicalPart a p) =
   S.joinWith "" $
     catMaybes
-      [ Authority.print printUserInfo <$> a
-      , printPath <$> p
+      [ Authority.print opts <$> a
+      , opts.printHierPath <$> p
       ]
 
-_authority ∷ ∀ userInfo path. Lens' (HierarchicalPart userInfo path) (Maybe (Authority userInfo))
+_authority ∷ ∀ userInfo hierPath. Lens' (HierarchicalPart userInfo hierPath) (Maybe (Authority userInfo))
 _authority =
   lens
     (\(HierarchicalPart a _) → a)
     (\(HierarchicalPart _ p) a → HierarchicalPart a p)
 
-_path ∷ ∀ userInfo path. Lens' (HierarchicalPart userInfo path) (Maybe path)
+_path ∷ ∀ userInfo hierPath. Lens' (HierarchicalPart userInfo hierPath) (Maybe hierPath)
 _path =
   lens
     (\(HierarchicalPart _ p) → p)

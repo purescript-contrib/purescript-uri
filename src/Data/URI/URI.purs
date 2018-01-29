@@ -1,6 +1,9 @@
 module Data.URI.URI
   ( URI(..)
+  , URIOptions
+  , URIParseOptions
   , parser
+  , URIPrintOptions
   , print
   , _scheme
   , _hierPart
@@ -29,70 +32,83 @@ import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
 
 -- | A generic URI
-data URI userInfo path query fragment = URI Scheme (HierarchicalPart userInfo path) (Maybe query) (Maybe fragment)
+data URI userInfo hierPath query fragment = URI Scheme (HierarchicalPart userInfo hierPath) (Maybe query) (Maybe fragment)
 
-derive instance eqURI ∷ (Eq userInfo, Eq path, Eq query, Eq fragment) ⇒ Eq (URI userInfo path query fragment)
-derive instance ordURI ∷ (Ord userInfo, Ord path, Ord query, Ord fragment) ⇒ Ord (URI userInfo path query fragment)
-derive instance genericURI ∷ Generic (URI userInfo path query fragment) _
-instance showURI ∷ (Show userInfo, Show path, Show query, Show fragment) ⇒ Show (URI userInfo path query fragment) where show = genericShow
+derive instance eqURI ∷ (Eq userInfo, Eq hierPath, Eq query, Eq fragment) ⇒ Eq (URI userInfo hierPath query fragment)
+derive instance ordURI ∷ (Ord userInfo, Ord hierPath, Ord query, Ord fragment) ⇒ Ord (URI userInfo hierPath query fragment)
+derive instance genericURI ∷ Generic (URI userInfo hierPath query fragment) _
+instance showURI ∷ (Show userInfo, Show hierPath, Show query, Show fragment) ⇒ Show (URI userInfo hierPath query fragment) where show = genericShow
+
+type URIOptions userInfo hierPath query fragment =
+  URIParseOptions userInfo hierPath query fragment (URIPrintOptions userInfo hierPath query fragment ())
+
+type URIParseOptions userInfo hierPath query fragment r =
+  ( parseUserInfo ∷ Parser userInfo
+  , parseHierPath ∷ Parser hierPath
+  , parseQuery ∷ Parser query
+  , parseFragment ∷ Parser fragment
+  | r
+  )
 
 parser
-  ∷ ∀ userInfo path query fragment
-  . Parser userInfo
-  → Parser path
-  → Parser query
-  → Parser fragment
-  → Parser (URI userInfo path query fragment)
-parser parseUserInfo parsePath parseQuery parseFragment = URI
+  ∷ ∀ userInfo hierPath query fragment r
+  . Record (URIParseOptions userInfo hierPath query fragment r)
+  → Parser (URI userInfo hierPath query fragment)
+parser opts = URI
   <$> Scheme.parser
-  <*> HPart.parser parseUserInfo parsePath
-  <*> optionMaybe (Query.parser parseQuery)
-  <*> optionMaybe (Fragment.parser parseFragment)
+  <*> HPart.parser opts
+  <*> optionMaybe (Query.parser opts.parseQuery)
+  <*> optionMaybe (Fragment.parser opts.parseFragment)
   <* eof
 
+type URIPrintOptions userInfo hierPath query fragment r =
+  ( printUserInfo ∷ userInfo → String
+  , printHierPath ∷ hierPath → String
+  , printQuery ∷ query → String
+  , printFragment ∷ fragment → String
+  | r
+  )
+
 print
-  ∷ ∀ userInfo path query fragment
-  . (userInfo → String)
-  → (path → String)
-  → (query → String)
-  → (fragment → String)
-  → URI userInfo path query fragment
+  ∷ ∀ userInfo hierPath query fragment r
+  . Record (URIPrintOptions userInfo hierPath query fragment r)
+  → URI userInfo hierPath query fragment
   → String
-print printUserInfo printPath printQuery printFragment (URI s h q f) =
+print opts (URI s h q f) =
   S.joinWith "" $ catMaybes
     [ Just (Scheme.print s)
-    , Just (HPart.print printUserInfo printPath h)
-    , Query.print printQuery <$> q
-    , Fragment.print printFragment <$> f
+    , Just (HPart.print opts h)
+    , Query.print opts.printQuery <$> q
+    , Fragment.print opts.printFragment <$> f
     ]
 
 _scheme
-  ∷ ∀ userInfo path query fragment
-  . Lens' (URI userInfo path query fragment) Scheme
+  ∷ ∀ userInfo hierPath query fragment
+  . Lens' (URI userInfo hierPath query fragment) Scheme
 _scheme =
   lens
     (\(URI s _ _ _) → s)
     (\(URI _ h q f) s → URI s h q f)
 
 _hierPart
-  ∷ ∀ userInfo path query fragment
-  . Lens' (URI userInfo path query fragment) (HierarchicalPart userInfo path)
+  ∷ ∀ userInfo hierPath query fragment
+  . Lens' (URI userInfo hierPath query fragment) (HierarchicalPart userInfo hierPath)
 _hierPart =
   lens
     (\(URI _ h _ _) → h)
     (\(URI s _ q f) h → URI s h q f)
 
 _query
-  ∷ ∀ userInfo path query fragment
-  . Lens' (URI userInfo path query fragment) (Maybe query)
+  ∷ ∀ userInfo hierPath query fragment
+  . Lens' (URI userInfo hierPath query fragment) (Maybe query)
 _query =
   lens
     (\(URI _ _ q _) → q)
     (\(URI s h _ f) q → URI s h q f)
 
 _fragment
-  ∷ ∀ userInfo path query fragment
-  . Lens' (URI userInfo path query fragment) (Maybe fragment)
+  ∷ ∀ userInfo hierPath query fragment
+  . Lens' (URI userInfo hierPath query fragment) (Maybe fragment)
 _fragment =
   lens
     (\(URI _ _ _ f) → f)

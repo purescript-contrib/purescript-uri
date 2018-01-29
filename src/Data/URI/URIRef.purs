@@ -9,30 +9,46 @@ import Data.URI.URI as URI
 import Text.Parsing.StringParser (Parser, try)
 
 -- | An alias for the most common use case of resource identifiers.
-type URIRef userInfo absPath relPath query fragment = Either (URI.URI userInfo absPath query fragment) (RelativeRef.RelativeRef userInfo relPath query fragment)
+type URIRef userInfo hierPath relPath query fragment =
+  Either
+    (URI.URI userInfo hierPath query fragment)
+    (RelativeRef.RelativeRef userInfo relPath query fragment)
+
+type URIRefOptions userInfo hierPath relPath query fragment =
+  URIRefParseOptions userInfo hierPath relPath query fragment (URIRefPrintOptions userInfo hierPath relPath query fragment ())
+
+type URIRefParseOptions userInfo hierPath relPath query fragment r =
+  ( parseUserInfo ∷ Parser userInfo
+  , parseHierPath ∷ Parser hierPath
+  , parseRelPath ∷ Parser relPath
+  , parseQuery ∷ Parser query
+  , parseFragment ∷ Parser fragment
+  | r
+  )
 
 parser
-  ∷ ∀ userInfo absPath relPath query fragment
-  . Parser userInfo
-  → Parser absPath
-  → Parser relPath
-  → Parser query
-  → Parser fragment
-  → Parser (URIRef userInfo absPath relPath query fragment)
-parser parseUserInfo parseAbsPath parseRelPath parseQuery parseFragment
-  = (Left <$> try (URI.parser parseUserInfo parseAbsPath parseQuery parseFragment))
-  <|> (Right <$> RelativeRef.parser parseUserInfo parseRelPath parseQuery parseFragment)
+  ∷ ∀ userInfo hierPath relPath query fragment r
+  . Record (URIRefParseOptions userInfo hierPath relPath query fragment r)
+  → Parser (URIRef userInfo hierPath relPath query fragment)
+parser opts
+  = (Left <$> try (URI.parser opts))
+  <|> (Right <$> RelativeRef.parser opts)
+
+type URIRefPrintOptions userInfo hierPath relPath query fragment r =
+  ( printUserInfo ∷ userInfo → String
+  , printHierPath ∷ hierPath → String
+  , printRelPath ∷ relPath → String
+  , printQuery ∷ query → String
+  , printFragment ∷ fragment → String
+  | r
+  )
 
 print
-  ∷ ∀ userInfo absPath relPath query fragment
-  . (userInfo → String)
-  → (absPath → String)
-  → (relPath → String)
-  → (query → String)
-  → (fragment → String)
-  → URIRef userInfo absPath relPath query fragment
+  ∷ ∀ userInfo hierPath relPath query fragment r
+  . Record (URIRefPrintOptions userInfo hierPath relPath query fragment r)
+  → URIRef userInfo hierPath relPath query fragment
   → String
-print printUserInfo printAbsPath printRelPath printQuery printFragment =
+print opts =
   either
-    (URI.print printUserInfo printAbsPath printQuery printFragment)
-    (RelativeRef.print printUserInfo printRelPath printQuery printFragment)
+    (URI.print opts)
+    (RelativeRef.print opts)
