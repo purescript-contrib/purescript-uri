@@ -17,6 +17,10 @@ import Partial.Unsafe (unsafePartial)
 import Text.Parsing.StringParser (ParseError(..), Parser(..), unParser)
 import Text.Parsing.StringParser.String (string)
 
+anyString ∷ Parser String
+anyString = Parser case _ of
+  { str, pos } → Right { result: str, suffix: { str, pos: pos + S.length str }}
+
 joinWith ∷ String → List String → String
 joinWith x y = S.joinWith x $ fromFoldable y
 

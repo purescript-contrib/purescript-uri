@@ -12,7 +12,7 @@ import Control.Alt ((<|>))
 import Data.Either (fromRight)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.List (List(..))
+import Data.List (List)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid)
 import Data.Newtype (class Newtype)
@@ -42,7 +42,7 @@ parser' ∷ ∀ q. Parser q → Parser q
 parser' parseQ = string "?" *> (wrapParser parseQ (try (rxPat "[^#]*")))
 
 parser ∷ Parser Query
-parser = string "?" *> (Query <$> wrapParser parseParts (try (rxPat "[^#]*")))
+parser = Query <$> parseParts
 
 parseParts ∷ Parser (List (Tuple String (Maybe String)))
 parseParts = sepBy parsePart (string ";" <|> string "&")
@@ -57,10 +57,7 @@ print' ∷ ∀ q. (q → String) → q → String
 print' printQ q = "?" <> printQ q
 
 print ∷ Query → String
-print (Query m) =
-  case m of
-    Nil → "?"
-    items → "?" <> joinWith "&" (printPart <$> items)
+print (Query m) = joinWith "&" (printPart <$> m)
   where
   printPart ∷ Tuple String (Maybe String) → String
   printPart (Tuple k Nothing) =

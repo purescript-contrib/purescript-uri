@@ -10,7 +10,7 @@ import Data.Newtype (class Newtype)
 import Data.String as S
 import Data.String.Regex as RX
 import Data.String.Regex.Flags as RXF
-import Data.URI.Common (decodePCTComponent, joinWith, parsePChar, wrapParser)
+import Data.URI.Common (anyString, decodePCTComponent, joinWith, parsePChar, wrapParser)
 import Global (encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.StringParser (Parser)
@@ -32,16 +32,13 @@ parser' parseF = string "#" *>
     <$> many (parsePChar decodePCTComponent <|> string "/" <|> string "?"))
 
 parser ∷ Parser Fragment
-parser = string "#" *>
-  (Fragment <<< joinWith ""
-    <$> many (parsePChar decodePCTComponent <|> string "/" <|> string "?"))
+parser = Fragment <$> anyString
 
 print' ∷ ∀ f. (f → String) → f → String
 print' printF f = "#" <> printF f
 
 print ∷ Fragment → String
-print (Fragment f) =
-  "#" <> S.joinWith "" (map printChar $ S.split (S.Pattern "") f)
+print (Fragment f) = S.joinWith "" (map printChar $ S.split (S.Pattern "") f)
   where
   -- Fragments & queries have a bunch of characters that don't need escaping
   printChar ∷ String → String
