@@ -1,5 +1,6 @@
 module Data.URI.AbsoluteURI
   ( AbsoluteURI(..)
+  , AbsoluteURIOptions
   , AbsoluteURIParseOptions
   , parser
   , AbsoluteURIPrintOptions
@@ -14,56 +15,61 @@ module Data.URI.AbsoluteURI
 import Prelude
 
 import Data.Array (catMaybes)
+import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
+import Data.Ord (class Ord1)
 import Data.String as S
+import Data.Tuple (Tuple)
+import Data.URI.HierarchicalPart (Authority(..), AuthorityParseOptions, AuthorityPrintOptions, HierarchicalPart(..), HierarchicalPartParseOptions, HierarchicalPartPrintOptions, Host(..), Port(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
-import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), Host(..), Port(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.Query as Query
-import Data.URI.Scheme as Scheme
 import Data.URI.Scheme (Scheme(..))
+import Data.URI.Scheme as Scheme
 import Text.Parsing.StringParser (Parser)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
 
--- | An absolute AbsoluteURI.
-data AbsoluteURI userInfo hierPath query = AbsoluteURI Scheme (HierarchicalPart userInfo hierPath) (Maybe query)
+-- | A generic AbsoluteURI
+data AbsoluteURI userInfo hosts hierPath query = AbsoluteURI Scheme (HierarchicalPart userInfo hosts hierPath) (Maybe query)
 
-derive instance eqAbsoluteURI ∷ (Eq userInfo, Eq hierPath, Eq query) ⇒ Eq (AbsoluteURI userInfo hierPath query)
-derive instance ordAbsoluteURI ∷ (Ord userInfo, Ord hierPath, Ord query) ⇒ Ord (AbsoluteURI userInfo hierPath query)
-derive instance genericAbsoluteURI ∷ Generic (AbsoluteURI userInfo hierPath query) _
-instance showAbsoluteURI ∷ (Show userInfo, Show hierPath, Show query) ⇒ Show (AbsoluteURI userInfo hierPath query) where show = genericShow
+derive instance eqAbsoluteURI ∷ (Eq userInfo, Eq1 hosts, Eq hierPath, Eq query) ⇒ Eq (AbsoluteURI userInfo hosts hierPath query)
+derive instance ordAbsoluteURI ∷ (Ord userInfo, Ord1 hosts, Ord hierPath, Ord query) ⇒ Ord (AbsoluteURI userInfo hosts hierPath query)
+derive instance genericAbsoluteURI ∷ Generic (AbsoluteURI userInfo hosts hierPath query) _
+instance showAbsoluteURI ∷ (Show userInfo, Show (hosts (Tuple Host (Maybe Port))), Show hierPath, Show query) ⇒ Show (AbsoluteURI userInfo hosts hierPath query) where show = genericShow
 
-type AbsoluteURIParseOptions userInfo hierPath query r =
-  ( parseUserInfo ∷ Parser userInfo
-  , parseHierPath ∷ Parser hierPath
-  , parseQuery ∷ Parser query
-  | r
-  )
+type AbsoluteURIOptions userInfo hosts hierPath query =
+  AbsoluteURIParseOptions userInfo hosts hierPath query (AbsoluteURIPrintOptions userInfo hosts hierPath query ())
+
+type AbsoluteURIParseOptions userInfo hosts hierPath query r =
+  HierarchicalPartParseOptions userInfo hosts hierPath
+    ( parseQuery ∷ Parser query
+    | r
+    )
 
 parser
-  ∷ ∀ userInfo hierPath query r
-  . Record (AbsoluteURIParseOptions userInfo hierPath query r)
-  → Parser (AbsoluteURI userInfo hierPath query)
+  ∷ ∀ userInfo hosts hierPath query r
+  . Record (AbsoluteURIParseOptions userInfo hosts hierPath query r)
+  → Parser (AbsoluteURI userInfo hosts hierPath query)
 parser opts = AbsoluteURI
   <$> Scheme.parser
   <*> HPart.parser opts
   <*> optionMaybe (Query.parser opts.parseQuery)
   <* eof
 
-type AbsoluteURIPrintOptions userInfo hierPath query r =
-  ( printUserInfo ∷ userInfo → String
-  , printHierPath ∷ hierPath → String
-  , printQuery ∷ query → String
-  | r
-  )
+type AbsoluteURIPrintOptions userInfo hosts hierPath query r =
+  HierarchicalPartPrintOptions userInfo hosts hierPath
+    ( printQuery ∷ query → String
+    | r
+    )
 
 print
-  ∷ ∀ userInfo hierPath query r
-  . Record (AbsoluteURIPrintOptions userInfo hierPath query r)
-  → AbsoluteURI userInfo hierPath query
+  ∷ ∀ userInfo hosts hierPath query r
+  . Functor hosts
+  ⇒ Record (AbsoluteURIPrintOptions userInfo hosts hierPath query r)
+  → AbsoluteURI userInfo hosts hierPath query
   → String
 print opts (AbsoluteURI s h q) =
   S.joinWith "" $ catMaybes
@@ -73,24 +79,24 @@ print opts (AbsoluteURI s h q) =
     ]
 
 _scheme
-  ∷ ∀ userInfo hierPath query
-  . Lens' (AbsoluteURI userInfo hierPath query) Scheme
+  ∷ ∀ userInfo hosts hierPath query
+  . Lens' (AbsoluteURI userInfo hosts hierPath query) Scheme
 _scheme =
   lens
     (\(AbsoluteURI s _ _) → s)
     (\(AbsoluteURI _ h q) s → AbsoluteURI s h q)
 
 _hierPart
-  ∷ ∀ userInfo hierPath query
-  . Lens' (AbsoluteURI userInfo hierPath query) (HierarchicalPart userInfo hierPath)
+  ∷ ∀ userInfo hosts hierPath query
+  . Lens' (AbsoluteURI userInfo hosts hierPath query) (HierarchicalPart userInfo hosts hierPath)
 _hierPart =
   lens
     (\(AbsoluteURI _ h _) → h)
     (\(AbsoluteURI s _ q) h → AbsoluteURI s h q)
 
 _query
-  ∷ ∀ userInfo hierPath query
-  . Lens' (AbsoluteURI userInfo hierPath query) (Maybe query)
+  ∷ ∀ userInfo hosts hierPath query
+  . Lens' (AbsoluteURI userInfo hosts hierPath query) (Maybe query)
 _query =
   lens
     (\(AbsoluteURI _ _ q) → q)

@@ -1,6 +1,8 @@
 module Data.URI.HierarchicalPart
   ( HierarchicalPart(..)
+  , HierarchicalPartParseOptions
   , parser
+  , HierarchicalPartPrintOptions
   , print
   , _authority
   , _path
@@ -11,31 +13,37 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array (catMaybes)
+import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
+import Data.Ord (class Ord1)
 import Data.String as S
-import Data.URI.Authority (Authority(..), Host(..), Port(..), _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
+import Data.Tuple (Tuple)
+import Data.URI.Authority (Authority(..), AuthorityPrintOptions, Host(..), Port(..), AuthorityParseOptions, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
 import Data.URI.Path as Path
 import Text.Parsing.StringParser (Parser)
 
 -- | The "hierarchical part" of a generic or absolute URI.
-data HierarchicalPart userInfo hierPath = HierarchicalPart (Maybe (Authority userInfo)) (Maybe hierPath)
+data HierarchicalPart userInfo hosts hierPath = HierarchicalPart (Maybe (Authority userInfo hosts)) (Maybe hierPath)
 
-derive instance eqHierarchicalPart ∷ (Eq userInfo, Eq hierPath) ⇒ Eq (HierarchicalPart userInfo hierPath)
-derive instance ordHierarchicalPart ∷ (Ord userInfo, Ord hierPath) ⇒ Ord (HierarchicalPart userInfo hierPath)
-derive instance genericHierarchicalPart ∷ Generic (HierarchicalPart userInfo hierPath) _
-instance showHierarchicalPart ∷ (Show userInfo, Show hierPath) ⇒ Show (HierarchicalPart userInfo hierPath) where show = genericShow
+derive instance eqHierarchicalPart ∷ (Eq userInfo, Eq1 hosts, Eq hierPath) ⇒ Eq (HierarchicalPart userInfo hosts hierPath)
+derive instance ordHierarchicalPart ∷ (Ord userInfo, Ord1 hosts, Ord hierPath) ⇒ Ord (HierarchicalPart userInfo hosts hierPath)
+derive instance genericHierarchicalPart ∷ Generic (HierarchicalPart userInfo hosts hierPath) _
+instance showHierarchicalPart ∷ (Show userInfo, Show (hosts (Tuple Host (Maybe Port))), Show hierPath) ⇒ Show (HierarchicalPart userInfo hosts hierPath) where show = genericShow
+
+type HierarchicalPartParseOptions userInfo hosts hierPath r =
+  AuthorityParseOptions userInfo hosts
+    ( parseHierPath ∷ Parser hierPath
+    | r
+    )
 
 parser
-  ∷ ∀ userInfo hierPath r
-  . { parseUserInfo ∷ Parser userInfo
-    , parseHierPath ∷ Parser hierPath
-    | r
-    }
-  → Parser (HierarchicalPart userInfo hierPath)
+  ∷ ∀ userInfo hosts hierPath r
+  . Record (HierarchicalPartParseOptions userInfo hosts hierPath r)
+  → Parser (HierarchicalPart userInfo hosts hierPath)
 parser opts = withAuth <|> withoutAuth
   where
   withAuth =
@@ -50,13 +58,17 @@ parser opts = withAuth <|> withoutAuth
     <|> (Just <$> Path.parsePathRootless opts.parseHierPath)
     <|> pure Nothing
 
-print
-  ∷ ∀ userInfo hierPath r
-  . { printUserInfo ∷ userInfo → String
-    , printHierPath ∷ hierPath → String
+type HierarchicalPartPrintOptions userInfo hosts hierPath r =
+  AuthorityPrintOptions userInfo hosts
+    ( printHierPath ∷ hierPath → String
     | r
-    }
-  → HierarchicalPart userInfo hierPath → String
+    )
+
+print
+  ∷ ∀ userInfo hosts hierPath r
+  . Functor hosts
+  ⇒ Record (HierarchicalPartPrintOptions userInfo hosts hierPath r)
+  → HierarchicalPart userInfo hosts hierPath → String
 print opts (HierarchicalPart a p) =
   S.joinWith "" $
     catMaybes
@@ -64,13 +76,13 @@ print opts (HierarchicalPart a p) =
       , opts.printHierPath <$> p
       ]
 
-_authority ∷ ∀ userInfo hierPath. Lens' (HierarchicalPart userInfo hierPath) (Maybe (Authority userInfo))
+_authority ∷ ∀ userInfo hosts hierPath. Lens' (HierarchicalPart userInfo hosts hierPath) (Maybe (Authority userInfo hosts))
 _authority =
   lens
     (\(HierarchicalPart a _) → a)
     (\(HierarchicalPart _ p) a → HierarchicalPart a p)
 
-_path ∷ ∀ userInfo hierPath. Lens' (HierarchicalPart userInfo hierPath) (Maybe hierPath)
+_path ∷ ∀ userInfo hosts hierPath. Lens' (HierarchicalPart userInfo hosts hierPath) (Maybe hierPath)
 _path =
   lens
     (\(HierarchicalPart _ p) → p)

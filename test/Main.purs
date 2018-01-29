@@ -8,11 +8,13 @@ import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Random (RANDOM)
+import Data.Array as Array
 import Data.Either (isLeft, Either(..))
 import Data.List (List(..), singleton, (:))
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Monoid (mempty)
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
+import Data.String as String
 import Data.String.Regex (Regex, regex)
 import Data.String.Regex.Flags (global, noFlags)
 import Data.Tuple (Tuple(..))
@@ -42,11 +44,15 @@ import Test.Unit.Assert (assert, equal)
 import Test.Unit.Console (TESTOUTPUT)
 import Test.Unit.Main (runTest)
 import Text.Parsing.StringParser (Parser, runParser)
+import Text.Parsing.StringParser.Combinators as SP
+import Text.Parsing.StringParser.String as SP
 
-options ∷ Record (URIRef.URIRefOptions NU.UserInfo NP.URIPathAbs NP.URIPathRel NQ.Query NF.Fragment)
+options ∷ Record (URIRef.URIRefOptions NU.UserInfo Array NP.URIPathAbs NP.URIPathRel NQ.Query NF.Fragment)
 options =
   { parseUserInfo: NU.parser
   , printUserInfo: NU.print
+  , parseHosts: map Array.fromFoldable <<< flip SP.sepBy (SP.string ",")
+  , printHosts: String.joinWith ","
   , parseHierPath: NP.parseURIPathAbs
   , printHierPath: NP.printPath
   , parseRelPath: NP.parseURIPathRel
@@ -74,10 +80,10 @@ testIso p f uri expected = do
   testRunParseSuccess p uri expected
   testPrinter f uri expected
 
-testIsoURI :: forall a. String -> URI.URI NU.UserInfo NP.URIPathAbs NQ.Query NF.Fragment -> TestSuite a
+testIsoURI :: forall a. String -> URI.URI NU.UserInfo Array NP.URIPathAbs NQ.Query NF.Fragment -> TestSuite a
 testIsoURI = testIso (URI.parser options) (URI.print options)
 
-testIsoURIRef :: forall a. String -> URIRef.URIRef NU.UserInfo NP.URIPathAbs NP.URIPathRel NQ.Query NF.Fragment -> TestSuite a
+testIsoURIRef :: forall a. String -> URIRef.URIRef NU.UserInfo Array NP.URIPathAbs NP.URIPathRel NQ.Query NF.Fragment -> TestSuite a
 testIsoURIRef = testIso (URIRef.parser options) (URIRef.print options)
 
 -- testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
