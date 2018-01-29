@@ -19,7 +19,7 @@ import Data.String as S
 import Data.URI.Fragment as Fragment
 import Data.URI.Query as Query
 import Data.URI.RelativePart as RPart
-import Data.URI.RelativePart (Authority(..), Host(..), Port(..), RelativePart(..), UserInfo(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
+import Data.URI.RelativePart (Authority(..), Host(..), Port(..), RelativePart(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Text.Parsing.StringParser (Parser)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
@@ -45,8 +45,8 @@ parser
 parser parseUserInfo parsePath parseQuery parseFragment =
   RelativeRef
     <$> RPart.parser parseUserInfo parsePath
-    <*> optionMaybe (Query.parser' parseQuery)
-    <*> optionMaybe (Fragment.parser' parseFragment)
+    <*> optionMaybe (Query.parser parseQuery)
+    <*> optionMaybe (Fragment.parser parseFragment)
     <* eof
 
 print
@@ -60,8 +60,8 @@ print
 print printUserInfo printPath printQuery printFragment (RelativeRef h q f) =
   S.joinWith "" $ catMaybes
     [ Just (RPart.print printUserInfo printPath h)
-    , Query.print' printQuery <$> q
-    , Fragment.print' printFragment <$> f
+    , Query.print printQuery <$> q
+    , Fragment.print printFragment <$> f
     ]
 
 _relPart

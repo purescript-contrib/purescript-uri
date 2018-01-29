@@ -6,7 +6,6 @@ module Data.URI.Authority
   , _hosts
   , module Data.URI.Host
   , module Data.URI.Port
-  , module Data.URI.UserInfo
   ) where
 
 import Prelude
@@ -22,7 +21,6 @@ import Data.URI.Host (Host(..), _IPv4Address, _IPv6Address, _NameAddress)
 import Data.URI.Host as Host
 import Data.URI.Port (Port(..))
 import Data.URI.Port as Port
-import Data.URI.UserInfo (UserInfo(..))
 import Data.URI.UserInfo as UserInfo
 import Text.Parsing.StringParser (Parser, try)
 import Text.Parsing.StringParser.Combinators (optionMaybe, sepBy)
@@ -40,7 +38,7 @@ instance showAuthority ∷ Show userInfo ⇒ Show (Authority userInfo) where sho
 parser ∷ ∀ userInfo. Parser userInfo → Parser (Authority userInfo)
 parser parseUserInfo = do
   _ ← string "//"
-  ui ← optionMaybe $ try (UserInfo.parser' parseUserInfo <* string "@")
+  ui ← optionMaybe $ try (UserInfo.parser parseUserInfo <* string "@")
   hosts ← flip sepBy (string ",") $
     Tuple <$> Host.parser <*> optionMaybe (string ":" *> Port.parser)
   pure $ Authority ui (fromFoldable hosts)
