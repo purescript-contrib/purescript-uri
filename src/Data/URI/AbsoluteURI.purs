@@ -2,8 +2,8 @@ module Data.URI.AbsoluteURI
   ( AbsoluteURI(..)
   , AbsoluteURIOptions
   , AbsoluteURIParseOptions
-  , parser
   , AbsoluteURIPrintOptions
+  , parser
   , print
   , _scheme
   , _hierPart
@@ -14,7 +14,7 @@ module Data.URI.AbsoluteURI
 
 import Prelude
 
-import Data.Array (catMaybes)
+import Data.Array as Array
 import Data.Either (Either)
 import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
@@ -22,7 +22,7 @@ import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
-import Data.String as S
+import Data.String as String
 import Data.Tuple (Tuple)
 import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), Host(..), Port(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
@@ -78,7 +78,7 @@ print
   → AbsoluteURI userInfo hosts hierPath query
   → String
 print opts (AbsoluteURI s h q) =
-  S.joinWith "" $ catMaybes
+  String.joinWith "" $ Array.catMaybes
     [ Just (Scheme.print s)
     , Just (HPart.print opts h)
     , Query.print opts.printQuery <$> q

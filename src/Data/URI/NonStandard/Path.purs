@@ -12,7 +12,7 @@ import Prelude
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Path.Pathy (Abs, Dir, Escaper(..), File, Path, Rel, Sandboxed, Unsandboxed, parseAbsDir, parseAbsFile, parseRelDir, parseRelFile, rootDir, sandbox, unsafePrintPath', (</>))
-import Data.String as Str
+import Data.String as String
 import Global (encodeURI)
 import Text.Parsing.StringParser (ParseError(..))
 
@@ -48,8 +48,8 @@ printPath = either printPath' printPath'
 printPath' ∷ ∀ a' b s'. Path a' b s' → String
 printPath' path =
   let printed = unsafePrintPath' escaper path
-  in fromMaybe printed $ Str.stripPrefix (Str.Pattern "./") printed
+  in fromMaybe printed $ String.stripPrefix (String.Pattern "./") printed
 
 escaper ∷ Escaper
 escaper = Escaper $
-  Str.replaceAll (Str.Pattern "#") (Str.Replacement "%23") <<< encodeURI
+  String.replaceAll (String.Pattern "#") (String.Replacement "%23") <<< encodeURI

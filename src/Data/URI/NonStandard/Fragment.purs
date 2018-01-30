@@ -6,7 +6,7 @@ import Data.Either (Either, fromRight)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Newtype (class Newtype)
-import Data.String as S
+import Data.String as String
 import Data.String.Regex as RX
 import Data.String.Regex.Flags as RXF
 import Global (encodeURIComponent)
@@ -25,7 +25,7 @@ parse ∷ ∀ e. String → Either e Fragment
 parse = pure <<< Fragment
 
 print ∷ Fragment → String
-print (Fragment f) = S.joinWith "" (map printChar $ S.split (S.Pattern "") f)
+print (Fragment f) = String.joinWith "" (map printChar $ String.split (String.Pattern "") f)
   where
   -- Fragments & queries have a bunch of characters that don't need escaping
   printChar ∷ String → String

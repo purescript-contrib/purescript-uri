@@ -14,7 +14,7 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.String as S
+import Data.String as String
 import Global (decodeURI, decodeURIComponent)
 import Text.Parsing.StringParser (ParseError, Parser(..), unParser)
 import Text.Parsing.StringParser.String (alphaNum, char, oneOf, string)
@@ -36,7 +36,7 @@ parsePChar f
 
 parseUnreserved ∷ Parser String
 parseUnreserved =
-  S.singleton <$> (alphaNum <|> char '-' <|> char '.' <|> char '_' <|> char '~')
+  String.singleton <$> (alphaNum <|> char '-' <|> char '.' <|> char '_' <|> char '~')
 
 newtype PCTEncoded = PCTEncoded String
 
@@ -49,13 +49,13 @@ decodePCTComponent (PCTEncoded s) = decodeURIComponent s
 parsePCTEncoded ∷ (PCTEncoded → String) → Parser String
 parsePCTEncoded f = f <<< PCTEncoded <$> parseHex
   where
-  parseHex = S.joinWith "" <$> Array.some do
+  parseHex = String.joinWith "" <$> Array.some do
     d0 ← char '%'
     d1 ← alphaNum
     d2 ← alphaNum
-    pure $ S.fromCharArray [d0, d1, d2]
+    pure $ String.fromCharArray [d0, d1, d2]
 
 parseSubDelims ∷ Parser String
 parseSubDelims =
   -- TODO: resolve the `,` situation
-  S.singleton <$> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', {- ',', -} ';', '=']
+  String.singleton <$> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', {- ',', -} ';', '=']

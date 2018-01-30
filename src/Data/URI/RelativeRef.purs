@@ -13,7 +13,7 @@ module Data.URI.RelativeRef
 
 import Prelude
 
-import Data.Array (catMaybes)
+import Data.Array as Array
 import Data.Either (Either)
 import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
@@ -21,7 +21,7 @@ import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
-import Data.String as S
+import Data.String as String
 import Data.Tuple (Tuple)
 import Data.URI.Fragment as Fragment
 import Data.URI.Query as Query
@@ -79,7 +79,7 @@ print
   → RelativeRef userInfo hosts relPath query fragment
   → String
 print opts (RelativeRef h q f) =
-  S.joinWith "" $ catMaybes
+  String.joinWith "" $ Array.catMaybes
     [ Just (RPart.print opts h)
     , Query.print opts.printQuery <$> q
     , Fragment.print opts.printFragment <$> f

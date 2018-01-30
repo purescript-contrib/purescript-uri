@@ -13,7 +13,7 @@ module Data.URI.RelativePart
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array (catMaybes)
+import Data.Array as Array
 import Data.Either (Either)
 import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
@@ -21,7 +21,7 @@ import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
-import Data.String as S
+import Data.String as String
 import Data.Tuple (Tuple)
 import Data.URI.Authority (Authority(..), AuthorityPrintOptions, Host(..), Port(..), AuthorityParseOptions, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
@@ -78,11 +78,10 @@ print
   ⇒ Record (RelativePartPrintOptions userInfo hosts relPath r)
   → RelativePart userInfo hosts relPath → String
 print opts (RelativePart a p) =
-  S.joinWith "" $
-    catMaybes
-      [ Authority.print opts <$> a
-      , opts.printRelPath <$> p
-      ]
+  String.joinWith "" $ Array.catMaybes
+    [ Authority.print opts <$> a
+    , opts.printRelPath <$> p
+    ]
 
 _authority ∷ ∀ userInfo hosts relPath. Lens' (RelativePart userInfo hosts relPath) (Maybe (Authority userInfo hosts))
 _authority =

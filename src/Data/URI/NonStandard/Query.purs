@@ -15,7 +15,7 @@ import Data.List (List)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid)
 import Data.Newtype (class Newtype)
-import Data.String as S
+import Data.String as String
 import Data.String.Regex as RX
 import Data.String.Regex.Flags as RXF
 import Data.Tuple (Tuple(..))
@@ -49,7 +49,7 @@ parsePart = do
   pure $ Tuple key value
 
 print ∷ Query → String
-print (Query m) = S.joinWith "&" $ Array.fromFoldable (printPart <$> m)
+print (Query m) = String.joinWith "&" $ Array.fromFoldable (printPart <$> m)
   where
   printPart ∷ Tuple String (Maybe String) → String
   printPart (Tuple k Nothing) =
@@ -58,7 +58,7 @@ print (Query m) = S.joinWith "&" $ Array.fromFoldable (printPart <$> m)
     printQueryPart k <> "=" <> printQueryPart v
 
 printQueryPart ∷ String → String
-printQueryPart = S.joinWith "" <<< map printChar <<< S.split (S.Pattern "")
+printQueryPart = String.joinWith "" <<< map printChar <<< String.split (String.Pattern "")
   where
   -- Fragments & queries have a bunch of characters that don't need escaping
   printChar ∷ String → String
