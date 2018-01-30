@@ -3,14 +3,15 @@ module Data.URI.UserInfo where
 import Prelude
 
 import Control.Alt ((<|>))
+import Data.Array as Array
 import Data.Either (Either)
-import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parseSubDelims, parseUnreserved, wrapParser)
+import Data.String as String
+import Data.URI.Common (decodePCT, parsePCTEncoded, parseSubDelims, parseUnreserved, wrapParser)
 import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.Combinators (many1)
 import Text.Parsing.StringParser.String (string)
 
 parser ∷ ∀ ui. (String → Either ParseError ui) → Parser ui
-parser p = wrapParser p (joinWith "" <$> many1 p')
+parser p = wrapParser p (String.joinWith "" <$> Array.some p')
   where
   p' = parseUnreserved
     <|> parsePCTEncoded decodePCT

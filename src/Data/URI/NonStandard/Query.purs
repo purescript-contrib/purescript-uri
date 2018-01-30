@@ -7,6 +7,7 @@ module Data.URI.NonStandard.Query
 import Prelude
 
 import Control.Alt ((<|>))
+import Data.Array as Array
 import Data.Either (Either, fromRight)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -18,12 +19,11 @@ import Data.String as S
 import Data.String.Regex as RX
 import Data.String.Regex.Flags as RXF
 import Data.Tuple (Tuple(..))
-import Data.URI.Common (joinWith, rxPat)
 import Global (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.StringParser (ParseError, Parser, runParser)
 import Text.Parsing.StringParser.Combinators (optionMaybe, sepBy)
-import Text.Parsing.StringParser.String (string)
+import Text.Parsing.StringParser.String (regex, string)
 
 -- | The query component of a URI.
 newtype Query = Query (List (Tuple String (Maybe String)))
@@ -44,12 +44,12 @@ parseParts = sepBy parsePart (string ";" <|> string "&")
 
 parsePart ∷ Parser (Tuple String (Maybe String))
 parsePart = do
-  key ← decodeURIComponent <$> rxPat "[^=;&]+"
-  value ← optionMaybe $ decodeURIComponent <$> (string "=" *> rxPat "[^;&]*")
+  key ← decodeURIComponent <$> regex "[^=;&]+"
+  value ← optionMaybe $ decodeURIComponent <$> (string "=" *> regex "[^;&]*")
   pure $ Tuple key value
 
 print ∷ Query → String
-print (Query m) = joinWith "&" (printPart <$> m)
+print (Query m) = S.joinWith "&" $ Array.fromFoldable (printPart <$> m)
   where
   printPart ∷ Tuple String (Maybe String) → String
   printPart (Tuple k Nothing) =

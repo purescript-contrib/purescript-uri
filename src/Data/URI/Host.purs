@@ -13,16 +13,19 @@ module Data.URI.Host
 import Prelude
 
 import Control.Alt ((<|>))
+import Data.Array as Array
+import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Int as Int
 import Data.Lens (Prism', prism')
 import Data.Maybe (Maybe(..))
-import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parseSubDelims, parseUnreserved, rxPat)
+import Data.String as String
+import Data.URI.Common (decodePCT, parsePCTEncoded, parseSubDelims, parseUnreserved, wrapParser)
 import Global (encodeURI)
-import Text.Parsing.StringParser (Parser, try, fail)
-import Text.Parsing.StringParser.Combinators ((<?>), many1)
-import Text.Parsing.StringParser.String (string, char)
+import Text.Parsing.StringParser (ParseError(..), Parser, try)
+import Text.Parsing.StringParser.Combinators ((<?>))
+import Text.Parsing.StringParser.String (anyDigit, char, regex, satisfy, string)
 
 -- | A host address.
 data Host
@@ -36,11 +39,11 @@ derive instance genericHost ∷ Generic Host _
 instance showHost ∷ Show Host where show = genericShow
 
 parser ∷ Parser Host
-parser = try ipv6AddressParser <|> try ipv4AddressParser <|> regNameParser
+parser = ipv6AddressParser <|> try ipv4AddressParser <|> regNameParser
 
 -- TODO: this is much too forgiving right now
 ipv6AddressParser ∷ Parser Host
-ipv6AddressParser = IPv6Address <$> (string "[" *> rxPat "[a-f0-9\\.:]+" <* string "]") <?> "IPv6 address"
+ipv6AddressParser = IPv6Address <$> (string "[" *> regex "[a-fA-F0-9\\.:]+" <* string "]") <?> "IPv6 address"
 
 ipv4AddressParser ∷ Parser Host
 ipv4AddressParser = IPv4Address <$> addr <?> "IPv4 address"
@@ -56,14 +59,19 @@ ipv4AddressParser = IPv4Address <$> addr <?> "IPv4 address"
     o4 <- octet
     pure $ show o1 <> "." <> show o2 <> "." <> show o3 <> "." <> show o4
   octet ∷ Parser Int
-  octet = do
-    s <- rxPat "0|([1-9][0-9]{0,2})"
-    case Int.fromString s of
-      Just n | n >= 0 && n <= 255 -> pure n
-      _ -> fail "Invalid IPv4 address octet"
+  octet = wrapParser toInt
+    $ try ((\x y z → String.fromCharArray [x, y, z]) <$> nzDigit <*> anyDigit <*> anyDigit)
+    <|> try ((\x y → String.fromCharArray [x, y]) <$> nzDigit <*> anyDigit)
+    <|> (String.singleton <$> anyDigit)
+  nzDigit ∷ Parser Char
+  nzDigit = satisfy (\c → c >= '1' && c <= '9')
+  toInt ∷ String → Either ParseError Int
+  toInt s = case Int.fromString s of
+    Just n | n >= 0 && n <= 255 → Right n
+    _ → Left (ParseError "Invalid IPv4 address octet")
 
 regNameParser ∷ Parser Host
-regNameParser = NameAddress <<< joinWith "" <$> many1 p
+regNameParser = NameAddress <<< String.joinWith "" <$> Array.some p
   where
   p = parseUnreserved <|> parsePCTEncoded decodePCT <|> parseSubDelims
 

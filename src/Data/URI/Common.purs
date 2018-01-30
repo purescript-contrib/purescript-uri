@@ -1,35 +1,23 @@
-module Data.URI.Common where
+module Data.URI.Common
+  ( wrapParser
+  , parsePChar
+  , parseUnreserved
+  , PCTEncoded
+  , decodePCT
+  , decodePCTComponent
+  , parsePCTEncoded
+  , parseSubDelims
+  ) where
 
 import Prelude
 
 import Control.Alt ((<|>))
-import Control.MonadZero (guard)
-import Data.Array (fromFoldable, head)
-import Data.Either (Either(..), fromRight)
-import Data.List (List)
-import Data.Maybe (Maybe(..))
+import Data.Array as Array
+import Data.Either (Either(..))
 import Data.String as S
-import Data.String.Regex as RX
-import Data.String.Regex.Flags as RXF
-import Data.Unfoldable (replicateA)
 import Global (decodeURI, decodeURIComponent)
-import Partial.Unsafe (unsafePartial)
-import Text.Parsing.StringParser (ParseError(..), Parser(..), unParser)
-import Text.Parsing.StringParser.String (string)
-
-anyString ∷ Parser String
-anyString = Parser case _ of
-  { str, pos } → Right { result: str, suffix: { str, pos: pos + S.length str }}
-
-joinWith ∷ String → List String → String
-joinWith x y = S.joinWith x $ fromFoldable y
-
-rep ∷ Int → Parser String → Parser String
-rep n p = S.joinWith "" <$> replicateA n p
-
-rxPat ∷ String → Parser String
-rxPat rx =
-  unsafePartial $ fromRight $ anyMatch <$> RX.regex rx RXF.ignoreCase
+import Text.Parsing.StringParser (ParseError, Parser(..), unParser)
+import Text.Parsing.StringParser.String (alphaNum, char, oneOf, string)
 
 wrapParser ∷ ∀ a. (String → Either ParseError a) → Parser String → Parser a
 wrapParser parseA p = Parser \ps → do
@@ -47,7 +35,8 @@ parsePChar f
   <|> string "@"
 
 parseUnreserved ∷ Parser String
-parseUnreserved = rxPat "[0-9a-z\\-\\._~]+"
+parseUnreserved =
+  S.singleton <$> (alphaNum <|> char '-' <|> char '.' <|> char '_' <|> char '~')
 
 newtype PCTEncoded = PCTEncoded String
 
@@ -58,23 +47,15 @@ decodePCTComponent ∷ PCTEncoded → String
 decodePCTComponent (PCTEncoded s) = decodeURIComponent s
 
 parsePCTEncoded ∷ (PCTEncoded → String) → Parser String
-parsePCTEncoded f = f <<< PCTEncoded <$> rxPat "(%[0-9a-f]{2})+"
+parsePCTEncoded f = f <<< PCTEncoded <$> parseHex
+  where
+  parseHex = S.joinWith "" <$> Array.some do
+    d0 ← char '%'
+    d1 ← alphaNum
+    d2 ← alphaNum
+    pure $ S.fromCharArray [d0, d1, d2]
 
 parseSubDelims ∷ Parser String
-parseSubDelims = rxPat "[!$&'()*+;=]"
-
-anyMatch ∷ RX.Regex → Parser String
-anyMatch rx = Parser \{ str: str, pos: i } → case match1From rx i str of
-  Just m → pure { result : m, suffix: { str: str, pos: i + (S.length m) }}
-  Nothing → Left { error: (ParseError $ "Expected " <> show rx), pos: i }
-
-match1From ∷ RX.Regex → Int → String → Maybe String
-match1From rx' n str' =
-  case RX.regex (RX.source rx') (RXF.global <> RX.flags rx') of
-    Left _ -> Nothing
-    Right rx -> do
-      let str = S.drop n str'
-      i <- RX.search rx str
-      guard $ i == 0
-      matches <- RX.match rx str
-      join $ head matches
+parseSubDelims =
+  -- TODO: resolve the `,` situation
+  S.singleton <$> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', {- ',', -} ';', '=']
