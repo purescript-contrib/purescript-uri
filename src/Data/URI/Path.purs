@@ -3,14 +3,15 @@ module Data.URI.Path where
 import Prelude
 
 import Control.Alt ((<|>))
+import Data.Either (Either)
 import Data.Maybe (Maybe(..))
 import Data.String as Str
 import Data.URI.Common (PCTEncoded, decodePCT, joinWith, parsePCTEncoded, parsePChar, parseSubDelims, parseUnreserved, wrapParser)
-import Text.Parsing.StringParser (Parser)
+import Text.Parsing.StringParser (ParseError, Parser)
 import Text.Parsing.StringParser.Combinators (many, many1, optionMaybe)
 import Text.Parsing.StringParser.String (string)
 
-parsePath ∷ ∀ p. Parser p → Parser (Maybe p)
+parsePath ∷ ∀ p. (String → Either ParseError p) → Parser (Maybe p)
 parsePath p
   = parsePathAbEmpty p
   <|> (Just <$> parsePathAbsolute p)
@@ -18,26 +19,26 @@ parsePath p
   <|> (Just <$> parsePathRootless p)
   <|> pure Nothing
 
-parsePathAbEmpty ∷ ∀ p. Parser p → Parser (Maybe p)
+parsePathAbEmpty ∷ ∀ p. (String → Either ParseError p) → Parser (Maybe p)
 parsePathAbEmpty p =
   optionMaybe $ wrapParser p do
     parts ← many1 (string "/" *> parseSegment)
     pure ("/" <> joinWith "/" parts)
 
-parsePathAbsolute ∷ ∀ p. Parser p → Parser p
+parsePathAbsolute ∷ ∀ p. (String → Either ParseError p) → Parser p
 parsePathAbsolute p = wrapParser p $ do
   _ ← string "/"
   start ← parseSegmentNonZero
   rest ← joinWith "" <$> many (append <$> string "/" <*> parseSegment)
   pure $ "/" <> start <> rest
 
-parsePathNoScheme ∷ ∀ p. Parser p → Parser p
+parsePathNoScheme ∷ ∀ p. (String → Either ParseError p) → Parser p
 parsePathNoScheme p = wrapParser p $
   append
     <$> parseSegmentNonZeroNoColon
     <*> (joinWith "" <$> many (append <$> string "/" <*> parseSegment))
 
-parsePathRootless ∷ ∀ p. Parser p → Parser p
+parsePathRootless ∷ ∀ p. (String → Either ParseError p) → Parser p
 parsePathRootless p = wrapParser p $
   append
     <$> parseSegmentNonZero

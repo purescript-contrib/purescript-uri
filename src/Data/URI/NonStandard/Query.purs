@@ -1,13 +1,13 @@
 module Data.URI.NonStandard.Query
   ( Query(..)
-  , parser
+  , parse
   , print
   ) where
 
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Either (fromRight)
+import Data.Either (Either, fromRight)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.List (List)
@@ -21,7 +21,7 @@ import Data.Tuple (Tuple(..))
 import Data.URI.Common (joinWith, rxPat)
 import Global (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
-import Text.Parsing.StringParser (Parser)
+import Text.Parsing.StringParser (ParseError, Parser, runParser)
 import Text.Parsing.StringParser.Combinators (optionMaybe, sepBy)
 import Text.Parsing.StringParser.String (string)
 
@@ -36,8 +36,8 @@ instance showQuery ∷ Show Query where show = genericShow
 derive newtype instance semigroupQuery ∷ Semigroup Query
 derive newtype instance monoidQuery ∷ Monoid Query
 
-parser ∷ Parser Query
-parser = Query <$> parseParts
+parse ∷ String → Either ParseError Query
+parse = runParser (Query <$> parseParts)
 
 parseParts ∷ Parser (List (Tuple String (Maybe String)))
 parseParts = sepBy parsePart (string ";" <|> string "&")

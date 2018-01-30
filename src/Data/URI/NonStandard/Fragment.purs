@@ -2,17 +2,15 @@ module Data.URI.NonStandard.Fragment where
 
 import Prelude
 
-import Data.Either (fromRight)
+import Data.Either (Either, fromRight)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Newtype (class Newtype)
 import Data.String as S
 import Data.String.Regex as RX
 import Data.String.Regex.Flags as RXF
-import Data.URI.Common (anyString)
 import Global (encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
-import Text.Parsing.StringParser (Parser)
 
 -- | The hash fragment of a URI.
 newtype Fragment = Fragment String
@@ -23,8 +21,8 @@ derive instance genericFragment ∷ Generic Fragment _
 derive instance newtypeFragment ∷ Newtype Fragment _
 instance showFragment ∷ Show Fragment where show = genericShow
 
-parser ∷ Parser Fragment
-parser = Fragment <$> anyString
+parse ∷ ∀ e. String → Either e Fragment
+parse = pure <<< Fragment
 
 print ∷ Fragment → String
 print (Fragment f) = S.joinWith "" (map printChar $ S.split (S.Pattern "") f)

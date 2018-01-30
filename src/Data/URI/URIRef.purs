@@ -4,10 +4,9 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Either (Either(..), either)
-import Data.URI.RelativeRef (AuthorityParseOptions, AuthorityPrintOptions)
 import Data.URI.RelativeRef as RelativeRef
 import Data.URI.URI as URI
-import Text.Parsing.StringParser (Parser, try)
+import Text.Parsing.StringParser (ParseError, Parser, try)
 
 -- | An alias for the most common use case of resource identifiers.
 type URIRef userInfo hosts hierPath relPath query fragment =
@@ -20,13 +19,24 @@ type URIRefOptions userInfo hosts hierPath relPath query fragment =
     (URIRefPrintOptions userInfo hosts hierPath relPath query fragment ())
 
 type URIRefParseOptions userInfo hosts hierPath relPath query fragment r =
-  AuthorityParseOptions userInfo hosts
-    ( parseHierPath ∷ Parser hierPath
-    , parseRelPath ∷ Parser relPath
-    , parseQuery ∷ Parser query
-    , parseFragment ∷ Parser fragment
-    | r
-    )
+  ( parseUserInfo ∷ String → Either ParseError userInfo
+  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
+  , parseRelPath ∷ String → Either ParseError relPath
+  , parseHierPath ∷ String → Either ParseError hierPath
+  , parseQuery ∷ String → Either ParseError query
+  , parseFragment ∷ String → Either ParseError fragment
+  | r
+  )
+
+type URIRefPrintOptions userInfo hosts hierPath relPath query fragment r =
+  ( printUserInfo ∷ userInfo → String
+  , printHosts ∷ hosts String → String
+  , printRelPath ∷ relPath → String
+  , printHierPath ∷ hierPath → String
+  , printQuery ∷ query → String
+  , printFragment ∷ fragment → String
+  | r
+  )
 
 parser
   ∷ ∀ userInfo hosts hierPath relPath query fragment r
@@ -35,15 +45,6 @@ parser
 parser opts
   = (Left <$> try (URI.parser opts))
   <|> (Right <$> RelativeRef.parser opts)
-
-type URIRefPrintOptions userInfo hosts hierPath relPath query fragment r =
-  AuthorityPrintOptions userInfo hosts
-    ( printHierPath ∷ hierPath → String
-    , printRelPath ∷ relPath → String
-    , printQuery ∷ query → String
-    , printFragment ∷ fragment → String
-    | r
-    )
 
 print
   ∷ ∀ userInfo hosts hierPath relPath query fragment r

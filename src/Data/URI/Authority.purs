@@ -1,5 +1,6 @@
 module Data.URI.Authority
   ( Authority(..)
+  , AuthorityOptions
   , AuthorityParseOptions
   , AuthorityPrintOptions
   , parser
@@ -12,6 +13,7 @@ module Data.URI.Authority
 
 import Prelude
 
+import Data.Either (Either)
 import Data.Eq (class Eq1, eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -24,7 +26,7 @@ import Data.URI.Host as Host
 import Data.URI.Port (Port(..))
 import Data.URI.Port as Port
 import Data.URI.UserInfo as UserInfo
-import Text.Parsing.StringParser (Parser, try)
+import Text.Parsing.StringParser (ParseError, Parser, try)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (string)
 
@@ -45,9 +47,19 @@ derive instance genericAuthority ∷ Generic (Authority userInfo hosts) _
 
 instance showAuthority ∷ (Show userInfo, Show (hosts (Tuple Host (Maybe Port)))) ⇒ Show (Authority userInfo hosts) where show = genericShow
 
+type AuthorityOptions userInfo hosts =
+  AuthorityParseOptions userInfo hosts
+    (AuthorityPrintOptions userInfo hosts ())
+
 type AuthorityParseOptions userInfo hosts r =
-  ( parseUserInfo ∷ Parser userInfo
+  ( parseUserInfo ∷ String → Either ParseError userInfo
   , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
+  | r
+  )
+
+type AuthorityPrintOptions userInfo hosts r =
+  ( printUserInfo ∷ userInfo → String
+  , printHosts ∷ hosts String → String
   | r
   )
 
@@ -60,12 +72,6 @@ parser opts = do
   ui ← optionMaybe $ try (UserInfo.parser opts.parseUserInfo <* string "@")
   hosts ← opts.parseHosts $ Tuple <$> Host.parser <*> optionMaybe (string ":" *> Port.parser)
   pure $ Authority ui hosts
-
-type AuthorityPrintOptions userInfo hosts r =
-  ( printUserInfo ∷ userInfo → String
-  , printHosts ∷ hosts String → String
-  | r
-  )
 
 print
   ∷ ∀ userInfo hosts r

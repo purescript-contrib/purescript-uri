@@ -14,7 +14,7 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Path.Pathy (Abs, Dir, Escaper(..), File, Path, Rel, Sandboxed, Unsandboxed, parseAbsDir, parseAbsFile, parseRelDir, parseRelFile, rootDir, sandbox, unsafePrintPath', (</>))
 import Data.String as Str
 import Global (encodeURI)
-import Text.Parsing.StringParser (ParseError(..), Parser(..))
+import Text.Parsing.StringParser (ParseError(..))
 
 -- | A general URI path, can be used to represent relative or absolute paths
 -- | that are sandboxed or unsandboxed.
@@ -26,21 +26,21 @@ type URIPathAbs = URIPath Abs Sandboxed
 -- | The path part for a relative reference.
 type URIPathRel = URIPath Rel Unsandboxed
 
-parseURIPathAbs ∷ Parser URIPathAbs
-parseURIPathAbs = Parser \{ str: str, pos: i } →
-  case sandbox rootDir =<< parseAbsFile (Str.drop i str) of
-    Just file → Right { result: (Right $ rootDir </> file), suffix: { str: str, pos: Str.length str }}
-    Nothing → case sandbox rootDir =<< parseAbsDir (Str.drop i str) of
-      Just dir → Right { result: (Left $ rootDir </> dir), suffix: { str: str, pos: Str.length str }}
-      Nothing → Left { error: (ParseError $ "Expected a valid path"), pos: i }
+parseURIPathAbs ∷ String → Either ParseError URIPathAbs
+parseURIPathAbs str =
+  case sandbox rootDir =<< parseAbsFile str of
+    Just file → Right $ Right (rootDir </> file)
+    Nothing → case sandbox rootDir =<< parseAbsDir str of
+      Just dir → Right $ Left (rootDir </> dir)
+      Nothing → Left (ParseError "Expected a valid path")
 
-parseURIPathRel ∷ Parser URIPathRel
-parseURIPathRel = Parser \{ str: str, pos: i } →
-  case parseRelFile (Str.drop i str) of
-    Just file → Right { result : Right file, suffix: { str: str, pos: Str.length str }}
-    Nothing → case parseRelDir (Str.drop i str) of
-      Just dir →  Right { result : Left dir,  suffix: { str: str, pos: Str.length str }}
-      Nothing → Left { error: (ParseError $ "Expected a valid path"), pos: i}
+parseURIPathRel ∷ String → Either ParseError URIPathRel
+parseURIPathRel str =
+  case parseRelFile str of
+    Just file → Right (Right file)
+    Nothing → case parseRelDir str of
+      Just dir → Right (Left dir)
+      Nothing → Left (ParseError "Expected a valid path")
 
 printPath ∷ ∀ a s. URIPath a s → String
 printPath = either printPath' printPath'

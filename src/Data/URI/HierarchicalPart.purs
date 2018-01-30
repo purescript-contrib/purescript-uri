@@ -1,8 +1,9 @@
 module Data.URI.HierarchicalPart
   ( HierarchicalPart(..)
+  , HierarchicalPartOptions
   , HierarchicalPartParseOptions
-  , parser
   , HierarchicalPartPrintOptions
+  , parser
   , print
   , _authority
   , _path
@@ -13,6 +14,7 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array (catMaybes)
+import Data.Either (Either)
 import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -21,10 +23,10 @@ import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
 import Data.String as S
 import Data.Tuple (Tuple)
-import Data.URI.Authority (Authority(..), AuthorityPrintOptions, Host(..), Port(..), AuthorityParseOptions, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
+import Data.URI.Authority (Authority(..), Host(..), Port(..), _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
 import Data.URI.Path as Path
-import Text.Parsing.StringParser (Parser)
+import Text.Parsing.StringParser (ParseError, Parser)
 
 -- | The "hierarchical part" of a generic or absolute URI.
 data HierarchicalPart userInfo hosts hierPath = HierarchicalPart (Maybe (Authority userInfo hosts)) (Maybe hierPath)
@@ -34,11 +36,23 @@ derive instance ordHierarchicalPart ∷ (Ord userInfo, Ord1 hosts, Ord hierPath)
 derive instance genericHierarchicalPart ∷ Generic (HierarchicalPart userInfo hosts hierPath) _
 instance showHierarchicalPart ∷ (Show userInfo, Show (hosts (Tuple Host (Maybe Port))), Show hierPath) ⇒ Show (HierarchicalPart userInfo hosts hierPath) where show = genericShow
 
+type HierarchicalPartOptions userInfo hosts hierPath =
+  HierarchicalPartParseOptions userInfo hosts hierPath
+    (HierarchicalPartPrintOptions userInfo hosts hierPath ())
+
 type HierarchicalPartParseOptions userInfo hosts hierPath r =
-  AuthorityParseOptions userInfo hosts
-    ( parseHierPath ∷ Parser hierPath
-    | r
-    )
+  ( parseUserInfo ∷ String → Either ParseError userInfo
+  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
+  , parseHierPath ∷ String → Either ParseError hierPath
+  | r
+  )
+
+type HierarchicalPartPrintOptions userInfo hosts hierPath r =
+  ( printUserInfo ∷ userInfo → String
+  , printHosts ∷ hosts String → String
+  , printHierPath ∷ hierPath → String
+  | r
+  )
 
 parser
   ∷ ∀ userInfo hosts hierPath r
@@ -57,12 +71,6 @@ parser opts = withAuth <|> withoutAuth
       = (Just <$> Path.parsePathAbsolute opts.parseHierPath)
     <|> (Just <$> Path.parsePathRootless opts.parseHierPath)
     <|> pure Nothing
-
-type HierarchicalPartPrintOptions userInfo hosts hierPath r =
-  AuthorityPrintOptions userInfo hosts
-    ( printHierPath ∷ hierPath → String
-    | r
-    )
 
 print
   ∷ ∀ userInfo hosts hierPath r

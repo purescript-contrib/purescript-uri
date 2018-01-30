@@ -3,12 +3,13 @@ module Data.URI.UserInfo where
 import Prelude
 
 import Control.Alt ((<|>))
+import Data.Either (Either)
 import Data.URI.Common (decodePCT, joinWith, parsePCTEncoded, parseSubDelims, parseUnreserved, wrapParser)
-import Text.Parsing.StringParser (Parser)
+import Text.Parsing.StringParser (ParseError, Parser)
 import Text.Parsing.StringParser.Combinators (many1)
 import Text.Parsing.StringParser.String (string)
 
-parser ∷ ∀ userInfo. Parser userInfo → Parser userInfo
+parser ∷ ∀ ui. (String → Either ParseError ui) → Parser ui
 parser p = wrapParser p (joinWith "" <$> many1 p')
   where
   p' = parseUnreserved
@@ -16,5 +17,5 @@ parser p = wrapParser p (joinWith "" <$> many1 p')
     <|> parseSubDelims
     <|> string ":"
 
-print ∷ ∀ userInfo. (userInfo → String) → userInfo → String
+print ∷ ∀ ui. (ui → String) → ui → String
 print = id

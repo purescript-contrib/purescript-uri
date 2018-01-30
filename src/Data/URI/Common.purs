@@ -31,11 +31,12 @@ rxPat ∷ String → Parser String
 rxPat rx =
   unsafePartial $ fromRight $ anyMatch <$> RX.regex rx RXF.ignoreCase
 
-wrapParser ∷ ∀ a. Parser a → Parser String → Parser a
-wrapParser outer inner = Parser \ps → do
-  r ← unParser inner ps
-  r' ← unParser outer {str : r.result, pos: 0}
-  pure { result: r'.result, suffix: r.suffix }
+wrapParser ∷ ∀ a. (String → Either ParseError a) → Parser String → Parser a
+wrapParser parseA p = Parser \ps → do
+  pr ← unParser p ps
+  case parseA pr.result of
+    Left error → Left { error, pos: ps.pos }
+    Right result → Right { result, suffix: pr.suffix }
 
 parsePChar ∷ (PCTEncoded → String) → Parser String
 parsePChar f

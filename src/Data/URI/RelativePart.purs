@@ -1,8 +1,9 @@
 module Data.URI.RelativePart
   ( RelativePart(..)
+  , RelativePartOptions
   , RelativePartParseOptions
-  , parser
   , RelativePartPrintOptions
+  , parser
   , print
   , _authority
   , _path
@@ -13,6 +14,7 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array (catMaybes)
+import Data.Either (Either)
 import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -24,7 +26,7 @@ import Data.Tuple (Tuple)
 import Data.URI.Authority (Authority(..), AuthorityPrintOptions, Host(..), Port(..), AuthorityParseOptions, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
 import Data.URI.Path as Path
-import Text.Parsing.StringParser (Parser)
+import Text.Parsing.StringParser (ParseError, Parser)
 
 -- | The "relative part" of a relative reference.
 data RelativePart userInfo hosts relPath = RelativePart (Maybe (Authority userInfo hosts)) (Maybe relPath)
@@ -34,11 +36,23 @@ derive instance ordRelativePart ∷ (Ord userInfo, Ord1 hosts, Ord relPath) ⇒ 
 derive instance genericRelativePart ∷ Generic (RelativePart userInfo hosts relPath) _
 instance showRelativePart ∷ (Show userInfo, Show (hosts (Tuple Host (Maybe Port))), Show relPath) ⇒ Show (RelativePart userInfo hosts relPath) where show = genericShow
 
+type RelativePartOptions userInfo hosts relPath =
+  RelativePartParseOptions userInfo hosts relPath
+    (RelativePartPrintOptions userInfo hosts relPath ())
+
 type RelativePartParseOptions userInfo hosts relPath r =
-  AuthorityParseOptions userInfo hosts
-    ( parseRelPath ∷ Parser relPath
-    | r
-    )
+  ( parseUserInfo ∷ String → Either ParseError userInfo
+  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
+  , parseRelPath ∷ String → Either ParseError relPath
+  | r
+  )
+
+type RelativePartPrintOptions userInfo hosts relPath r =
+  ( printUserInfo ∷ userInfo → String
+  , printHosts ∷ hosts String → String
+  , printRelPath ∷ relPath → String
+  | r
+  )
 
 parser
   ∷ ∀ userInfo hosts relPath r
@@ -57,12 +71,6 @@ parser opts = withAuth <|> withoutAuth
       = (Just <$> Path.parsePathAbsolute opts.parseRelPath)
     <|> (Just <$> Path.parsePathNoScheme opts.parseRelPath)
     <|> pure Nothing
-
-type RelativePartPrintOptions userInfo hosts relPath r =
-  AuthorityPrintOptions userInfo hosts
-    ( printRelPath ∷ relPath → String
-    | r
-    )
 
 print
   ∷ ∀ userInfo hosts relPath r

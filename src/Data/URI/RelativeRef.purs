@@ -2,8 +2,8 @@ module Data.URI.RelativeRef
   ( RelativeRef(..)
   , RelativeRefOptions
   , RelativeRefParseOptions
-  , parser
   , RelativeRefPrintOptions
+  , parser
   , print
   , _relPart
   , _query
@@ -14,6 +14,7 @@ module Data.URI.RelativeRef
 import Prelude
 
 import Data.Array (catMaybes)
+import Data.Either (Either)
 import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -26,7 +27,7 @@ import Data.URI.Fragment as Fragment
 import Data.URI.Query as Query
 import Data.URI.RelativePart (Authority(..), AuthorityParseOptions, AuthorityPrintOptions, Host(..), Port(..), RelativePart(..), RelativePartParseOptions, RelativePartPrintOptions, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.RelativePart as RPart
-import Text.Parsing.StringParser (Parser)
+import Text.Parsing.StringParser (ParseError, Parser)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
 
@@ -39,14 +40,26 @@ derive instance genericRelativeRef ∷ Generic (RelativeRef userInfo hosts relPa
 instance showRelativeRef ∷ (Show userInfo, Show (hosts (Tuple Host (Maybe Port))), Show relPath, Show query, Show fragment) ⇒ Show (RelativeRef userInfo hosts relPath query fragment) where show = genericShow
 
 type RelativeRefOptions userInfo hosts relPath query fragment =
-  RelativeRefParseOptions userInfo hosts relPath query fragment (RelativeRefPrintOptions userInfo hosts relPath query fragment ())
+  RelativeRefParseOptions userInfo hosts relPath query fragment
+    (RelativeRefPrintOptions userInfo hosts relPath query fragment ())
 
 type RelativeRefParseOptions userInfo hosts relPath query fragment r =
-  RelativePartParseOptions userInfo hosts relPath
-    ( parseQuery ∷ Parser query
-    , parseFragment ∷ Parser fragment
-    | r
-    )
+  ( parseUserInfo ∷ String → Either ParseError userInfo
+  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
+  , parseRelPath ∷ String → Either ParseError relPath
+  , parseQuery ∷ String → Either ParseError query
+  , parseFragment ∷ String → Either ParseError fragment
+  | r
+  )
+
+type RelativeRefPrintOptions userInfo hosts relPath query fragment r =
+  ( printUserInfo ∷ userInfo → String
+  , printHosts ∷ hosts String → String
+  , printRelPath ∷ relPath → String
+  , printQuery ∷ query → String
+  , printFragment ∷ fragment → String
+  | r
+  )
 
 parser
   ∷ ∀ userInfo hosts relPath query fragment r
@@ -58,13 +71,6 @@ parser opts =
     <*> optionMaybe (Query.parser opts.parseQuery)
     <*> optionMaybe (Fragment.parser opts.parseFragment)
     <* eof
-
-type RelativeRefPrintOptions userInfo hosts relPath query fragment r =
-  RelativePartPrintOptions userInfo hosts relPath
-    ( printQuery ∷ query → String
-    , printFragment ∷ fragment → String
-    | r
-    )
 
 print
   ∷ ∀ userInfo hosts relPath query fragment r

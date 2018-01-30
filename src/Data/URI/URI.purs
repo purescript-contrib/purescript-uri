@@ -2,8 +2,8 @@ module Data.URI.URI
   ( URI(..)
   , URIOptions
   , URIParseOptions
-  , parser
   , URIPrintOptions
+  , parser
   , print
   , _scheme
   , _hierPart
@@ -16,6 +16,7 @@ module Data.URI.URI
 import Prelude
 
 import Data.Array (catMaybes)
+import Data.Either (Either)
 import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -25,12 +26,12 @@ import Data.Ord (class Ord1)
 import Data.String as S
 import Data.Tuple (Tuple)
 import Data.URI.Fragment as Fragment
-import Data.URI.HierarchicalPart (Authority(..), AuthorityParseOptions, AuthorityPrintOptions, HierarchicalPart(..), HierarchicalPartParseOptions, HierarchicalPartPrintOptions, Host(..), Port(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
+import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), Host(..), Port(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
 import Data.URI.Query as Query
 import Data.URI.Scheme (Scheme(..))
 import Data.URI.Scheme as Scheme
-import Text.Parsing.StringParser (Parser)
+import Text.Parsing.StringParser (ParseError, Parser)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
 
@@ -43,14 +44,26 @@ derive instance genericURI ∷ Generic (URI userInfo hosts hierPath query fragme
 instance showURI ∷ (Show userInfo, Show (hosts (Tuple Host (Maybe Port))), Show hierPath, Show query, Show fragment) ⇒ Show (URI userInfo hosts hierPath query fragment) where show = genericShow
 
 type URIOptions userInfo hosts hierPath query fragment =
-  URIParseOptions userInfo hosts hierPath query fragment (URIPrintOptions userInfo hosts hierPath query fragment ())
+  URIParseOptions userInfo hosts hierPath query fragment
+    (URIPrintOptions userInfo hosts hierPath query fragment ())
 
 type URIParseOptions userInfo hosts hierPath query fragment r =
-  HierarchicalPartParseOptions userInfo hosts hierPath
-    ( parseQuery ∷ Parser query
-    , parseFragment ∷ Parser fragment
-    | r
-    )
+  ( parseUserInfo ∷ String → Either ParseError userInfo
+  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
+  , parseHierPath ∷ String → Either ParseError hierPath
+  , parseQuery ∷ String → Either ParseError query
+  , parseFragment ∷ String → Either ParseError fragment
+  | r
+  )
+
+type URIPrintOptions userInfo hosts hierPath query fragment r =
+  ( printUserInfo ∷ userInfo → String
+  , printHosts ∷ hosts String → String
+  , printHierPath ∷ hierPath → String
+  , printQuery ∷ query → String
+  , printFragment ∷ fragment → String
+  | r
+  )
 
 parser
   ∷ ∀ userInfo hosts hierPath query fragment r
@@ -62,13 +75,6 @@ parser opts = URI
   <*> optionMaybe (Query.parser opts.parseQuery)
   <*> optionMaybe (Fragment.parser opts.parseFragment)
   <* eof
-
-type URIPrintOptions userInfo hosts hierPath query fragment r =
-  HierarchicalPartPrintOptions userInfo hosts hierPath
-    ( printQuery ∷ query → String
-    , printFragment ∷ fragment → String
-    | r
-    )
 
 print
   ∷ ∀ userInfo hosts hierPath query fragment r

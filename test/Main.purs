@@ -44,12 +44,12 @@ import Test.Unit.Assert (assert, equal)
 import Test.Unit.Console (TESTOUTPUT)
 import Test.Unit.Main (runTest)
 import Text.Parsing.StringParser (Parser, runParser)
-import Text.Parsing.StringParser.Combinators as SP
-import Text.Parsing.StringParser.String as SP
+import Text.Parsing.StringParser.Combinators (sepBy) as SP
+import Text.Parsing.StringParser.String (string) as SP
 
 options ∷ Record (URIRef.URIRefOptions NU.UserInfo Array NP.URIPathAbs NP.URIPathRel NQ.Query NF.Fragment)
 options =
-  { parseUserInfo: NU.parser
+  { parseUserInfo: NU.parse
   , printUserInfo: NU.print
   , parseHosts: map Array.fromFoldable <<< flip SP.sepBy (SP.string ",")
   , printHosts: String.joinWith ","
@@ -57,9 +57,9 @@ options =
   , printHierPath: NP.printPath
   , parseRelPath: NP.parseURIPathRel
   , printRelPath: NP.printPath
-  , parseQuery: NQ.parser
+  , parseQuery: NQ.parse
   , printQuery: NQ.print
-  , parseFragment: NF.parser
+  , parseFragment: NF.parse
   , printFragment: NF.print
   }
 
@@ -105,7 +105,7 @@ testParseQueryParses :: forall a. String -> NQ.Query -> TestSuite a
 testParseQueryParses uri query =
   test
     ("parses: \"" <> uri <> "\"")
-    (equal (Right query) (runParser (Query.parser NQ.parser) uri))
+    (equal (Right query) (runParser (Query.parser NQ.parse) uri))
 
 testMatch1FromMatches :: forall a. Either String Regex -> Int -> String -> Maybe String -> TestSuite a
 testMatch1FromMatches rx' n str expected = case rx' of
@@ -144,10 +144,10 @@ main = runTest $ suite "Data.URI" do
     testRunParseSuccess Scheme.parser "git+ssh:" (Scheme "git+ssh")
 
   suite "UserInfo parser" do
-    testRunParseSuccess (UserInfo.parser NU.parser) "user" (NU.UserInfo "user")
-    testRunParseSuccess (UserInfo.parser NU.parser) "spaced%20user" (NU.UserInfo "spaced user")
-    testRunParseSuccess (UserInfo.parser NU.parser) "user:password" (NU.UserInfo "user:password")
-    testRunParseSuccess (UserInfo.parser NU.parser) "spaced%20user:password%25%C2%A3" (NU.UserInfo "spaced user:password%£")
+    testRunParseSuccess (UserInfo.parser NU.parse) "user" (NU.UserInfo "user")
+    testRunParseSuccess (UserInfo.parser NU.parse) "spaced%20user" (NU.UserInfo "spaced user")
+    testRunParseSuccess (UserInfo.parser NU.parse) "user:password" (NU.UserInfo "user:password")
+    testRunParseSuccess (UserInfo.parser NU.parse) "spaced%20user:password%25%C2%A3" (NU.UserInfo "spaced user:password%£")
 
   suite "Host parser" do
     testRunParseSuccess Host.parser "localhost" (NameAddress "localhost")
@@ -162,7 +162,7 @@ main = runTest $ suite "Data.URI" do
     testRunParseSuccess Port.parser "63174" (Port 63174)
 
   suite "Fragment' parser" do
-    testRunParseSuccess (Fragment.parser anyString) "#" ""
+    testRunParseSuccess (Fragment.parser Right) "#" ""
 
   suite "Authority parser" do
     testRunParseSuccess

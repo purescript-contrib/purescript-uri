@@ -15,6 +15,7 @@ module Data.URI.AbsoluteURI
 import Prelude
 
 import Data.Array (catMaybes)
+import Data.Either (Either)
 import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -23,12 +24,12 @@ import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
 import Data.String as S
 import Data.Tuple (Tuple)
-import Data.URI.HierarchicalPart (Authority(..), AuthorityParseOptions, AuthorityPrintOptions, HierarchicalPart(..), HierarchicalPartParseOptions, HierarchicalPartPrintOptions, Host(..), Port(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
+import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), Host(..), Port(..), _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
 import Data.URI.Query as Query
 import Data.URI.Scheme (Scheme(..))
 import Data.URI.Scheme as Scheme
-import Text.Parsing.StringParser (Parser)
+import Text.Parsing.StringParser (ParseError, Parser)
 import Text.Parsing.StringParser.Combinators (optionMaybe)
 import Text.Parsing.StringParser.String (eof)
 
@@ -41,13 +42,24 @@ derive instance genericAbsoluteURI ∷ Generic (AbsoluteURI userInfo hosts hierP
 instance showAbsoluteURI ∷ (Show userInfo, Show (hosts (Tuple Host (Maybe Port))), Show hierPath, Show query) ⇒ Show (AbsoluteURI userInfo hosts hierPath query) where show = genericShow
 
 type AbsoluteURIOptions userInfo hosts hierPath query =
-  AbsoluteURIParseOptions userInfo hosts hierPath query (AbsoluteURIPrintOptions userInfo hosts hierPath query ())
+  AbsoluteURIParseOptions userInfo hosts hierPath query
+    (AbsoluteURIPrintOptions userInfo hosts hierPath query ())
 
 type AbsoluteURIParseOptions userInfo hosts hierPath query r =
-  HierarchicalPartParseOptions userInfo hosts hierPath
-    ( parseQuery ∷ Parser query
-    | r
-    )
+  ( parseUserInfo ∷ String → Either ParseError userInfo
+  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
+  , parseHierPath ∷ String → Either ParseError hierPath
+  , parseQuery ∷ String → Either ParseError query
+  | r
+  )
+
+type AbsoluteURIPrintOptions userInfo hosts hierPath query r =
+  ( printUserInfo ∷ userInfo → String
+  , printHosts ∷ hosts String → String
+  , printHierPath ∷ hierPath → String
+  , printQuery ∷ query → String
+  | r
+  )
 
 parser
   ∷ ∀ userInfo hosts hierPath query r
@@ -58,12 +70,6 @@ parser opts = AbsoluteURI
   <*> HPart.parser opts
   <*> optionMaybe (Query.parser opts.parseQuery)
   <* eof
-
-type AbsoluteURIPrintOptions userInfo hosts hierPath query r =
-  HierarchicalPartPrintOptions userInfo hosts hierPath
-    ( printQuery ∷ query → String
-    | r
-    )
 
 print
   ∷ ∀ userInfo hosts hierPath query r
