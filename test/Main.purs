@@ -103,22 +103,6 @@ testParseQueryParses uri query =
     ("parses: \"" <> uri <> "\"")
     (equal (Right query) (runParser (Query.parser NQ.parse) uri))
 
--- testMatch1FromMatches :: forall a. Either String Regex -> Int -> String -> Maybe String -> TestSuite a
--- testMatch1FromMatches rx' n str expected = case rx' of
---   Left error -> test "faulty regex given" (assert error false)
---   Right rx ->
---     test
---       ("matches: " <> show rx <> " at " <> show n <> " in " <> show str)
---       (equal expected $ Common.match1From rx n str)
---
--- testMatch1FromMisses :: forall a. Either String Regex -> Int -> String -> TestSuite a
--- testMatch1FromMisses rx' n str = case rx' of
---   Left error -> test "faulty regex given" (assert error false)
---   Right rx ->
---     test
---     ("does not match: " <> show rx <> " at " <> show n <> " in " <> show str)
---     (equal Nothing $ Common.match1From rx n str)
-
 main :: forall eff. Eff (console :: CONSOLE, testOutput :: TESTOUTPUT, avar :: AVAR, exception :: EXCEPTION, random :: RANDOM | eff) Unit
 main = runTest $ suite "Data.URI" do
 
