@@ -6,6 +6,7 @@ import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Either (Either)
 import Data.Maybe (Maybe(..))
+import Data.Monoid (class Monoid)
 import Data.String as String
 import Data.URI.Common (PCTEncoded, decodePCT, parsePCTEncoded, parsePChar, parseSubDelims, parseUnreserved, wrapParser)
 import Text.Parsing.StringParser (ParseError, Parser)
@@ -54,7 +55,7 @@ parseSegmentNonZero = String.joinWith "" <$> Array.some (parsePChar decoder)
 parseSegmentNonZeroNoColon ∷ Parser String
 parseSegmentNonZeroNoColon =
   String.joinWith "" <$> Array.some
-    (parseUnreserved <|> parsePCTEncoded decoder <|> parseSubDelims <|> string "@")
+    (String.singleton <$> parseUnreserved <|> parsePCTEncoded decoder <|> String.singleton <$> parseSubDelims <|> string "@")
 
 decoder ∷ PCTEncoded → String
 decoder = String.replaceAll (String.Pattern "%23") (String.Replacement "#") <<< decodePCT

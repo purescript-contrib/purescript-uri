@@ -23,41 +23,45 @@ import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
 import Data.String as String
 import Data.Tuple (Tuple)
-import Data.URI.Authority (Authority(..), AuthorityPrintOptions, Host(..), Port(..), AuthorityParseOptions, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
+import Data.URI.Authority (Authority(..), Host(..), Port(..), RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
 import Data.URI.Path as Path
 import Text.Parsing.StringParser (ParseError, Parser)
 
 -- | The "relative part" of a relative reference.
-data RelativePart userInfo hosts relPath = RelativePart (Maybe (Authority userInfo hosts)) (Maybe relPath)
+data RelativePart userInfo hosts host port relPath = RelativePart (Maybe (Authority userInfo hosts host port)) (Maybe relPath)
 
-derive instance eqRelativePart ∷ (Eq userInfo, Eq1 hosts, Eq relPath) ⇒ Eq (RelativePart userInfo hosts relPath)
-derive instance ordRelativePart ∷ (Ord userInfo, Ord1 hosts, Ord relPath) ⇒ Ord (RelativePart userInfo hosts relPath)
-derive instance genericRelativePart ∷ Generic (RelativePart userInfo hosts relPath) _
-instance showRelativePart ∷ (Show userInfo, Show (hosts (Tuple Host (Maybe Port))), Show relPath) ⇒ Show (RelativePart userInfo hosts relPath) where show = genericShow
+derive instance eqRelativePart ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port, Eq relPath) ⇒ Eq (RelativePart userInfo hosts host port relPath)
+derive instance ordRelativePart ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port, Ord relPath) ⇒ Ord (RelativePart userInfo hosts host port relPath)
+derive instance genericRelativePart ∷ Generic (RelativePart userInfo hosts host port relPath) _
+instance showRelativePart ∷ (Show userInfo, Show (hosts (Tuple host (Maybe port))), Show port, Show relPath) ⇒ Show (RelativePart userInfo hosts host port relPath) where show = genericShow
 
-type RelativePartOptions userInfo hosts relPath =
-  RelativePartParseOptions userInfo hosts relPath
-    (RelativePartPrintOptions userInfo hosts relPath ())
+type RelativePartOptions userInfo hosts host port relPath =
+  RelativePartParseOptions userInfo hosts host port relPath
+    (RelativePartPrintOptions userInfo hosts host port relPath ())
 
-type RelativePartParseOptions userInfo hosts relPath r =
-  ( parseUserInfo ∷ String → Either ParseError userInfo
+type RelativePartParseOptions userInfo hosts host port relPath r =
+  ( parseUserInfo ∷ UserInfo → Either ParseError userInfo
   , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
+  , parseHost ∷ Host → Either ParseError host
+  , parsePort ∷ Port → Either ParseError port
   , parseRelPath ∷ String → Either ParseError relPath
   | r
   )
 
-type RelativePartPrintOptions userInfo hosts relPath r =
-  ( printUserInfo ∷ userInfo → String
+type RelativePartPrintOptions userInfo hosts host port relPath r =
+  ( printUserInfo ∷ userInfo → UserInfo
   , printHosts ∷ hosts String → String
+  , printHost ∷ host → Host
+  , printPort ∷ port → Port
   , printRelPath ∷ relPath → String
   | r
   )
 
 parser
-  ∷ ∀ userInfo hosts relPath r
-  . Record (RelativePartParseOptions userInfo hosts relPath r)
-  → Parser (RelativePart userInfo hosts relPath)
+  ∷ ∀ userInfo hosts host port relPath r
+  . Record (RelativePartParseOptions userInfo hosts host port relPath r)
+  → Parser (RelativePart userInfo hosts host port relPath)
 parser opts = withAuth <|> withoutAuth
   where
   withAuth =
@@ -73,23 +77,31 @@ parser opts = withAuth <|> withoutAuth
     <|> pure Nothing
 
 print
-  ∷ ∀ userInfo hosts relPath r
+  ∷ ∀ userInfo hosts host port relPath r
   . Functor hosts
-  ⇒ Record (RelativePartPrintOptions userInfo hosts relPath r)
-  → RelativePart userInfo hosts relPath → String
+  ⇒ Record (RelativePartPrintOptions userInfo hosts host port relPath r)
+  → RelativePart userInfo hosts host port relPath → String
 print opts (RelativePart a p) =
   String.joinWith "" $ Array.catMaybes
     [ Authority.print opts <$> a
     , opts.printRelPath <$> p
     ]
 
-_authority ∷ ∀ userInfo hosts relPath. Lens' (RelativePart userInfo hosts relPath) (Maybe (Authority userInfo hosts))
+_authority
+  ∷ ∀ userInfo hosts host port relPath
+  . Lens'
+      (RelativePart userInfo hosts host port relPath)
+      (Maybe (Authority userInfo hosts host port))
 _authority =
   lens
     (\(RelativePart a _) → a)
     (\(RelativePart _ p) a → RelativePart a p)
 
-_path ∷ ∀ userInfo hosts relPath. Lens' (RelativePart userInfo hosts relPath) (Maybe relPath)
+_path
+  ∷ ∀ userInfo hosts host port relPath
+  . Lens'
+      (RelativePart userInfo hosts host port relPath)
+      (Maybe relPath)
 _path =
   lens
     (\(RelativePart _ p) → p)

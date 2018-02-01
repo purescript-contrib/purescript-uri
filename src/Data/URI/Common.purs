@@ -4,22 +4,23 @@ module Data.URI.Common
   , parseUnreserved
   , PCTEncoded
   , decodePCT
-  , decodePCTComponent
   , parsePCTEncoded
+  , newParsePCTEncoded
   , parseSubDelims
+  , printEncoded
   ) where
 
 import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.Either (Either(..))
+import Data.Either (Either(..), either)
 import Data.String as String
-import Global (decodeURI, decodeURIComponent)
-import Text.Parsing.StringParser (ParseError, Parser(..), unParser)
-import Text.Parsing.StringParser.String (alphaNum, char, oneOf, string)
+import Global (decodeURI, encodeURIComponent)
+import Text.Parsing.StringParser (ParseError, Parser(..), runParser, unParser)
+import Text.Parsing.StringParser.String (alphaNum, anyChar, char, eof, oneOf, string)
 
-wrapParser ∷ ∀ a. (String → Either ParseError a) → Parser String → Parser a
+wrapParser ∷ ∀ a b. (a → Either ParseError b) → Parser a → Parser b
 wrapParser parseA p = Parser \ps → do
   pr ← unParser p ps
   case parseA pr.result of
@@ -28,23 +29,31 @@ wrapParser parseA p = Parser \ps → do
 
 parsePChar ∷ (PCTEncoded → String) → Parser String
 parsePChar f
-  = parseUnreserved
+  = String.singleton <$> parseUnreserved
   <|> parsePCTEncoded f
-  <|> parseSubDelims
+  <|> String.singleton <$> parseSubDelims
   <|> string ":"
   <|> string "@"
 
-parseUnreserved ∷ Parser String
-parseUnreserved =
-  String.singleton <$> (alphaNum <|> char '-' <|> char '.' <|> char '_' <|> char '~')
+parseUnreserved ∷ Parser Char
+parseUnreserved = alphaNum <|> char '-' <|> char '.' <|> char '_' <|> char '~'
+
+newParsePCTEncoded ∷ Parser String
+newParsePCTEncoded = do
+  d0 ← char '%'
+  d1 ← alphaNum
+  d2 ← alphaNum
+  pure $ String.fromCharArray [d0, d1, d2]
+
+parseSubDelims ∷ Parser Char
+parseSubDelims =
+  -- TODO: resolve the `,` situation
+  oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', {- ',', -} ';', '=']
 
 newtype PCTEncoded = PCTEncoded String
 
 decodePCT ∷ PCTEncoded → String
 decodePCT (PCTEncoded s) = decodeURI s
-
-decodePCTComponent ∷ PCTEncoded → String
-decodePCTComponent (PCTEncoded s) = decodeURIComponent s
 
 parsePCTEncoded ∷ (PCTEncoded → String) → Parser String
 parsePCTEncoded f = f <<< PCTEncoded <$> parseHex
@@ -55,7 +64,12 @@ parsePCTEncoded f = f <<< PCTEncoded <$> parseHex
     d2 ← alphaNum
     pure $ String.fromCharArray [d0, d1, d2]
 
-parseSubDelims ∷ Parser String
-parseSubDelims =
-  -- TODO: resolve the `,` situation
-  String.singleton <$> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', {- ',', -} ';', '=']
+printEncoded ∷ Parser Char → String → String
+printEncoded p s = either (const s) id (runParser parse s)
+  where
+  parse ∷ Parser String
+  parse = (String.joinWith "" <$> Array.many (simpleChar <|> encodedChar)) <* eof
+  simpleChar ∷ Parser String
+  simpleChar = String.singleton <$> p
+  encodedChar ∷ Parser String
+  encodedChar = encodeURIComponent <<< String.singleton <$> anyChar

@@ -1,19 +1,16 @@
 module Data.URI.Host
   ( Host(..)
   , parser
-  , ipv6AddressParser
-  , ipv4AddressParser
-  , regNameParser
   , print
   , _IPv6Address
   , _IPv4Address
   , _NameAddress
+  , module Data.URI.Host.RegName
   ) where
 
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -21,8 +18,9 @@ import Data.Int as Int
 import Data.Lens (Prism', prism')
 import Data.Maybe (Maybe(..))
 import Data.String as String
-import Data.URI.Common (decodePCT, parsePCTEncoded, parseSubDelims, parseUnreserved, wrapParser)
-import Global (encodeURI)
+import Data.URI.Common (wrapParser)
+import Data.URI.Host.RegName (RegName)
+import Data.URI.Host.RegName as RegName
 import Text.Parsing.StringParser (ParseError(..), Parser, try)
 import Text.Parsing.StringParser.Combinators ((<?>))
 import Text.Parsing.StringParser.String (anyDigit, char, regex, satisfy, string)
@@ -31,15 +29,18 @@ import Text.Parsing.StringParser.String (anyDigit, char, regex, satisfy, string)
 data Host
   = IPv6Address String
   | IPv4Address String
-  | NameAddress String
+  | NameAddress RegName
 
 derive instance eqHost ∷ Eq Host
 derive instance ordHost ∷ Ord Host
 derive instance genericHost ∷ Generic Host _
 instance showHost ∷ Show Host where show = genericShow
 
-parser ∷ Parser Host
-parser = ipv6AddressParser <|> try ipv4AddressParser <|> regNameParser
+parser ∷ ∀ h. (Host → Either ParseError h) → Parser h
+parser p = wrapParser p
+  $ ipv6AddressParser
+  <|> try ipv4AddressParser
+  <|> (NameAddress <$> RegName.parser)
 
 -- TODO: this is much too forgiving right now
 ipv6AddressParser ∷ Parser Host
@@ -70,27 +71,23 @@ ipv4AddressParser = IPv4Address <$> addr <?> "IPv4 address"
     Just n | n >= 0 && n <= 255 → Right n
     _ → Left (ParseError "Invalid IPv4 address octet")
 
-regNameParser ∷ Parser Host
-regNameParser = NameAddress <<< String.joinWith "" <$> Array.some p
-  where
-  p = parseUnreserved <|> parsePCTEncoded decodePCT <|> parseSubDelims
-
-print ∷ Host → String
-print (IPv6Address i) = "[" <> i <> "]"
-print (IPv4Address i) = i
-print (NameAddress i) = encodeURI i
+print ∷ ∀ h. (h → Host) → h → String
+print f = f >>> case _ of
+  IPv6Address addr → "[" <> addr <> "]"
+  IPv4Address addr → addr
+  NameAddress addr → RegName.unsafeToString addr
 
 _IPv6Address ∷ Prism' Host String
 _IPv6Address = prism' IPv6Address case _ of
-  IPv6Address s → Just s
+  IPv6Address addr → Just addr
   _ → Nothing
 
 _IPv4Address ∷ Prism' Host String
 _IPv4Address = prism' IPv4Address case _ of
-  IPv4Address s → Just s
+  IPv4Address addr → Just addr
   _ → Nothing
 
-_NameAddress ∷ Prism' Host String
+_NameAddress ∷ Prism' Host RegName
 _NameAddress = prism' NameAddress case _ of
-  NameAddress s → Just s
+  NameAddress addr → Just addr
   _ → Nothing

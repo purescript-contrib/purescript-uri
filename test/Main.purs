@@ -16,16 +16,15 @@ import Data.Monoid (mempty)
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
 import Data.String as String
 import Data.Tuple (Tuple(..))
-import Data.URI (AbsoluteURI(..), Authority(..), HierarchicalPart(..), Host(..), Port(..), RelativePart(..), RelativeRef(..), Scheme(..), URI(..))
+import Data.URI (AbsoluteURI(..), Authority(..), HierarchicalPart(..), Host(..), Fragment, Port(..), RelativePart(..), RelativeRef(..), Scheme(..), URI(..), UserInfo)
 import Data.URI.AbsoluteURI as AbsoluteURI
 import Data.URI.Authority as Authority
 import Data.URI.Fragment as Fragment
 import Data.URI.Host as Host
+import Data.URI.Host.RegName as RegName
 import Data.URI.Host.Gen as Host.Gen
-import Data.URI.NonStandard.Fragment as NF
 import Data.URI.NonStandard.Path as NP
 import Data.URI.NonStandard.Query as NQ
-import Data.URI.NonStandard.UserInfo as NU
 import Data.URI.Port as Port
 import Data.URI.Query as Query
 import Data.URI.Scheme as Scheme
@@ -43,20 +42,24 @@ import Text.Parsing.StringParser (Parser, runParser)
 import Text.Parsing.StringParser.Combinators (sepBy) as SP
 import Text.Parsing.StringParser.String (string) as SP
 
-options ∷ Record (URIRef.URIRefOptions NU.UserInfo Array NP.URIPathAbs NP.URIPathRel NQ.Query NF.Fragment)
+options ∷ Record (URIRef.URIRefOptions UserInfo Array Host Port NP.URIPathAbs NP.URIPathRel NQ.Query Fragment)
 options =
-  { parseUserInfo: NU.parse
-  , printUserInfo: NU.print
+  { parseUserInfo: pure
+  , printUserInfo: id
   , parseHosts: map Array.fromFoldable <<< flip SP.sepBy (SP.string ",")
   , printHosts: String.joinWith ","
+  , parseHost: pure
+  , printHost: id
+  , parsePort: pure
+  , printPort: id
   , parseHierPath: NP.parseURIPathAbs
   , printHierPath: NP.printPath
   , parseRelPath: NP.parseURIPathRel
   , printRelPath: NP.printPath
   , parseQuery: NQ.parse
   , printQuery: NQ.print
-  , parseFragment: NF.parse
-  , printFragment: NF.print
+  , parseFragment: pure
+  , printFragment: id
   }
 
 testPrinter :: forall a b. Show b => (b -> String) -> String -> b -> TestSuite a
@@ -76,10 +79,10 @@ testIso p f uri expected = do
   testRunParseSuccess p uri expected
   testPrinter f uri expected
 
-testIsoURI :: forall a. String -> URI.URI NU.UserInfo Array NP.URIPathAbs NQ.Query NF.Fragment -> TestSuite a
+testIsoURI :: forall a. String -> URI.URI UserInfo Array Host Port NP.URIPathAbs NQ.Query Fragment -> TestSuite a
 testIsoURI = testIso (URI.parser options) (URI.print options)
 
-testIsoURIRef :: forall a. String -> URIRef.URIRef NU.UserInfo Array NP.URIPathAbs NP.URIPathRel NQ.Query NF.Fragment -> TestSuite a
+testIsoURIRef :: forall a. String -> URIRef.URIRef UserInfo Array Host Port NP.URIPathAbs NP.URIPathRel NQ.Query Fragment -> TestSuite a
 testIsoURIRef = testIso (URIRef.parser options) (URIRef.print options)
 
 -- testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
@@ -111,48 +114,53 @@ main = runTest $ suite "Data.URI" do
     test "parseIPv4Address / Host.print roundtrip" do
       forAll do
         ipv4 <- Host.Gen.genIPv4
-        let printed = Host.print ipv4
-        let parsed = runParser Host.ipv4AddressParser printed
+        let printed = Host.print id ipv4
+        let parsed = runParser (Host.parser pure) printed
         pure $ pure ipv4 === parsed
 
-    test "0-lead octets should not parse" do
-      assert ("parse should fail for 192.168.001.1") $
-        isLeft $ runParser Host.ipv4AddressParser "192.168.001.1"
+    test "0-lead octets should not parse as an IP address" do
+      equal
+        (Right (NameAddress (RegName.unsafeFromString "192.168.001.1")))
+        (runParser (Host.parser pure) "192.168.001.1")
 
   suite "Scheme parser" do
     testRunParseSuccess Scheme.parser "http:" (Scheme "http")
     testRunParseSuccess Scheme.parser "git+ssh:" (Scheme "git+ssh")
 
   suite "UserInfo parser" do
-    testRunParseSuccess (UserInfo.parser NU.parse) "user" (NU.UserInfo "user")
-    testRunParseSuccess (UserInfo.parser NU.parse) "spaced%20user" (NU.UserInfo "spaced user")
-    testRunParseSuccess (UserInfo.parser NU.parse) "user:password" (NU.UserInfo "user:password")
-    testRunParseSuccess (UserInfo.parser NU.parse) "spaced%20user:password%25%C2%A3" (NU.UserInfo "spaced user:password%£")
+    testRunParseSuccess (UserInfo.parser pure) "user" (UserInfo.fromString "user")
+    testRunParseSuccess (UserInfo.parser pure) "spaced%20user" (UserInfo.fromString "spaced user")
+    testRunParseSuccess (UserInfo.parser pure) "user:password" (UserInfo.fromString "user:password")
+    testRunParseSuccess (UserInfo.parser pure) "spaced%20user:password%25%C2%A3" (UserInfo.fromString "spaced user:password%£")
+    testRunParseSuccess (UserInfo.parser pure) "a:b:c" (UserInfo.fromString "a:b:c")
 
   suite "Host parser" do
-    testRunParseSuccess Host.parser "localhost" (NameAddress "localhost")
-    testRunParseSuccess Host.parser "github.com" (NameAddress "github.com")
-    testRunParseSuccess Host.parser "www.multipart.domain.example.com" (NameAddress "www.multipart.domain.example.com")
-    testRunParseSuccess Host.parser "192.168.0.1" (IPv4Address "192.168.0.1")
-    testRunParseSuccess Host.parser "[2001:cdba:0000:0000:0000:0000:3257:9652]" (IPv6Address "2001:cdba:0000:0000:0000:0000:3257:9652")
+    testRunParseSuccess (Host.parser pure) "localhost" (NameAddress (RegName.fromString "localhost"))
+    testRunParseSuccess (Host.parser pure) "github.com" (NameAddress (RegName.fromString "github.com"))
+    testRunParseSuccess (Host.parser pure) "www.multipart.domain.example.com" (NameAddress (RegName.fromString "www.multipart.domain.example.com"))
+    testRunParseSuccess (Host.parser pure) "192.168.0.1" (IPv4Address "192.168.0.1")
+    testRunParseSuccess (Host.parser pure) "[2001:cdba:0000:0000:0000:0000:3257:9652]" (IPv6Address "2001:cdba:0000:0000:0000:0000:3257:9652")
 
   suite "Port parser" do
-    testRunParseSuccess Port.parser "0" (Port 0)
-    testRunParseSuccess Port.parser "1234" (Port 1234)
-    testRunParseSuccess Port.parser "63174" (Port 63174)
+    testRunParseSuccess (Port.parser pure) "0" (Port 0)
+    testRunParseSuccess (Port.parser pure) "1234" (Port 1234)
+    testRunParseSuccess (Port.parser pure) "63174" (Port 63174)
 
-  suite "Fragment' parser" do
-    testRunParseSuccess (Fragment.parser Right) "#" ""
+  suite "Fragment parser" do
+    testRunParseSuccess (Fragment.parser pure) "#" (Fragment.fromString "")
+    testRunParseSuccess (Fragment.parser pure) "#foo" (Fragment.fromString "foo")
+    testRunParseSuccess (Fragment.parser pure) "#foo%23bar" (Fragment.fromString "foo#bar")
+    testRunParseSuccess (Fragment.parser pure) "#foo%23bar" (Fragment.unsafeFromString "foo%23bar")
 
   suite "Authority parser" do
     testRunParseSuccess
       (Authority.parser options)
       "//localhost"
-      (Authority Nothing [Tuple (NameAddress "localhost") Nothing])
+      (Authority Nothing [Tuple (NameAddress (RegName.fromString "localhost")) Nothing])
     testRunParseSuccess
       (Authority.parser options)
       "//localhost:3000"
-      (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 3000))])
+      (Authority Nothing [Tuple (NameAddress (RegName.fromString "localhost")) (Just (Port 3000))])
 
   suite "URIRef.parse" do
     testIsoURIRef
@@ -171,7 +179,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "mongodb")
           (HierarchicalPart
-            (Just (Authority Nothing [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "localhost")) Nothing)]))
             Nothing)
           Nothing
           Nothing))
@@ -181,7 +189,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "https")
           (HierarchicalPart
-            (Just (Authority Nothing [(Tuple (NameAddress "1a.example.com") Nothing)]))
+            (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "1a.example.com")) Nothing)]))
             Nothing)
           Nothing
           Nothing))
@@ -191,7 +199,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "http")
           (HierarchicalPart
-            (Just (Authority Nothing [Tuple (NameAddress "en.wikipedia.org") Nothing]))
+            (Just (Authority Nothing [Tuple (NameAddress (RegName.fromString "en.wikipedia.org")) Nothing]))
             ((Just (Right ((rootDir </> dir "wiki") </> file "URI_scheme")))))
           Nothing
           Nothing))
@@ -203,9 +211,9 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just
               (Authority
-                (Just (NU.UserInfo "foo:bar"))
-                [ Tuple (NameAddress "db1.example.net") Nothing
-                , Tuple (NameAddress "db2.example.net") (Just (Port 2500))]))
+                (Just (UserInfo.unsafeFromString "foo:bar"))
+                [ Tuple (NameAddress (RegName.fromString "db1.example.net")) Nothing
+                , Tuple (NameAddress (RegName.fromString "db2.example.net")) (Just (Port 2500))]))
             (Just (Right (rootDir </> file "authdb"))))
           (Just
             (NQ.Query
@@ -217,7 +225,11 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "mongodb")
           (HierarchicalPart
-            (Just (Authority (Just (NU.UserInfo "foo:bar")) [(Tuple (NameAddress "db1.example.net") (Just (Port 6))),(Tuple (NameAddress "db2.example.net") (Just (Port 2500)))]))
+            (Just
+              (Authority
+                (Just (UserInfo.unsafeFromString "foo:bar"))
+                [ (Tuple (NameAddress (RegName.fromString "db1.example.net")) (Just (Port 6)))
+                , (Tuple (NameAddress (RegName.fromString "db2.example.net")) (Just (Port 2500)))]))
             (Just (Right (rootDir </> file "authdb"))))
           (Just (NQ.Query (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
           Nothing))
@@ -250,7 +262,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "mongodb")
           (HierarchicalPart
-            (Just(Authority (Just (NU.UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Authority (Just (UserInfo.unsafeFromString "sysop:moon")) [(Tuple (NameAddress (RegName.fromString "localhost")) Nothing)]))
             Nothing)
           Nothing
           Nothing))
@@ -260,7 +272,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "mongodb")
           (HierarchicalPart
-            (Just (Authority (Just (NU.UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Authority (Just (UserInfo.unsafeFromString "sysop:moon")) [(Tuple (NameAddress (RegName.fromString "localhost")) Nothing)]))
             (Just (Left rootDir)))
           Nothing
           Nothing))
@@ -270,7 +282,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "mongodb")
           (HierarchicalPart
-            (Just (Authority (Just (NU.UserInfo "sysop:moon")) [(Tuple (NameAddress "localhost") Nothing)]))
+            (Just (Authority (Just (UserInfo.unsafeFromString "sysop:moon")) [(Tuple (NameAddress (RegName.fromString "localhost")) Nothing)]))
             (Just (Right (rootDir </> file "records"))))
           Nothing
           Nothing))
@@ -310,7 +322,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "ftp")
           (HierarchicalPart
-            (Just (Authority Nothing [(Tuple (NameAddress "ftp.is.co.za") Nothing)]))
+            (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "ftp.is.co.za")) Nothing)]))
             (Just (Right ((rootDir </> dir "rfc") </> file "rfc1808.txt"))))
           Nothing
           Nothing))
@@ -319,7 +331,9 @@ main = runTest $ suite "Data.URI" do
       (Left
         (URI
           (Scheme "http")
-          (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "www.ietf.org") Nothing)])) (Just (Right ((rootDir </> dir "rfc") </> file "rfc2396.txt"))))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "www.ietf.org")) Nothing)]))
+            (Just (Right ((rootDir </> dir "rfc") </> file "rfc2396.txt"))))
           Nothing
           Nothing))
     testIsoURIRef
@@ -347,24 +361,26 @@ main = runTest $ suite "Data.URI" do
       (Left
         (URI
           (Scheme "foo")
-          (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "example.com")) (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
           (Just (NQ.Query (singleton (Tuple "name" (Just "ferret")))))
-          (Just (NF.Fragment "nose"))))
+          (Just (Fragment.unsafeFromString "nose"))))
     testIsoURIRef
       "foo://example.com:8042/over/there?name=ferret#"
       (Left
         (URI
           (Scheme "foo")
-          (HierarchicalPart (Just (Authority Nothing [(Tuple (NameAddress "example.com") (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
+          (HierarchicalPart
+            (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "example.com")) (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
           (Just (NQ.Query (singleton (Tuple "name" (Just "ferret")))))
-          (Just (NF.Fragment ""))))
+          (Just (Fragment.unsafeFromString ""))))
     testIsoURIRef
       "foo://info.example.com?fred"
       (Left
         (URI
           (Scheme "foo")
           (HierarchicalPart
-            (Just (Authority Nothing [(Tuple (NameAddress "info.example.com") Nothing)]))
+            (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "info.example.com")) Nothing)]))
             Nothing)
           (Just (NQ.Query (singleton $ Tuple "fred" Nothing)))
           Nothing))
@@ -376,7 +392,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just
               (Authority
-                (Just (NU.UserInfo "cnn.example.com&story=breaking_news"))
+                (Just (UserInfo.unsafeFromString "cnn.example.com&story=breaking_news"))
                 [(Tuple (IPv4Address "10.0.0.1") Nothing)]))
             (Just (Right (rootDir </> file "top_story.htm"))))
           Nothing
@@ -409,7 +425,7 @@ main = runTest $ suite "Data.URI" do
           (Just
             (Authority
               Nothing
-              [(Tuple (NameAddress "localhost") Nothing)]))
+              [(Tuple (NameAddress (RegName.fromString "localhost")) Nothing)]))
           (Just (Right (rootDir </> file "testBucket"))))
         (Just (NQ.Query (Tuple "password" (Just "") : Tuple "docTypeKey" (Just "") : Nil))))
     testIso
@@ -422,7 +438,7 @@ main = runTest $ suite "Data.URI" do
           (Just
             (Authority
               Nothing
-              [(Tuple (NameAddress "localhost") (Just (Port 99999)))]))
+              [(Tuple (NameAddress (RegName.fromString "localhost")) (Just (Port 99999)))]))
           (Just (Right (rootDir </> file "testBucket"))))
         (Just (NQ.Query (Tuple "password" (Just "pass") : Tuple "docTypeKey" (Just "type") : Tuple "queryTimeoutSeconds" (Just "20") : Nil))))
     testIsoURIRef
@@ -431,7 +447,7 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "http")
           (HierarchicalPart
-            (Just (Authority Nothing [Tuple (NameAddress "www.example.com") Nothing]))
+            (Just (Authority Nothing [Tuple (NameAddress (RegName.fromString "www.example.com")) Nothing]))
             ((Just (Right ((rootDir </> dir "some invented") </> file "url with spaces.html")))))
           Nothing
           Nothing))
@@ -441,20 +457,20 @@ main = runTest $ suite "Data.URI" do
         (URI
           (Scheme "http")
           (HierarchicalPart
-            (Just (Authority Nothing [Tuple (NameAddress "localhost") (Just (Port 53174))]))
+            (Just (Authority Nothing [Tuple (NameAddress (RegName.fromString "localhost")) (Just (Port 53174))]))
             ((Just (Right (rootDir </> dir "metadata" </> dir "fs" </> dir "test" </> file "Пациенты# #")))))
           (Just mempty)
           Nothing))
 
-    -- testIsoURIRef
-    --   "../top_story.htm"
-    --   (Right
-    --     (RelativeRef
-    --       (RelativePart
-    --         Nothing
-    --         (Just (Right (parentDir' currentDir </> file "top_story.htm"))))
-    --       Nothing
-    --       Nothing))
+    testIsoURIRef
+      "../top_story.htm"
+      (Right
+        (RelativeRef
+          (RelativePart
+            Nothing
+            (Just (Right (parentDir' currentDir </> file "top_story.htm"))))
+          Nothing
+          Nothing))
 
     -- Not an iso in this case as the printed path is normalised
     -- testRunParseURIRefParses
@@ -463,10 +479,10 @@ main = runTest $ suite "Data.URI" do
     --     (URI
     --       (Scheme "http")
     --       (HierarchicalPart
-    --         (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
+    --         (Just (Authority Nothing [Tuple (NameAddress (RegName.fromString "local.)slamdata.com") Nothing]))
     --         ((Just (Left rootDir))))
     --       ((Just mempty))
-    --       ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
+    --       ((Just (Fragment.unsafeFromString "?sort=asc&q=path:/&salt=1177214")))))
     -- testPrinter
     --   URIRef.print
     --   "http://local.slamdata.com/?#?sort=asc&q=path:/&salt=1177214"
@@ -474,10 +490,10 @@ main = runTest $ suite "Data.URI" do
     --     (URI
     --       (Scheme "http")
     --       (HierarchicalPart
-    --         (Just (Authority Nothing [Tuple (NameAddress "local.slamdata.com") Nothing]))
+    --         (Just (Authority Nothing [Tuple (NameAddress (RegName.fromString "local.)slamdata.com") Nothing]))
     --         ((Just (Left rootDir))))
     --       ((Just mempty))
-    --       ((Just (Fragment "?sort=asc&q=path:/&salt=1177214")))))
+    --       ((Just (Fragment.unsafeFromString "?sort=asc&q=path:/&salt=1177214")))))
 
     -- testIsoURIRef
     --   "news:comp.infosystems.www.servers.unix"
