@@ -16,7 +16,7 @@ import Data.Monoid (mempty)
 import Data.Path.Pathy (currentDir, parentDir', file, dir, rootDir, (</>))
 import Data.String as String
 import Data.Tuple (Tuple(..))
-import Data.URI (AbsoluteURI(..), Authority(..), HierarchicalPart(..), Host(..), Fragment, Port(..), RelativePart(..), RelativeRef(..), Scheme(..), URI(..), UserInfo)
+import Data.URI (AbsoluteURI(..), Authority(..), HierarchicalPart(..), Host(..), Fragment, Port(..), RelativePart(..), RelativeRef(..), Query, Scheme(..), URI(..), UserInfo)
 import Data.URI.AbsoluteURI as AbsoluteURI
 import Data.URI.Authority as Authority
 import Data.URI.Fragment as Fragment
@@ -24,7 +24,7 @@ import Data.URI.Host as Host
 import Data.URI.Host.RegName as RegName
 import Data.URI.Host.Gen as Host.Gen
 import Data.URI.NonStandard.Path as NP
-import Data.URI.NonStandard.Query as NQ
+import Data.URI.NonStandard.QueryPairs as NQP
 import Data.URI.Port as Port
 import Data.URI.Query as Query
 import Data.URI.Scheme as Scheme
@@ -42,7 +42,7 @@ import Text.Parsing.StringParser (Parser, runParser)
 import Text.Parsing.StringParser.Combinators (sepBy) as SP
 import Text.Parsing.StringParser.String (string) as SP
 
-options ∷ Record (URIRef.URIRefOptions UserInfo Array Host Port NP.URIPathAbs NP.URIPathRel NQ.Query Fragment)
+options ∷ Record (URIRef.URIRefOptions UserInfo Array Host Port NP.URIPathAbs NP.URIPathRel Query Fragment)
 options =
   { parseUserInfo: pure
   , printUserInfo: id
@@ -56,8 +56,8 @@ options =
   , printHierPath: NP.printPath
   , parseRelPath: NP.parseURIPathRel
   , printRelPath: NP.printPath
-  , parseQuery: NQ.parse
-  , printQuery: NQ.print
+  , parseQuery: pure
+  , printQuery: id
   , parseFragment: pure
   , printFragment: id
   }
@@ -79,10 +79,10 @@ testIso p f uri expected = do
   testRunParseSuccess p uri expected
   testPrinter f uri expected
 
-testIsoURI :: forall a. String -> URI.URI UserInfo Array Host Port NP.URIPathAbs NQ.Query Fragment -> TestSuite a
+testIsoURI :: forall a. String -> URI.URI UserInfo Array Host Port NP.URIPathAbs Query Fragment -> TestSuite a
 testIsoURI = testIso (URI.parser options) (URI.print options)
 
-testIsoURIRef :: forall a. String -> URIRef.URIRef UserInfo Array Host Port NP.URIPathAbs NP.URIPathRel NQ.Query Fragment -> TestSuite a
+testIsoURIRef :: forall a. String -> URIRef.URIRef UserInfo Array Host Port NP.URIPathAbs NP.URIPathRel Query Fragment -> TestSuite a
 testIsoURIRef = testIso (URIRef.parser options) (URIRef.print options)
 
 -- testRunParseURIRefParses :: forall a. String -> Either URI RelativeRef -> TestSuite a
@@ -93,18 +93,6 @@ testRunParseURIRefFails uri =
   test
     ("fails to parse: " <> uri)
     (assert ("parse should fail for: " <> uri) <<< isLeft <<< runParser (URIRef.parser options) $ uri)
-
-testPrintQuerySerializes :: forall a. NQ.Query -> String -> TestSuite a
-testPrintQuerySerializes query expected =
-  test
-    ("serializes: " <> show query)
-    (equal expected (Query.print NQ.print query))
-
-testParseQueryParses :: forall a. String -> NQ.Query -> TestSuite a
-testParseQueryParses uri query =
-  test
-    ("parses: \"" <> uri <> "\"")
-    (equal (Right query) (runParser (Query.parser NQ.parse) uri))
 
 main :: forall eff. Eff (console :: CONSOLE, testOutput :: TESTOUTPUT, avar :: AVAR, exception :: EXCEPTION, random :: RANDOM | eff) Unit
 main = runTest $ suite "Data.URI" do
@@ -171,7 +159,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority Nothing []))
             (Just (Left rootDir)))
-          (Just (NQ.Query (Tuple "q" (Just "foo") : Tuple "var.bar" (Just "baz") : Nil)))
+          (Just (Query.unsafeFromString "q=foo&var.bar=baz"))
           Nothing))
     testIsoURIRef
       "mongodb://localhost"
@@ -215,9 +203,7 @@ main = runTest $ suite "Data.URI" do
                 [ Tuple (NameAddress (RegName.fromString "db1.example.net")) Nothing
                 , Tuple (NameAddress (RegName.fromString "db2.example.net")) (Just (Port 2500))]))
             (Just (Right (rootDir </> file "authdb"))))
-          (Just
-            (NQ.Query
-              (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
+          (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
           Nothing))
     testIsoURIRef
       "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
@@ -231,7 +217,7 @@ main = runTest $ suite "Data.URI" do
                 [ (Tuple (NameAddress (RegName.fromString "db1.example.net")) (Just (Port 6)))
                 , (Tuple (NameAddress (RegName.fromString "db2.example.net")) (Just (Port 2500)))]))
             (Just (Right (rootDir </> file "authdb"))))
-          (Just (NQ.Query (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil)))
+          (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
           Nothing))
     testIsoURIRef
       "mongodb://192.168.0.1"
@@ -344,7 +330,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (IPv6Address "2001:db8::7") Nothing)]))
             (Just (Right (rootDir </> file "c=GB"))))
-          (Just (NQ.Query (singleton $ (Tuple "objectClass?one" Nothing))))
+          (Just (Query.unsafeFromString "objectClass?one"))
           Nothing))
     testIsoURIRef
       "telnet://192.0.2.16:80/"
@@ -363,7 +349,7 @@ main = runTest $ suite "Data.URI" do
           (Scheme "foo")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "example.com")) (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
-          (Just (NQ.Query (singleton (Tuple "name" (Just "ferret")))))
+          (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString "nose"))))
     testIsoURIRef
       "foo://example.com:8042/over/there?name=ferret#"
@@ -372,7 +358,7 @@ main = runTest $ suite "Data.URI" do
           (Scheme "foo")
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "example.com")) (Just (Port 8042)))])) (Just (Right ((rootDir </> dir "over") </> file "there"))))
-          (Just (NQ.Query (singleton (Tuple "name" (Just "ferret")))))
+          (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString ""))))
     testIsoURIRef
       "foo://info.example.com?fred"
@@ -382,7 +368,7 @@ main = runTest $ suite "Data.URI" do
           (HierarchicalPart
             (Just (Authority Nothing [(Tuple (NameAddress (RegName.fromString "info.example.com")) Nothing)]))
             Nothing)
-          (Just (NQ.Query (singleton $ Tuple "fred" Nothing)))
+          (Just (Query.unsafeFromString "fred"))
           Nothing))
     testIsoURIRef
       "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
@@ -427,7 +413,7 @@ main = runTest $ suite "Data.URI" do
               Nothing
               [(Tuple (NameAddress (RegName.fromString "localhost")) Nothing)]))
           (Just (Right (rootDir </> file "testBucket"))))
-        (Just (NQ.Query (Tuple "password" (Just "") : Tuple "docTypeKey" (Just "") : Nil))))
+        (Just (Query.unsafeFromString "password=&docTypeKey=")))
     testIso
       (AbsoluteURI.parser options)
       (AbsoluteURI.print options)
@@ -440,7 +426,7 @@ main = runTest $ suite "Data.URI" do
               Nothing
               [(Tuple (NameAddress (RegName.fromString "localhost")) (Just (Port 99999)))]))
           (Just (Right (rootDir </> file "testBucket"))))
-        (Just (NQ.Query (Tuple "password" (Just "pass") : Tuple "docTypeKey" (Just "type") : Tuple "queryTimeoutSeconds" (Just "20") : Nil))))
+        (Just (Query.unsafeFromString "password=pass&docTypeKey=type&queryTimeoutSeconds=20")))
     testIsoURIRef
       "http://www.example.com/some%20invented/url%20with%20spaces.html"
       (Left
@@ -546,37 +532,41 @@ main = runTest $ suite "Data.URI" do
     --       Nothing
     --       Nothing))
 
-  suite "Query.print" do
-    testPrintQuerySerializes
-      (NQ.Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
+  suite "QueryPairs printer/parser" do
+    let testQueryIso = testIso (Query.parser NQP.parse) (Query.print NQP.print)
+    testQueryIso
       "?key1=value1&key2=value2&key1=value3"
-    testPrintQuerySerializes
-      (NQ.Query (Tuple "k=ey" (Just "value=1") : Nil))
+      (NQP.QueryPairs (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
+    testQueryIso
       "?k%3Dey=value%3D1"
-    testPrintQuerySerializes (NQ.Query Nil) "?"
-    testPrintQuerySerializes
-      (NQ.Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
+      (NQP.QueryPairs (Tuple "k=ey" (Just "value=1") : Nil))
+    testQueryIso
+      "?"
+      (NQP.QueryPairs Nil)
+    testQueryIso
       "?key1=&key2="
-    testPrintQuerySerializes
-      (NQ.Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
+      (NQP.QueryPairs (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
+    testQueryIso
       "?key1&key2"
-    testPrintQuerySerializes
-      (NQ.Query (Tuple "key1" (Just "foo;bar") : Nil))
+      (NQP.QueryPairs (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
+    testQueryIso
       "?key1=foo%3Bbar"
-
-  suite "Query.parser" do
-    testParseQueryParses
-      "?key1=value1&key2=value2&key1=value3"
-      (NQ.Query (Tuple "key1" (Just "value1") : Tuple "key2" (Just "value2") : Tuple "key1" (Just "value3") : Nil))
-    testParseQueryParses
-      "?key1&key2"
-      (NQ.Query (Tuple "key1" Nothing : Tuple "key2" Nothing : Nil))
-    testParseQueryParses
-      "?key1=&key2="
-      (NQ.Query (Tuple "key1" (Just "") : Tuple "key2" (Just "") : Nil))
-    testParseQueryParses
-      "?key1=foo%3Bbar"
-      (NQ.Query (Tuple "key1" (Just "foo;bar") : Nil))
+      (NQP.QueryPairs (Tuple "key1" (Just "foo;bar") : Nil))
+    testQueryIso
+      "?replicaSet=test&connectTimeoutMS=300000"
+      (NQP.QueryPairs (Tuple "replicaSet" (Just "test") : Tuple "connectTimeoutMS" (Just "300000") : Nil))
+    testQueryIso
+      "?fred"
+      (NQP.QueryPairs (pure (Tuple "fred" Nothing)))
+    testQueryIso
+      "?objectClass?one"
+      (NQP.QueryPairs (pure (Tuple "objectClass?one" Nothing)))
+    testQueryIso
+      "?password=&docTypeKey="
+      (NQP.QueryPairs (Tuple "password" (Just "") : Tuple "docTypeKey" (Just "") : Nil))
+    testQueryIso
+      "?password=pass&docTypeKey=type&queryTimeoutSeconds=20"
+      (NQP.QueryPairs (Tuple "password" (Just "pass") : Tuple "docTypeKey" (Just "type") : Tuple "queryTimeoutSeconds" (Just "20") : Nil))
 
 forAll :: forall eff prop. QC.Testable prop => QCG.Gen prop -> Test (console :: CONSOLE, random :: RANDOM, exception :: EXCEPTION | eff)
 forAll = quickCheck

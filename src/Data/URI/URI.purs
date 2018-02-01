@@ -10,6 +10,7 @@ module Data.URI.URI
   , _query
   , _fragment
   , module Data.URI.HierarchicalPart
+  , module Data.URI.Query
   , module Data.URI.Scheme
   ) where
 
@@ -29,6 +30,7 @@ import Data.URI.Fragment (Fragment)
 import Data.URI.Fragment as Fragment
 import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), Host(..), Port(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
+import Data.URI.Query (Query)
 import Data.URI.Query as Query
 import Data.URI.Scheme (Scheme(..))
 import Data.URI.Scheme as Scheme
@@ -54,7 +56,7 @@ type URIParseOptions userInfo hosts host port hierPath query fragment r =
   , parseHost ∷ Host → Either ParseError host
   , parsePort ∷ Port → Either ParseError port
   , parseHierPath ∷ String → Either ParseError hierPath
-  , parseQuery ∷ String → Either ParseError query
+  , parseQuery ∷ Query → Either ParseError query
   , parseFragment ∷ Fragment → Either ParseError fragment
   | r
   )
@@ -65,7 +67,7 @@ type URIPrintOptions userInfo hosts host port hierPath query fragment r =
   , printHost ∷ host → Host
   , printPort ∷ port → Port
   , printHierPath ∷ hierPath → String
-  , printQuery ∷ query → String
+  , printQuery ∷ query → Query
   , printFragment ∷ fragment → Fragment
   | r
   )

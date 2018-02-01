@@ -1,21 +1,62 @@
-module Data.URI.Query where
+module Data.URI.Query
+  ( Query
+  , fromString
+  , toString
+  , unsafeFromString
+  , unsafeToString
+  , parser
+  , print
+  ) where
 
 import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Either (Either)
+import Data.Monoid (class Monoid)
 import Data.String as String
-import Data.URI.Common (decodePCT, parsePChar, wrapParser)
+import Data.URI.Common (newParsePCTEncoded, parseSubDelims, parseUnreserved, printEncoded, wrapParser)
+import Global (decodeURIComponent)
 import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.String (string)
+import Text.Parsing.StringParser.String (char, string)
 
-parser ∷ ∀ q. (String → Either ParseError q) → Parser q
-parser parseQ = string "?" *> (wrapParser parseQ query)
+newtype Query = Query String
+
+derive newtype instance eqQuery ∷ Eq Query
+derive newtype instance ordQuery ∷ Ord Query
+derive newtype instance semigroupQuery ∷ Semigroup Query
+derive newtype instance monoidQuery ∷ Monoid Query
+
+instance showQuery ∷ Show Query where
+  show (Query s) = "(Query.unsafeFromString " <> show s <> ")"
+
+fromString ∷ String → Query
+fromString = Query <<< printEncoded queryChar
+
+toString ∷ Query → String
+toString (Query s) = decodeURIComponent s
+
+unsafeFromString ∷ String → Query
+unsafeFromString = Query
+
+unsafeToString ∷ Query → String
+unsafeToString (Query s) = s
+
+parser ∷ ∀ q. (Query → Either ParseError q) → Parser q
+parser parseQ =
+  string "?" *>
+    wrapParser parseQ (Query <<< String.joinWith "" <$> Array.many p)
   where
-  query =
-    String.joinWith ""
-      <$> Array.many (parsePChar decodePCT <|> string "/" <|> string "?")
+    p = String.singleton <$> queryChar <|> newParsePCTEncoded
 
-print ∷ ∀ q. (q → String) → q → String
-print printQ q = "?" <> printQ q
+print ∷ ∀ q. (q → Query) → q → String
+print printQ q = "?" <> unsafeToString (printQ q)
+
+queryChar ∷ Parser Char
+queryChar
+  = parseUnreserved
+  <|> parseSubDelims
+  <|> char ':'
+  <|> char '@'
+  <|> char '/'
+  <|> char '?'

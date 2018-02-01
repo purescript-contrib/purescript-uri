@@ -1,5 +1,5 @@
-module Data.URI.NonStandard.Query
-  ( Query(..)
+module Data.URI.NonStandard.QueryPairs
+  ( QueryPairs(..)
   , parse
   , print
   ) where
@@ -19,25 +19,25 @@ import Data.String as String
 import Data.String.Regex as RX
 import Data.String.Regex.Flags as RXF
 import Data.Tuple (Tuple(..))
+import Data.URI.Query as Q
 import Global (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.StringParser (ParseError, Parser, runParser)
 import Text.Parsing.StringParser.Combinators (optionMaybe, sepBy)
 import Text.Parsing.StringParser.String (regex, string)
 
--- | The query component of a URI.
-newtype Query = Query (List (Tuple String (Maybe String)))
+newtype QueryPairs = QueryPairs (List (Tuple String (Maybe String)))
 
-derive newtype instance eqQuery ∷ Eq Query
-derive newtype instance ordQuery ∷ Ord Query
-derive instance genericQuery ∷ Generic Query _
-derive instance newtypeQuery ∷ Newtype Query _
-instance showQuery ∷ Show Query where show = genericShow
-derive newtype instance semigroupQuery ∷ Semigroup Query
-derive newtype instance monoidQuery ∷ Monoid Query
+derive newtype instance eqQueryPairs ∷ Eq QueryPairs
+derive newtype instance ordQueryPairs ∷ Ord QueryPairs
+derive instance genericQueryPairs ∷ Generic QueryPairs _
+derive instance newtypeQueryPairs ∷ Newtype QueryPairs _
+instance showQueryPairs ∷ Show QueryPairs where show = genericShow
+derive newtype instance semigroupQueryPairs ∷ Semigroup QueryPairs
+derive newtype instance monoidQueryPairs ∷ Monoid QueryPairs
 
-parse ∷ String → Either ParseError Query
-parse = runParser (Query <$> parseParts)
+parse ∷ Q.Query → Either ParseError QueryPairs
+parse = runParser (QueryPairs <$> parseParts) <<< Q.unsafeToString
 
 parseParts ∷ Parser (List (Tuple String (Maybe String)))
 parseParts = sepBy parsePart (string ";" <|> string "&")
@@ -48,17 +48,17 @@ parsePart = do
   value ← optionMaybe $ decodeURIComponent <$> (string "=" *> regex "[^;&]*")
   pure $ Tuple key value
 
-print ∷ Query → String
-print (Query m) = String.joinWith "&" $ Array.fromFoldable (printPart <$> m)
+print ∷ QueryPairs → Q.Query
+print (QueryPairs m) = Q.unsafeFromString $ String.joinWith "&" $ Array.fromFoldable (printPart <$> m)
   where
   printPart ∷ Tuple String (Maybe String) → String
   printPart (Tuple k Nothing) =
-    printQueryPart k
+    printQueryPairsPart k
   printPart (Tuple k (Just v)) =
-    printQueryPart k <> "=" <> printQueryPart v
+    printQueryPairsPart k <> "=" <> printQueryPairsPart v
 
-printQueryPart ∷ String → String
-printQueryPart = String.joinWith "" <<< map printChar <<< String.split (String.Pattern "")
+printQueryPairsPart ∷ String → String
+printQueryPairsPart = String.joinWith "" <<< map printChar <<< String.split (String.Pattern "")
   where
   -- Fragments & queries have a bunch of characters that don't need escaping
   printChar ∷ String → String

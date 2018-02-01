@@ -8,6 +8,8 @@ module Data.URI.RelativeRef
   , _relPart
   , _query
   , _fragment
+  , module Data.URI.Fragment
+  , module Data.URI.Query
   , module Data.URI.RelativePart
   ) where
 
@@ -25,6 +27,7 @@ import Data.String as String
 import Data.Tuple (Tuple)
 import Data.URI.Fragment (Fragment)
 import Data.URI.Fragment as Fragment
+import Data.URI.Query (Query)
 import Data.URI.Query as Query
 import Data.URI.RelativePart (Authority(..), Host(..), Port(..), RelativePart(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.RelativePart as RPart
@@ -50,7 +53,7 @@ type RelativeRefParseOptions userInfo hosts host port relPath query fragment r =
   , parseHost ∷ Host → Either ParseError host
   , parsePort ∷ Port → Either ParseError port
   , parseRelPath ∷ String → Either ParseError relPath
-  , parseQuery ∷ String → Either ParseError query
+  , parseQuery ∷ Query → Either ParseError query
   , parseFragment ∷ Fragment → Either ParseError fragment
   | r
   )
@@ -61,7 +64,7 @@ type RelativeRefPrintOptions userInfo hosts host port relPath query fragment r =
   , printHost ∷ host → Host
   , printPort ∷ port → Port
   , printRelPath ∷ relPath → String
-  , printQuery ∷ query → String
+  , printQuery ∷ query → Query
   , printFragment ∷ fragment → Fragment
   | r
   )

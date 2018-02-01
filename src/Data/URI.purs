@@ -7,6 +7,7 @@ module Data.URI
   , module Data.URI.Port
   , module Data.URI.RelativePart
   , module Data.URI.RelativeRef
+  , module Data.URI.Query
   , module Data.URI.Scheme
   , module Data.URI.URI
   , module Data.URI.URIRef
@@ -21,6 +22,7 @@ import Data.URI.Fragment (Fragment)
 import Data.URI.Port (Port(..))
 import Data.URI.RelativePart (RelativePart(..))
 import Data.URI.RelativeRef (RelativeRef(..))
+import Data.URI.Query (Query)
 import Data.URI.Scheme (Scheme(..))
 import Data.URI.URI (URI(..))
 import Data.URI.URIRef (URIRef)

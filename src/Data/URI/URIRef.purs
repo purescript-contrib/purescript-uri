@@ -9,6 +9,7 @@ module Data.URI.URIRef
   , module Data.URI.Fragment
   , module Data.URI.Host
   , module Data.URI.Port
+  , module Data.URI.Query
   , module Data.URI.UserInfo
   , module Data.URI.RelativeRef
   , module Data.URI.URI
@@ -22,6 +23,7 @@ import Data.URI.Authority (Authority(..))
 import Data.URI.Fragment (Fragment)
 import Data.URI.Host (Host(..), RegName, _IPv4Address, _IPv6Address, _NameAddress)
 import Data.URI.Port (Port(..))
+import Data.URI.Query (Query)
 import Data.URI.RelativeRef (RelativeRef(..), RelativePart(..))
 import Data.URI.RelativeRef as RelativeRef
 import Data.URI.URI (URI(..), HierarchicalPart(..))
@@ -46,7 +48,7 @@ type URIRefParseOptions userInfo hosts host port hierPath relPath query fragment
   , parsePort ∷ Port → Either ParseError port
   , parseRelPath ∷ String → Either ParseError relPath
   , parseHierPath ∷ String → Either ParseError hierPath
-  , parseQuery ∷ String → Either ParseError query
+  , parseQuery ∷ Query → Either ParseError query
   , parseFragment ∷ Fragment → Either ParseError fragment
   | r
   )
@@ -58,7 +60,7 @@ type URIRefPrintOptions userInfo hosts host port hierPath relPath query fragment
   , printPort ∷ port → Port
   , printRelPath ∷ relPath → String
   , printHierPath ∷ hierPath → String
-  , printQuery ∷ query → String
+  , printQuery ∷ query → Query
   , printFragment ∷ fragment → Fragment
   | r
   )
