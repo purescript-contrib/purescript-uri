@@ -26,6 +26,7 @@ import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
 import Data.String as String
 import Data.Tuple (Tuple)
+import Data.URI.Common (URIPartParseError)
 import Data.URI.Fragment (Fragment)
 import Data.URI.Fragment as Fragment
 import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), HierPath, Host(..), Path, PathAbsolute, PathRootless, Port(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
@@ -34,9 +35,9 @@ import Data.URI.Query (Query)
 import Data.URI.Query as Query
 import Data.URI.Scheme (Scheme(..))
 import Data.URI.Scheme as Scheme
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
-import Text.Parsing.StringParser.String (eof)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.Combinators (optionMaybe)
+import Text.Parsing.Parser.String (eof)
 
 -- | A generic URI
 data URI userInfo hosts host port path hierPath query fragment = URI Scheme (HierarchicalPart userInfo hosts host port path hierPath) (Maybe query) (Maybe fragment)
@@ -51,14 +52,14 @@ type URIOptions userInfo hosts host port path hierPath query fragment =
     (URIPrintOptions userInfo hosts host port path hierPath query fragment ())
 
 type URIParseOptions userInfo hosts host port path hierPath query fragment r =
-  ( parseUserInfo ∷ UserInfo → Either ParseError userInfo
-  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
-  , parseHost ∷ Host → Either ParseError host
-  , parsePort ∷ Port → Either ParseError port
-  , parsePath ∷ Path → Either ParseError path
-  , parseHierPath ∷ Either PathAbsolute PathRootless → Either ParseError hierPath
-  , parseQuery ∷ Query → Either ParseError query
-  , parseFragment ∷ Fragment → Either ParseError fragment
+  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
+  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHost ∷ Host → Either URIPartParseError host
+  , parsePort ∷ Port → Either URIPartParseError port
+  , parsePath ∷ Path → Either URIPartParseError path
+  , parseHierPath ∷ Either PathAbsolute PathRootless → Either URIPartParseError hierPath
+  , parseQuery ∷ Query → Either URIPartParseError query
+  , parseFragment ∷ Fragment → Either URIPartParseError fragment
   | r
   )
 
@@ -77,7 +78,7 @@ type URIPrintOptions userInfo hosts host port path hierPath query fragment r =
 parser
   ∷ ∀ userInfo hosts host port path hierPath query fragment r
   . Record (URIParseOptions userInfo hosts host port path hierPath query fragment r)
-  → Parser (URI userInfo hosts host port path hierPath query fragment)
+  → Parser String (URI userInfo hosts host port path hierPath query fragment)
 parser opts = URI
   <$> Scheme.parser
   <*> HPart.parser opts

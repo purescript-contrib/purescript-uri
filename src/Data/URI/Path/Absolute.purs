@@ -9,11 +9,11 @@ import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.Tuple (Tuple(..))
-import Data.URI.Common (wrapParser)
+import Data.URI.Common (URIPartParseError, wrapParser)
 import Data.URI.Path.Segment (PathSegment, PathSegmentNZ, parseSegment, parseSegmentNonZero, unsafeSegmentNZToString, unsafeSegmentToString)
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
-import Text.Parsing.StringParser.String (string)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.Combinators (optionMaybe)
+import Text.Parsing.Parser.String (char)
 
 newtype PathAbsolute = PathAbsolute (Maybe (Tuple PathSegmentNZ (Array PathSegment)))
 
@@ -22,12 +22,12 @@ derive instance ordPathAbsolute ∷ Ord PathAbsolute
 derive instance genericPathAbsolute ∷ Generic PathAbsolute _
 instance showPathAbsolute ∷ Show PathAbsolute where show = genericShow
 
-parse ∷ ∀ p. (PathAbsolute → Either ParseError p) → Parser p
+parse ∷ ∀ p. (PathAbsolute → Either URIPartParseError p) → Parser String p
 parse p = wrapParser p do
-  _ ← string "/"
+  _ ← char '/'
   optionMaybe parseSegmentNonZero >>= case _ of
     Just head →
-      PathAbsolute <<< Just <<< Tuple head <$> Array.many (string "/" *> parseSegment)
+      PathAbsolute <<< Just <<< Tuple head <$> Array.many (char '/' *> parseSegment)
     Nothing →
       pure (PathAbsolute Nothing)
 

@@ -6,20 +6,20 @@ import Data.Array as Array
 import Data.Identity (Identity(..))
 import Data.Maybe (Maybe(..))
 import Data.Newtype (un)
-import Data.Tuple (Tuple(..))
 import Data.String as String
+import Data.Tuple (Tuple(..))
 import Data.URI.Authority (Authority(..), AuthorityOptions, Host(..), Port(..), UserInfo)
 import Data.URI.Authority as Authority
 import Data.URI.Host.RegName as RegName
 import Data.URI.UserInfo as UserInfo
-import Test.Unit (TestSuite, suite)
+import Test.Spec (Spec, describe)
 import Test.Util (testIso)
-import Text.Parsing.StringParser.Combinators (sepBy) as SP
-import Text.Parsing.StringParser.String (string) as SP
+import Text.Parsing.Parser.Combinators (sepBy) as SP
+import Text.Parsing.Parser.String (char) as SP
 
-spec ∷ ∀ eff. TestSuite eff
+spec ∷ ∀ eff. Spec eff Unit
 spec =
-  suite "Authority parser/printer" do
+  describe "Authority parser/printer" do
     testIso
       (Authority.parser optionsSingle)
       (Authority.print optionsSingle)
@@ -67,7 +67,7 @@ optionsMany ∷ Record (AuthorityOptions UserInfo Array Host Port)
 optionsMany =
   { parseUserInfo: pure
   , printUserInfo: id
-  , parseHosts: map Array.fromFoldable <<< flip SP.sepBy (SP.string ",")
+  , parseHosts: map Array.fromFoldable <<< flip SP.sepBy (SP.char ',')
   , printHosts: String.joinWith ","
   , parseHost: pure
   , printHost: id

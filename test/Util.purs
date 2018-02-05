@@ -2,6 +2,7 @@ module Test.Util where
 
 import Prelude
 
+import Control.Monad.Aff (Aff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
@@ -9,39 +10,38 @@ import Control.Monad.Eff.Random (RANDOM)
 import Data.Either (Either(..))
 import Test.QuickCheck as QC
 import Test.QuickCheck.Gen as QCG
-import Test.Unit (Test, TestSuite, failure, success, test)
-import Text.Parsing.StringParser (Parser, runParser)
+import Test.Spec (Spec, it)
+import Test.Spec.Assertions (fail)
+import Text.Parsing.Parser (Parser, runParser)
 
 type TestEffects eff = (console ∷ CONSOLE, random ∷ RANDOM, exception ∷ EXCEPTION | eff)
 
-testPrinter ∷ ∀ a b. Show b ⇒ (b → String) → String → b → TestSuite a
-testPrinter f expected uri =
-  test
+testPrinter ∷ ∀ a eff. Show a ⇒ (a → String) → String → a → Spec eff Unit
+testPrinter f expected value =
+  it
     ("prints: " <> expected)
-    (equal expected (f uri))
+    (equal expected (f value))
 
-testParser ∷ ∀ a b. Eq b ⇒ Show b ⇒ Parser b → String → b → TestSuite a
-testParser p uri expected =
-  test
-    ("parses: " <> uri)
-    (equal (Right expected) (runParser p uri))
+testParser ∷ ∀ a eff. Eq a ⇒ Show a ⇒ Parser String a → String → a → Spec eff Unit
+testParser p value expected =
+  it
+    ("parses: " <> value)
+    (equal (Right expected) (runParser value p))
 
-equal :: forall a e. Eq a => Show a => a -> a -> Test e
+equal :: forall a eff. Eq a => Show a => a -> a -> Aff eff Unit
 equal expected actual =
-  if expected == actual
-    then success
-    else
-      failure $
-        "\nexpected: " <> show expected <>
-        "\ngot:      " <> show actual
+  when (expected /= actual) do
+    fail $
+      "\nexpected: " <> show expected <>
+      "\ngot:      " <> show actual
 
-testIso ∷ ∀ a b. Eq b ⇒ Show b ⇒ Parser b → (b → String) → String → b → TestSuite a
-testIso p f uri expected = do
-  testParser p uri expected
-  testPrinter f uri expected
+testIso ∷ ∀ a b eff. Eq b ⇒ Show b ⇒ Parser String b → (b → String) → String → b → Spec eff Unit
+testIso p f value expected = do
+  testParser p value expected
+  testPrinter f value expected
 
-forAll ∷ ∀ eff prop. QC.Testable prop ⇒ QCG.Gen prop → Test (TestEffects eff)
+forAll ∷ ∀ eff prop. QC.Testable prop ⇒ QCG.Gen prop → Aff (TestEffects eff) Unit
 forAll = quickCheck
 
-quickCheck ∷ ∀ eff prop. QC.Testable prop ⇒ prop → Test (TestEffects eff)
+quickCheck ∷ ∀ eff prop. QC.Testable prop ⇒ prop → Aff (TestEffects eff) Unit
 quickCheck = liftEff <<< QC.quickCheck' 100

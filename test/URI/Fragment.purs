@@ -3,12 +3,12 @@ module Test.URI.Fragment where
 import Prelude
 
 import Data.URI.Fragment as Fragment
-import Test.Unit (TestSuite, suite)
+import Test.Spec (Spec, describe)
 import Test.Util (testIso)
 
-spec ∷ ∀ eff. TestSuite eff
+spec ∷ ∀ eff. Spec eff Unit
 spec =
-  suite "Fragment parser/printer" do
+  describe "Fragment parser/printer" do
     testIso (Fragment.parser pure) (Fragment.print id) "#" (Fragment.fromString "")
     testIso (Fragment.parser pure) (Fragment.print id) "#foo" (Fragment.fromString "foo")
     testIso (Fragment.parser pure) (Fragment.print id) "#foo%23bar" (Fragment.fromString "foo#bar")

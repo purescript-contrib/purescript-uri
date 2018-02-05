@@ -30,14 +30,15 @@ import Data.String as String
 import Data.Tuple (Tuple)
 import Data.URI.Authority (Authority(..), Host(..), Port(..), RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
+import Data.URI.Common (URIPartParseError)
 import Data.URI.Path (Path(..))
 import Data.URI.Path as Path
 import Data.URI.Path.Absolute (PathAbsolute(..))
 import Data.URI.Path.Absolute as PathAbs
 import Data.URI.Path.Rootless (PathRootless(..))
 import Data.URI.Path.Rootless as PathRootless
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.Combinators (optionMaybe)
 
 -- | The "hierarchical part" of a generic or absolute URI.
 data HierarchicalPart userInfo hosts host port path hierPath
@@ -54,12 +55,12 @@ type HierarchicalPartOptions userInfo hosts host port path hierPath =
     (HierarchicalPartPrintOptions userInfo hosts host port path hierPath ())
 
 type HierarchicalPartParseOptions userInfo hosts host port path hierPath r =
-  ( parseUserInfo ∷ UserInfo → Either ParseError userInfo
-  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
-  , parseHost ∷ Host → Either ParseError host
-  , parsePort ∷ Port → Either ParseError port
-  , parsePath ∷ Path → Either ParseError path
-  , parseHierPath ∷ HierPath → Either ParseError hierPath
+  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
+  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHost ∷ Host → Either URIPartParseError host
+  , parsePort ∷ Port → Either URIPartParseError port
+  , parsePath ∷ Path → Either URIPartParseError path
+  , parseHierPath ∷ HierPath → Either URIPartParseError hierPath
   | r
   )
 
@@ -78,7 +79,7 @@ type HierPath = Either PathAbsolute PathRootless
 parser
   ∷ ∀ userInfo hosts host port path hierPath r
   . Record (HierarchicalPartParseOptions userInfo hosts host port path hierPath r)
-  → Parser (HierarchicalPart userInfo hosts host port path hierPath)
+  → Parser String (HierarchicalPart userInfo hosts host port path hierPath)
 parser opts = withAuth <|> withoutAuth
   where
   withAuth =
@@ -111,24 +112,24 @@ _authority
   . Traversal'
       (HierarchicalPart userInfo hosts host port path hierPath)
       (Authority userInfo hosts host port)
-_authority = wander \f a → case a of
+_authority = wander \f → case _ of
   HierarchicalPartAuth a p → flip HierarchicalPartAuth p <$> f a
-  _ → pure a
+  a → pure a
 
 _path
   ∷ ∀ userInfo hosts host port path hierPath
   . Traversal'
       (HierarchicalPart userInfo hosts host port path hierPath)
       (Maybe path)
-_path = wander \f a → case a of
+_path = wander \f → case _ of
   HierarchicalPartAuth a p → HierarchicalPartAuth a <$> f p
-  _ → pure a
+  a → pure a
 
 _hierPath
   ∷ ∀ userInfo hosts host port path hierPath
   . Traversal'
       (HierarchicalPart userInfo hosts host port path hierPath)
       (Maybe hierPath)
-_hierPath = wander \f a → case a of
+_hierPath = wander \f → case _ of
   HierarchicalPartNoAuth p → HierarchicalPartNoAuth <$> f p
-  _ → pure a
+  a → pure a

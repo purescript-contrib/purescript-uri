@@ -15,10 +15,10 @@ import Data.Array as Array
 import Data.Either (Either)
 import Data.Monoid (class Monoid)
 import Data.String as String
-import Data.URI.Common (newParsePCTEncoded, parseSubDelims, parseUnreserved, printEncoded, wrapParser)
+import Data.URI.Common (URIPartParseError, parseSubDelims, parseUnreserved, pctEncoded, printEncoded, wrapParser)
 import Global (decodeURIComponent)
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.String (char)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.String (char)
 
 -- | The user info part of an `Authority`. For example: `user`, `foo:bar`.
 newtype UserInfo = UserInfo String
@@ -56,15 +56,15 @@ unsafeFromString = UserInfo
 unsafeToString ∷ UserInfo → String
 unsafeToString (UserInfo s) = s
 
-parser ∷ ∀ ui. (UserInfo → Either ParseError ui) → Parser ui
+parser ∷ ∀ ui. (UserInfo → Either URIPartParseError ui) → Parser String ui
 parser p = wrapParser p (UserInfo <<< String.joinWith "" <$> Array.some parse)
   where
-  parse ∷ Parser String
-  parse = String.singleton <$> userInfoChar <|> newParsePCTEncoded
+  parse ∷ Parser String String
+  parse = String.singleton <$> userInfoChar <|> pctEncoded
 
 print ∷ ∀ ui. (ui → UserInfo) → ui → String
 print = map unsafeToString
 
 -- | The supported user info characters, excluding percent-encodings.
-userInfoChar ∷ Parser Char
+userInfoChar ∷ Parser String Char
 userInfoChar = parseUnreserved <|> parseSubDelims <|> char ':'

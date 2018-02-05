@@ -11,6 +11,7 @@ module Data.URI.Host
 import Prelude
 
 import Control.Alt ((<|>))
+import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -18,12 +19,12 @@ import Data.Int as Int
 import Data.Lens (Prism', prism')
 import Data.Maybe (Maybe(..))
 import Data.String as String
-import Data.URI.Common (wrapParser)
+import Data.URI.Common (URIPartParseError(..), digit, hexDigit, wrapParser)
 import Data.URI.Host.RegName (RegName)
 import Data.URI.Host.RegName as RegName
-import Text.Parsing.StringParser (ParseError(..), Parser, try)
-import Text.Parsing.StringParser.Combinators ((<?>))
-import Text.Parsing.StringParser.String (anyDigit, char, regex, satisfy, string)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.Combinators (try, (<?>))
+import Text.Parsing.Parser.String (char, satisfy)
 
 -- | A host address.
 data Host
@@ -36,40 +37,40 @@ derive instance ordHost ∷ Ord Host
 derive instance genericHost ∷ Generic Host _
 instance showHost ∷ Show Host where show = genericShow
 
-parser ∷ ∀ h. (Host → Either ParseError h) → Parser h
+parser ∷ ∀ h. (Host → Either URIPartParseError h) → Parser String h
 parser p = wrapParser p
   $ ipv6AddressParser
   <|> try ipv4AddressParser
   <|> (NameAddress <$> RegName.parser)
 
--- TODO: this is much too forgiving right now
-ipv6AddressParser ∷ Parser Host
-ipv6AddressParser = IPv6Address <$> (string "[" *> regex "[a-fA-F0-9\\.:]+" <* string "]") <?> "IPv6 address"
+-- TODO: this is still much too forgiving
+ipv6AddressParser ∷ Parser String Host
+ipv6AddressParser = IPv6Address <$> (char '[' *> (String.fromCharArray <$> Array.some ipv6Char) <* char ']') <?> "IPv6 address"
+  where
+    ipv6Char ∷ Parser String Char
+    ipv6Char = hexDigit <|> char ':' <|> char '.'
 
-ipv4AddressParser ∷ Parser Host
+ipv4AddressParser ∷ Parser String Host
 ipv4AddressParser = IPv4Address <$> addr <?> "IPv4 address"
   where
-  addr ∷ Parser String
+  addr ∷ Parser String String
   addr = do
-    o1 <- octet
-    _ <- char '.'
-    o2 <- octet
-    _ <- char '.'
-    o3 <- octet
-    _ <- char '.'
-    o4 <- octet
+    o1 ← octet <* char '.'
+    o2 ← octet <* char '.'
+    o3 ← octet <* char '.'
+    o4 ← octet
     pure $ show o1 <> "." <> show o2 <> "." <> show o3 <> "." <> show o4
-  octet ∷ Parser Int
+  octet ∷ Parser String Int
   octet = wrapParser toInt
-    $ try ((\x y z → String.fromCharArray [x, y, z]) <$> nzDigit <*> anyDigit <*> anyDigit)
-    <|> try ((\x y → String.fromCharArray [x, y]) <$> nzDigit <*> anyDigit)
-    <|> (String.singleton <$> anyDigit)
-  nzDigit ∷ Parser Char
+    $ try ((\x y z → String.fromCharArray [x, y, z]) <$> nzDigit <*> digit <*> digit)
+    <|> try ((\x y → String.fromCharArray [x, y]) <$> nzDigit <*> digit)
+    <|> (String.singleton <$> digit)
+  nzDigit ∷ Parser String Char
   nzDigit = satisfy (\c → c >= '1' && c <= '9')
-  toInt ∷ String → Either ParseError Int
+  toInt ∷ String → Either URIPartParseError Int
   toInt s = case Int.fromString s of
     Just n | n >= 0 && n <= 255 → Right n
-    _ → Left (ParseError "Invalid IPv4 address octet")
+    _ → Left (URIPartParseError "Invalid IPv4 address octet")
 
 print ∷ ∀ h. (h → Host) → h → String
 print f = f >>> case _ of

@@ -15,10 +15,10 @@ import Data.Array as Array
 import Data.Either (Either)
 import Data.Monoid (class Monoid)
 import Data.String as String
-import Data.URI.Common (newParsePCTEncoded, parseSubDelims, parseUnreserved, printEncoded, wrapParser)
+import Data.URI.Common (URIPartParseError, parseSubDelims, parseUnreserved, pctEncoded, printEncoded, wrapParser)
 import Global (decodeURIComponent)
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.String (char, string)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.String (char)
 
 -- | The hash fragment of a URI.
 newtype Fragment = Fragment String
@@ -43,16 +43,17 @@ unsafeFromString = Fragment
 unsafeToString ∷ Fragment → String
 unsafeToString (Fragment s) = s
 
-parser ∷ ∀ f. (Fragment → Either ParseError f) → Parser f
-parser parseF = string "#" *>
-  wrapParser parseF (Fragment <<< String.joinWith ""
-    <$> Array.many (newParsePCTEncoded <|> String.singleton <$> fragmentChar))
+parser ∷ ∀ f. (Fragment → Either URIPartParseError f) → Parser String f
+parser parseF =
+  char '#' *>
+    wrapParser parseF (Fragment <<< String.joinWith ""
+      <$> Array.many (pctEncoded <|> String.singleton <$> fragmentChar))
 
 print ∷ ∀ f. (f → Fragment) → f → String
 print printF f = "#" <> unsafeToString (printF f)
 
 -- | The supported fragment characters, excluding percent-encodings.
-fragmentChar ∷ Parser Char
+fragmentChar ∷ Parser String Char
 fragmentChar =
   parseUnreserved <|> parseSubDelims
     <|> char ':' <|> char '@' <|> char '/' <|> char '?'

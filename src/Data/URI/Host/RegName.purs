@@ -13,9 +13,9 @@ import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Monoid (class Monoid)
 import Data.String as String
-import Data.URI.Common (newParsePCTEncoded, parseSubDelims, parseUnreserved, printEncoded)
+import Data.URI.Common (pctEncoded, parseSubDelims, parseUnreserved, printEncoded)
 import Global (decodeURIComponent)
-import Text.Parsing.StringParser (Parser)
+import Text.Parsing.Parser (Parser)
 
 newtype RegName = RegName String
 
@@ -52,10 +52,10 @@ unsafeFromString = RegName
 unsafeToString ∷ RegName → String
 unsafeToString (RegName s) = s
 
-parser ∷ Parser RegName
+parser ∷ Parser String RegName
 parser = RegName <<< String.joinWith "" <$> Array.some p
   where
-  p = newParsePCTEncoded <|> String.singleton <$> regNameChar
+  p = pctEncoded <|> String.singleton <$> regNameChar
 
-regNameChar ∷ Parser Char
+regNameChar ∷ Parser String Char
 regNameChar = parseUnreserved <|> parseSubDelims

@@ -12,13 +12,13 @@ import Data.URI.Query as Query
 import Data.URI.URIRef (Authority(..), Fragment, HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathNoScheme(..), PathRootless(..), Port(..), Query, RelPath, RelativePart(..), RelativeRef(..), Scheme(..), URI(..), URIRefOptions, UserInfo)
 import Data.URI.URIRef as URIRef
 import Data.URI.UserInfo as UserInfo
-import Test.Unit (TestSuite, suite)
+import Test.Spec (Spec, describe)
 import Test.Util (testIso)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
+import Text.Parsing.Parser.Combinators (optionMaybe)
 
-spec ∷ ∀ eff. TestSuite eff
+spec ∷ ∀ eff. Spec eff Unit
 spec =
-  suite "URIRef parser/printer" do
+  describe "URIRef parser/printer" do
     testIso
       (URIRef.parser optionsSingle)
       (URIRef.print optionsSingle)
@@ -489,6 +489,34 @@ spec =
           (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "fred@example.com") [])))))
           Nothing
           Nothing))
+    testIso
+      (URIRef.parser optionsSingle)
+      (URIRef.print optionsSingle)
+      "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"
+      (Left
+        (URI
+          (Scheme "http")
+          (HierarchicalPartAuth
+            (Authority
+              Nothing
+              (Just (Tuple (NameAddress (RegName.fromString "local.slamdata.com")) Nothing)))
+            (path [""]))
+          (Just (Query.unsafeFromString ""))
+          (Just (Fragment.unsafeFromString "?sort=asc&q=path%3A%2F&salt=1177214"))))
+    testIso
+      (URIRef.parser optionsSingle)
+      (URIRef.print optionsSingle)
+      "http://local.slamdata.com/?#?sort=asc&q=path:/&salt=1177214"
+      (Left
+        (URI
+          (Scheme "http")
+          (HierarchicalPartAuth
+            (Authority
+              Nothing
+              (Just (Tuple (NameAddress (RegName.fromString "local.slamdata.com")) Nothing)))
+            (path [""]))
+          (Just (Query.unsafeFromString ""))
+          (Just (Fragment.unsafeFromString "?sort=asc&q=path:/&salt=1177214"))))
 
 path ∷ Array String → Maybe Path
 path = Just <<< Path <<< map PathSegment.unsafeSegmentFromString

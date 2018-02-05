@@ -25,15 +25,16 @@ import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
 import Data.String as String
 import Data.Tuple (Tuple)
+import Data.URI.Common (URIPartParseError)
 import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), HierPath, Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
 import Data.URI.Query (Query)
 import Data.URI.Query as Query
 import Data.URI.Scheme (Scheme(..))
 import Data.URI.Scheme as Scheme
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
-import Text.Parsing.StringParser.String (eof)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.Combinators (optionMaybe)
+import Text.Parsing.Parser.String (eof)
 
 -- | A generic AbsoluteURI
 data AbsoluteURI userInfo hosts host port path hierPath query = AbsoluteURI Scheme (HierarchicalPart userInfo hosts host port path hierPath) (Maybe query)
@@ -48,13 +49,13 @@ type AbsoluteURIOptions userInfo hosts host port path hierPath query =
     (AbsoluteURIPrintOptions userInfo hosts host port path hierPath query ())
 
 type AbsoluteURIParseOptions userInfo hosts host port path hierPath query r =
-  ( parseUserInfo ∷ UserInfo → Either ParseError userInfo
-  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
-  , parseHost ∷ Host → Either ParseError host
-  , parsePort ∷ Port → Either ParseError port
-  , parsePath ∷ Path → Either ParseError path
-  , parseHierPath ∷ Either PathAbsolute PathRootless → Either ParseError hierPath
-  , parseQuery ∷ Query → Either ParseError query
+  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
+  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHost ∷ Host → Either URIPartParseError host
+  , parsePort ∷ Port → Either URIPartParseError port
+  , parsePath ∷ Path → Either URIPartParseError path
+  , parseHierPath ∷ Either PathAbsolute PathRootless → Either URIPartParseError hierPath
+  , parseQuery ∷ Query → Either URIPartParseError query
   | r
   )
 
@@ -72,7 +73,7 @@ type AbsoluteURIPrintOptions userInfo hosts host port path hierPath query r =
 parser
   ∷ ∀ userInfo hosts host port path hierPath query r
   . Record (AbsoluteURIParseOptions userInfo hosts host port path hierPath query r)
-  → Parser (AbsoluteURI userInfo hosts host port path hierPath query)
+  → Parser String (AbsoluteURI userInfo hosts host port path hierPath query)
 parser opts = AbsoluteURI
   <$> Scheme.parser
   <*> HPart.parser opts

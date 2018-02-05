@@ -14,10 +14,9 @@ import Data.Int (fromNumber)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.String as String
-import Data.URI.Common (wrapParser)
+import Data.URI.Common (URIPartParseError, digit, wrapParser)
 import Global (readInt)
-import Text.Parsing.StringParser (ParseError, Parser, fail)
-import Text.Parsing.StringParser.String (anyDigit)
+import Text.Parsing.Parser (Parser, fail)
 
 -- | A port number.
 newtype Port = Port Int
@@ -28,9 +27,9 @@ derive instance genericPort ∷ Generic Port _
 derive instance newtypePort ∷ Newtype Port _
 instance showPort ∷ Show Port where show = genericShow
 
-parser ∷ ∀ p. (Port → Either ParseError p) → Parser p
+parser ∷ ∀ p. (Port → Either URIPartParseError p) → Parser String p
 parser p = wrapParser p do
-  s ← String.fromCharArray <$> Array.some anyDigit
+  s ← String.fromCharArray <$> Array.some digit
   case fromNumber $ readInt 10 s of
     Just x → pure (Port x)
     _ → fail "Expected valid port number"

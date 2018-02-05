@@ -15,10 +15,10 @@ import Data.Array as Array
 import Data.Either (Either)
 import Data.Monoid (class Monoid)
 import Data.String as String
-import Data.URI.Common (newParsePCTEncoded, parseSubDelims, parseUnreserved, printEncoded, wrapParser)
+import Data.URI.Common (URIPartParseError, parseSubDelims, parseUnreserved, pctEncoded, printEncoded, wrapParser)
 import Global (decodeURIComponent)
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.String (char, string)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.String (char)
 
 newtype Query = Query String
 
@@ -42,17 +42,17 @@ unsafeFromString = Query
 unsafeToString ∷ Query → String
 unsafeToString (Query s) = s
 
-parser ∷ ∀ q. (Query → Either ParseError q) → Parser q
+parser ∷ ∀ q. (Query → Either URIPartParseError q) → Parser String q
 parser parseQ =
-  string "?" *>
+  char '?' *>
     wrapParser parseQ (Query <<< String.joinWith "" <$> Array.many p)
   where
-    p = String.singleton <$> queryChar <|> newParsePCTEncoded
+    p = String.singleton <$> queryChar <|> pctEncoded
 
 print ∷ ∀ q. (q → Query) → q → String
 print printQ q = "?" <> unsafeToString (printQ q)
 
-queryChar ∷ Parser Char
+queryChar ∷ Parser String Char
 queryChar
   = parseUnreserved
   <|> parseSubDelims

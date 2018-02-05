@@ -10,13 +10,13 @@ import Data.URI.Path.Segment as PathSegment
 import Data.URI.Query as Query
 import Data.URI.AbsoluteURI (Authority(..), HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port(..), Query, Scheme(..), AbsoluteURI(..), AbsoluteURIOptions, UserInfo)
 import Data.URI.AbsoluteURI as AbsoluteURI
-import Test.Unit (TestSuite, suite)
+import Test.Spec (Spec, describe)
 import Test.Util (testIso)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
+import Text.Parsing.Parser.Combinators (optionMaybe)
 
-spec ∷ ∀ eff. TestSuite eff
+spec ∷ ∀ eff. Spec eff Unit
 spec =
-  suite "AbsoluteURI parser/printer" do
+  describe "AbsoluteURI parser/printer" do
     testIso
       (AbsoluteURI.parser options)
       (AbsoluteURI.print options)

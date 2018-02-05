@@ -22,15 +22,16 @@ import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe, maybe)
 import Data.Ord (class Ord1, compare1)
 import Data.Tuple (Tuple(..))
+import Data.URI.Common (URIPartParseError)
 import Data.URI.Host (Host(..), RegName, _IPv4Address, _IPv6Address, _NameAddress)
 import Data.URI.Host as Host
 import Data.URI.Port (Port(..))
 import Data.URI.Port as Port
 import Data.URI.UserInfo (UserInfo)
 import Data.URI.UserInfo as UserInfo
-import Text.Parsing.StringParser (ParseError, Parser, try)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
-import Text.Parsing.StringParser.String (string)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.Combinators (optionMaybe, try)
+import Text.Parsing.Parser.String (char, string)
 
 -- | The authority part of a URI. For example: `purescript.org`,
 -- | `localhost:3000`, `user@example.net`
@@ -54,10 +55,10 @@ type AuthorityOptions userInfo hosts host port =
     (AuthorityPrintOptions userInfo hosts host port ())
 
 type AuthorityParseOptions userInfo hosts host port r =
-  ( parseUserInfo ∷ UserInfo → Either ParseError userInfo
-  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
-  , parseHost ∷ Host → Either ParseError host
-  , parsePort ∷ Port → Either ParseError port
+  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
+  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHost ∷ Host → Either URIPartParseError host
+  , parsePort ∷ Port → Either URIPartParseError port
   | r
   )
 
@@ -72,14 +73,14 @@ type AuthorityPrintOptions userInfo hosts host port r =
 parser
   ∷ ∀ userInfo hosts host port r
   . Record (AuthorityParseOptions userInfo hosts host port r)
-  → Parser (Authority userInfo hosts host port)
+  → Parser String (Authority userInfo hosts host port)
 parser opts = do
   _ ← string "//"
-  ui ← optionMaybe $ try (UserInfo.parser opts.parseUserInfo <* string "@")
+  ui ← optionMaybe $ try (UserInfo.parser opts.parseUserInfo <* char '@')
   hosts ← opts.parseHosts $
     Tuple
       <$> Host.parser opts.parseHost
-      <*> optionMaybe (string ":" *> Port.parser opts.parsePort)
+      <*> optionMaybe (char ':' *> Port.parser opts.parsePort)
   pure $ Authority ui hosts
 
 print

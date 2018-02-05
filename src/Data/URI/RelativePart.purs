@@ -30,14 +30,15 @@ import Data.String as String
 import Data.Tuple (Tuple)
 import Data.URI.Authority (Authority(..), Host(..), Port(..), RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
+import Data.URI.Common (URIPartParseError)
 import Data.URI.Path (Path)
 import Data.URI.Path as Path
 import Data.URI.Path.Absolute (PathAbsolute)
 import Data.URI.Path.Absolute as PathAbs
 import Data.URI.Path.NoScheme (PathNoScheme)
 import Data.URI.Path.NoScheme as PathNoScheme
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.Combinators (optionMaybe)
 
 -- | The "relative part" of a relative reference.
 data RelativePart userInfo hosts host port path relPath
@@ -54,12 +55,12 @@ type RelativePartOptions userInfo hosts host port path relPath =
     (RelativePartPrintOptions userInfo hosts host port path relPath ())
 
 type RelativePartParseOptions userInfo hosts host port path relPath r =
-  ( parseUserInfo ∷ UserInfo → Either ParseError userInfo
-  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
-  , parseHost ∷ Host → Either ParseError host
-  , parsePort ∷ Port → Either ParseError port
-  , parsePath ∷ Path → Either ParseError path
-  , parseRelPath ∷ RelPath → Either ParseError relPath
+  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
+  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHost ∷ Host → Either URIPartParseError host
+  , parsePort ∷ Port → Either URIPartParseError port
+  , parsePath ∷ Path → Either URIPartParseError path
+  , parseRelPath ∷ RelPath → Either URIPartParseError relPath
   | r
   )
 
@@ -78,7 +79,7 @@ type RelPath = Either PathAbsolute PathNoScheme
 parser
   ∷ ∀ userInfo hosts host port path relPath r
   . Record (RelativePartParseOptions userInfo hosts host port path relPath r)
-  → Parser (RelativePart userInfo hosts host port path relPath)
+  → Parser String (RelativePart userInfo hosts host port path relPath)
 parser opts = withAuth <|> withoutAuth
   where
   withAuth =
@@ -111,18 +112,18 @@ _authority
   . Traversal'
       (RelativePart userInfo hosts host port path relPath)
       (Authority userInfo hosts host port)
-_authority = wander \f a → case a of
+_authority = wander \f → case _ of
   RelativePartAuth a p → flip RelativePartAuth p <$> f a
-  _ → pure a
+  a → pure a
 
 _path
   ∷ ∀ userInfo hosts host port path relPath
   . Traversal'
       (RelativePart userInfo hosts host port path relPath)
       (Maybe path)
-_path = wander \f a → case a of
+_path = wander \f → case _ of
   RelativePartAuth a p → RelativePartAuth a <$> f p
-  _ → pure a
+  a → pure a
 
 _relPath
   ∷ ∀ userInfo hosts host port path relPath

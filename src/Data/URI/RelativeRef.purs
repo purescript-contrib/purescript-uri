@@ -25,15 +25,16 @@ import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
 import Data.String as String
 import Data.Tuple (Tuple)
+import Data.URI.Common (URIPartParseError)
 import Data.URI.Fragment (Fragment)
 import Data.URI.Fragment as Fragment
 import Data.URI.Query (Query)
 import Data.URI.Query as Query
 import Data.URI.RelativePart (Authority(..), Host(..), Path, PathAbsolute, PathNoScheme, Port(..), RelativePart(..), RelPath, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.RelativePart as RPart
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.Combinators (optionMaybe)
-import Text.Parsing.StringParser.String (eof)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.Combinators (optionMaybe)
+import Text.Parsing.Parser.String (eof)
 
 -- | A relative reference for a URI.
 data RelativeRef userInfo hosts host port path relPath query fragment = RelativeRef (RelativePart userInfo hosts host port path relPath) (Maybe query) (Maybe fragment)
@@ -48,14 +49,14 @@ type RelativeRefOptions userInfo hosts host port path relPath query fragment =
     (RelativeRefPrintOptions userInfo hosts host port path relPath query fragment ())
 
 type RelativeRefParseOptions userInfo hosts host port path relPath query fragment r =
-  ( parseUserInfo ∷ UserInfo → Either ParseError userInfo
-  , parseHosts ∷ ∀ a. Parser a → Parser (hosts a)
-  , parseHost ∷ Host → Either ParseError host
-  , parsePort ∷ Port → Either ParseError port
-  , parsePath ∷ Path → Either ParseError path
-  , parseRelPath ∷ Either PathAbsolute PathNoScheme → Either ParseError relPath
-  , parseQuery ∷ Query → Either ParseError query
-  , parseFragment ∷ Fragment → Either ParseError fragment
+  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
+  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHost ∷ Host → Either URIPartParseError host
+  , parsePort ∷ Port → Either URIPartParseError port
+  , parsePath ∷ Path → Either URIPartParseError path
+  , parseRelPath ∷ Either PathAbsolute PathNoScheme → Either URIPartParseError relPath
+  , parseQuery ∷ Query → Either URIPartParseError query
+  , parseFragment ∷ Fragment → Either URIPartParseError fragment
   | r
   )
 
@@ -74,7 +75,7 @@ type RelativeRefPrintOptions userInfo hosts host port path relPath query fragmen
 parser
   ∷ ∀ userInfo hosts host port path relPath query fragment r
   . Record (RelativeRefParseOptions userInfo hosts host port path relPath query fragment r)
-  → Parser (RelativeRef userInfo hosts host port path relPath query fragment)
+  → Parser String (RelativeRef userInfo hosts host port path relPath query fragment)
 parser opts =
   RelativeRef
     <$> RPart.parser opts

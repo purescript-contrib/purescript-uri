@@ -8,10 +8,10 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.String as String
 import Data.Tuple (Tuple(..))
-import Data.URI.Common (wrapParser)
+import Data.URI.Common (URIPartParseError, wrapParser)
 import Data.URI.Path.Segment (PathSegment, PathSegmentNZNC, parseSegment, parseSegmentNonZeroNoColon, unsafeSegmentNZNCToString, unsafeSegmentToString)
-import Text.Parsing.StringParser (ParseError, Parser)
-import Text.Parsing.StringParser.String (char)
+import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.String (char)
 
 newtype PathNoScheme = PathNoScheme (Tuple PathSegmentNZNC (Array PathSegment))
 
@@ -20,7 +20,7 @@ derive instance ordPathNoScheme ∷ Ord PathNoScheme
 derive instance genericPathNoScheme ∷ Generic PathNoScheme _
 instance showPathNoScheme ∷ Show PathNoScheme where show = genericShow
 
-parse ∷ ∀ p. (PathNoScheme → Either ParseError p) → Parser p
+parse ∷ ∀ p. (PathNoScheme → Either URIPartParseError p) → Parser String p
 parse p = wrapParser p do
   head ← parseSegmentNonZeroNoColon
   tail ← Array.many (char '/' *> parseSegment)
