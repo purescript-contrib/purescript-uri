@@ -30,11 +30,11 @@ import Data.String as String
 import Data.Tuple (Tuple)
 import Data.URI.Authority (Authority(..), Host(..), Port(..), RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
-import Data.URI.Path (Path)
+import Data.URI.Path (Path(..))
 import Data.URI.Path as Path
-import Data.URI.Path.Absolute (PathAbsolute)
+import Data.URI.Path.Absolute (PathAbsolute(..))
 import Data.URI.Path.Absolute as PathAbs
-import Data.URI.Path.Rootless (PathRootless)
+import Data.URI.Path.Rootless (PathRootless(..))
 import Data.URI.Path.Rootless as PathRootless
 import Text.Parsing.StringParser (ParseError, Parser)
 import Text.Parsing.StringParser.Combinators (optionMaybe)

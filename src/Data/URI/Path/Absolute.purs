@@ -35,7 +35,10 @@ print ∷ PathAbsolute → String
 print = case _ of
   PathAbsolute Nothing →
     "/"
+  PathAbsolute (Just (Tuple head [])) →
+    "/" <> unsafeSegmentNZToString head
   PathAbsolute (Just (Tuple head tail)) →
     "/"
       <> unsafeSegmentNZToString head
+      <> "/"
       <> String.joinWith "/" (map unsafeSegmentToString tail)

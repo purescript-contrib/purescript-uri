@@ -27,6 +27,10 @@ parse p = wrapParser p do
   pure (PathRootless (Tuple head tail))
 
 print ∷ PathRootless → String
-print (PathRootless (Tuple head tail)) =
-  unsafeSegmentNZToString head
-    <> String.joinWith "/" (map unsafeSegmentToString tail)
+print = case _ of
+  PathRootless (Tuple head []) →
+    unsafeSegmentNZToString head
+  PathRootless (Tuple head tail) →
+    unsafeSegmentNZToString head
+      <> "/"
+      <> String.joinWith "/" (map unsafeSegmentToString tail)

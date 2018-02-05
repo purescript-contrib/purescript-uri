@@ -3,15 +3,13 @@ module Test.URI.URIRef where
 import Prelude
 
 import Data.Either (Either(..))
-import Data.Identity (Identity(..))
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Newtype (un)
 import Data.Tuple (Tuple(..))
 import Data.URI.Fragment as Fragment
 import Data.URI.Host.RegName as RegName
 import Data.URI.Path.Segment as PathSegment
 import Data.URI.Query as Query
-import Data.URI.URIRef (Authority(..), Fragment, HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathNoScheme(..), Port(..), Query, RelPath, RelativePart(..), RelativeRef(..), Scheme(..), URI(..), URIRefOptions, UserInfo)
+import Data.URI.URIRef (Authority(..), Fragment, HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathNoScheme(..), PathRootless(..), Port(..), Query, RelPath, RelativePart(..), RelativeRef(..), Scheme(..), URI(..), URIRefOptions, UserInfo)
 import Data.URI.URIRef as URIRef
 import Data.URI.UserInfo as UserInfo
 import Test.Unit (TestSuite, suite)
@@ -441,77 +439,56 @@ spec =
             (path ["metadata", "fs", "test", "%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23"]))
           (Just (Query.unsafeFromString ""))
           Nothing))
---     -- testIsoURIRef
---     --   "http://localhost:53174/metadata/fs/test/%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23?"
---     --   (Left
---     --     (URI
---     --       (Scheme "http")
---     --       (HierarchicalPart
---     --         (Just (Authority Nothing [Tuple (NameAddress (RegName.fromString "localhost")) (Just (Port 53174))]))
---     --         ((Just (Right (rootDir </> dir "metadata" </> dir "fs" </> dir "test" </> file "Пациенты# #")))))
---     --       (Just mempty)
---     --       Nothing))
---     --
---     -- testIsoURIRef
---     --   "../top_story.htm"
---     --   (Right
---     --     (RelativeRef
---     --       (RelativePart
---     --         Nothing
---     --         (Just (Right (parentDir' currentDir </> file "top_story.htm"))))
---     --       Nothing
---     --       Nothing))
-
---     -- testIsoURIRef
---     --   "news:comp.infosystems.www.servers.unix"
---     --   (Left
---     --     (URI
---     --       (Scheme "news")
---     --       (HierarchicalPart
---     --         Nothing
---     --         (Just "comp.infosystems.www.servers.unix"))
---     --       Nothing
---     --       Nothing))
---     -- testIsoURIRef
---     --   "tel:+1-816-555-1212"
---     --   (Left
---     --     (URI
---     --       (Scheme "tel")
---     --       (HierarchicalPart
---     --         Nothing
---     --         (Just "+1-816-555-1212"))
---     --       Nothing
---     --       Nothing))
---     -- testIsoURIRef
---     --   "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
---     --   (Left
---     --     (URI
---     --       (Scheme "urn")
---     --       (HierarchicalPart
---     --         Nothing
---     --         (Just "oasis:names:specification:docbook:dtd:xml:4.1.2"))
---     --       Nothing
---     --       Nothing))
---     -- testIsoURIRef
---     --   "mailto:John.Doe@example.com"
---     --   (Left
---     --     (URI
---     --       (Scheme "mailto")
---     --       (HierarchicalPart
---     --         Nothing
---     --         (Just "John.Doe@example.com"))
---     --       Nothing
---     --       Nothing))
---     -- testIsoURIRef
---     --   "mailto:fred@example.com"
---     --   (Left
---     --     (URI
---     --       (Scheme "mailto")
---     --       (HierarchicalPart
---     --         Nothing
---     --         (Just "fred@example.com"))
---     --       Nothing
---     --       Nothing))
+    testIso
+      (URIRef.parser optionsSingle)
+      (URIRef.print optionsSingle)
+      "news:comp.infosystems.www.servers.unix"
+      (Left
+        (URI
+          (Scheme "news")
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "comp.infosystems.www.servers.unix") [])))))
+          Nothing
+          Nothing))
+    testIso
+      (URIRef.parser optionsSingle)
+      (URIRef.print optionsSingle)
+      "tel:+1-816-555-1212"
+      (Left
+        (URI
+          (Scheme "tel")
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "+1-816-555-1212") [])))))
+          Nothing
+          Nothing))
+    testIso
+      (URIRef.parser optionsSingle)
+      (URIRef.print optionsSingle)
+      "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
+      (Left
+        (URI
+          (Scheme "urn")
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "oasis:names:specification:docbook:dtd:xml:4.1.2") [])))))
+          Nothing
+          Nothing))
+    testIso
+      (URIRef.parser optionsSingle)
+      (URIRef.print optionsSingle)
+      "mailto:John.Doe@example.com"
+      (Left
+        (URI
+          (Scheme "mailto")
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "John.Doe@example.com") [])))))
+          Nothing
+          Nothing))
+    testIso
+      (URIRef.parser optionsSingle)
+      (URIRef.print optionsSingle)
+      "mailto:fred@example.com"
+      (Left
+        (URI
+          (Scheme "mailto")
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "fred@example.com") [])))))
+          Nothing
+          Nothing))
 
 path ∷ Array String → Maybe Path
 path = Just <<< Path <<< map PathSegment.unsafeSegmentFromString
