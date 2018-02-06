@@ -17,14 +17,11 @@ import Prelude
 
 import Data.Array as Array
 import Data.Either (Either)
-import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
-import Data.Ord (class Ord1)
 import Data.String as String
-import Data.These (These)
 import Data.URI.Common (URIPartParseError)
 import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), HierPath, Host(..), HostsParseOptions, Path(..), PathAbsolute(..), PathRootless(..), Port(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
@@ -37,33 +34,29 @@ import Text.Parsing.Parser.Combinators (optionMaybe)
 import Text.Parsing.Parser.String (eof)
 
 -- | A generic AbsoluteURI
-data AbsoluteURI userInfo hosts host port path hierPath query = AbsoluteURI Scheme (HierarchicalPart userInfo hosts host port path hierPath) (Maybe query)
+data AbsoluteURI userInfo hosts path hierPath query = AbsoluteURI Scheme (HierarchicalPart userInfo hosts path hierPath) (Maybe query)
 
-derive instance eqAbsoluteURI ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port, Eq path, Eq hierPath, Eq query) ⇒ Eq (AbsoluteURI userInfo hosts host port path hierPath query)
-derive instance ordAbsoluteURI ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port, Ord path, Ord hierPath, Ord query) ⇒ Ord (AbsoluteURI userInfo hosts host port path hierPath query)
-derive instance genericAbsoluteURI ∷ Generic (AbsoluteURI userInfo hosts host port path hierPath query) _
-instance showAbsoluteURI ∷ (Show userInfo, Show (hosts (These host port)), Show host, Show port, Show path, Show hierPath, Show query) ⇒ Show (AbsoluteURI userInfo hosts host port path hierPath query) where show = genericShow
+derive instance eqAbsoluteURI ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query) ⇒ Eq (AbsoluteURI userInfo hosts path hierPath query)
+derive instance ordAbsoluteURI ∷ (Ord userInfo, Ord hosts, Ord path, Ord hierPath, Ord query) ⇒ Ord (AbsoluteURI userInfo hosts path hierPath query)
+derive instance genericAbsoluteURI ∷ Generic (AbsoluteURI userInfo hosts path hierPath query) _
+instance showAbsoluteURI ∷ (Show userInfo, Show hosts, Show path, Show hierPath, Show query) ⇒ Show (AbsoluteURI userInfo hosts path hierPath query) where show = genericShow
 
-type AbsoluteURIOptions userInfo hosts host port path hierPath query =
-  AbsoluteURIParseOptions userInfo hosts host port path hierPath query
-    (AbsoluteURIPrintOptions userInfo hosts host port path hierPath query ())
+type AbsoluteURIOptions userInfo hosts path hierPath query =
+  AbsoluteURIParseOptions userInfo hosts path hierPath query
+    (AbsoluteURIPrintOptions userInfo hosts path hierPath query ())
 
-type AbsoluteURIParseOptions userInfo hosts host port path hierPath query r =
+type AbsoluteURIParseOptions userInfo hosts path hierPath query r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ HostsParseOptions hosts
-  , parseHost ∷ Host → Either URIPartParseError host
-  , parsePort ∷ Port → Either URIPartParseError port
+  , parseHosts ∷ Parser String hosts
   , parsePath ∷ Path → Either URIPartParseError path
   , parseHierPath ∷ Either PathAbsolute PathRootless → Either URIPartParseError hierPath
   , parseQuery ∷ Query → Either URIPartParseError query
   | r
   )
 
-type AbsoluteURIPrintOptions userInfo hosts host port path hierPath query r =
+type AbsoluteURIPrintOptions userInfo hosts path hierPath query r =
   ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts String → String
-  , printHost ∷ host → Host
-  , printPort ∷ port → Port
+  , printHosts ∷ hosts → String
   , printPath ∷ path → Path
   , printHierPath ∷ hierPath → Either PathAbsolute PathRootless
   , printQuery ∷ query → Query
@@ -71,9 +64,9 @@ type AbsoluteURIPrintOptions userInfo hosts host port path hierPath query r =
   )
 
 parser
-  ∷ ∀ userInfo hosts host port path hierPath query r
-  . Record (AbsoluteURIParseOptions userInfo hosts host port path hierPath query r)
-  → Parser String (AbsoluteURI userInfo hosts host port path hierPath query)
+  ∷ ∀ userInfo hosts path hierPath query r
+  . Record (AbsoluteURIParseOptions userInfo hosts path hierPath query r)
+  → Parser String (AbsoluteURI userInfo hosts path hierPath query)
 parser opts = AbsoluteURI
   <$> Scheme.parser
   <*> HPart.parser opts
@@ -81,10 +74,9 @@ parser opts = AbsoluteURI
   <* eof
 
 print
-  ∷ ∀ userInfo hosts host port path hierPath query r
-  . Functor hosts
-  ⇒ Record (AbsoluteURIPrintOptions userInfo hosts host port path hierPath query r)
-  → AbsoluteURI userInfo hosts host port path hierPath query
+  ∷ ∀ userInfo hosts path hierPath query r
+  . Record (AbsoluteURIPrintOptions userInfo hosts path hierPath query r)
+  → AbsoluteURI userInfo hosts path hierPath query
   → String
 print opts (AbsoluteURI s h q) =
   String.joinWith "" $ Array.catMaybes
@@ -94,9 +86,9 @@ print opts (AbsoluteURI s h q) =
     ]
 
 _scheme
-  ∷ ∀ userInfo hosts host port path hierPath query
+  ∷ ∀ userInfo hosts path hierPath query
   . Lens'
-      (AbsoluteURI userInfo hosts host port path hierPath query)
+      (AbsoluteURI userInfo hosts path hierPath query)
       Scheme
 _scheme =
   lens
@@ -104,19 +96,19 @@ _scheme =
     (\(AbsoluteURI _ h q) s → AbsoluteURI s h q)
 
 _hierPart
-  ∷ ∀ userInfo hosts host port path hierPath query
+  ∷ ∀ userInfo hosts path hierPath query
   . Lens'
-      (AbsoluteURI userInfo hosts host port path hierPath query)
-      (HierarchicalPart userInfo hosts host port path hierPath)
+      (AbsoluteURI userInfo hosts path hierPath query)
+      (HierarchicalPart userInfo hosts path hierPath)
 _hierPart =
   lens
     (\(AbsoluteURI _ h _) → h)
     (\(AbsoluteURI s _ q) h → AbsoluteURI s h q)
 
 _query
-  ∷ ∀ userInfo hosts host port path hierPath query
+  ∷ ∀ userInfo hosts path hierPath query
   . Lens'
-      (AbsoluteURI userInfo hosts host port path hierPath query)
+      (AbsoluteURI userInfo hosts path hierPath query)
       (Maybe query)
 _query =
   lens

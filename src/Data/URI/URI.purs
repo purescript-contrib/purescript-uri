@@ -18,15 +18,11 @@ import Prelude
 
 import Data.Array as Array
 import Data.Either (Either)
-import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
-import Data.Ord (class Ord1)
 import Data.String as String
-import Data.These (These)
-import Data.Tuple (Tuple)
 import Data.URI.Common (URIPartParseError)
 import Data.URI.Fragment (Fragment)
 import Data.URI.Fragment as Fragment
@@ -41,22 +37,20 @@ import Text.Parsing.Parser.Combinators (optionMaybe)
 import Text.Parsing.Parser.String (eof)
 
 -- | A generic URI
-data URI userInfo hosts host port path hierPath query fragment = URI Scheme (HierarchicalPart userInfo hosts host port path hierPath) (Maybe query) (Maybe fragment)
+data URI userInfo hosts path hierPath query fragment = URI Scheme (HierarchicalPart userInfo hosts path hierPath) (Maybe query) (Maybe fragment)
 
-derive instance eqURI ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port, Eq path, Eq hierPath, Eq query, Eq fragment) ⇒ Eq (URI userInfo hosts host port path hierPath query fragment)
-derive instance ordURI ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port, Ord path, Ord hierPath, Ord query, Ord fragment) ⇒ Ord (URI userInfo hosts host port path hierPath query fragment)
-derive instance genericURI ∷ Generic (URI userInfo hosts host port path hierPath query fragment) _
-instance showURI ∷ (Show userInfo, Show (hosts (These host port)), Show host, Show port, Show path, Show hierPath, Show query, Show fragment) ⇒ Show (URI userInfo hosts host port path hierPath query fragment) where show = genericShow
+derive instance eqURI ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query, Eq fragment) ⇒ Eq (URI userInfo hosts path hierPath query fragment)
+derive instance ordURI ∷ (Ord userInfo, Ord hosts, Ord path, Ord hierPath, Ord query, Ord fragment) ⇒ Ord (URI userInfo hosts path hierPath query fragment)
+derive instance genericURI ∷ Generic (URI userInfo hosts path hierPath query fragment) _
+instance showURI ∷ (Show userInfo, Show hosts, Show path, Show hierPath, Show query, Show fragment) ⇒ Show (URI userInfo hosts path hierPath query fragment) where show = genericShow
 
-type URIOptions userInfo hosts host port path hierPath query fragment =
-  URIParseOptions userInfo hosts host port path hierPath query fragment
-    (URIPrintOptions userInfo hosts host port path hierPath query fragment ())
+type URIOptions userInfo hosts path hierPath query fragment =
+  URIParseOptions userInfo hosts path hierPath query fragment
+    (URIPrintOptions userInfo hosts path hierPath query fragment ())
 
-type URIParseOptions userInfo hosts host port path hierPath query fragment r =
+type URIParseOptions userInfo hosts path hierPath query fragment r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ HostsParseOptions hosts
-  , parseHost ∷ Host → Either URIPartParseError host
-  , parsePort ∷ Port → Either URIPartParseError port
+  , parseHosts ∷ Parser String hosts
   , parsePath ∷ Path → Either URIPartParseError path
   , parseHierPath ∷ Either PathAbsolute PathRootless → Either URIPartParseError hierPath
   , parseQuery ∷ Query → Either URIPartParseError query
@@ -64,11 +58,9 @@ type URIParseOptions userInfo hosts host port path hierPath query fragment r =
   | r
   )
 
-type URIPrintOptions userInfo hosts host port path hierPath query fragment r =
+type URIPrintOptions userInfo hosts path hierPath query fragment r =
   ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts String → String
-  , printHost ∷ host → Host
-  , printPort ∷ port → Port
+  , printHosts ∷ hosts → String
   , printPath ∷ path → Path
   , printHierPath ∷ hierPath → Either PathAbsolute PathRootless
   , printQuery ∷ query → Query
@@ -77,9 +69,9 @@ type URIPrintOptions userInfo hosts host port path hierPath query fragment r =
   )
 
 parser
-  ∷ ∀ userInfo hosts host port path hierPath query fragment r
-  . Record (URIParseOptions userInfo hosts host port path hierPath query fragment r)
-  → Parser String (URI userInfo hosts host port path hierPath query fragment)
+  ∷ ∀ userInfo hosts path hierPath query fragment r
+  . Record (URIParseOptions userInfo hosts path hierPath query fragment r)
+  → Parser String (URI userInfo hosts path hierPath query fragment)
 parser opts = URI
   <$> Scheme.parser
   <*> HPart.parser opts
@@ -88,10 +80,9 @@ parser opts = URI
   <* eof
 
 print
-  ∷ ∀ userInfo hosts host port path hierPath query fragment r
-  . Functor hosts
-  ⇒ Record (URIPrintOptions userInfo hosts host port path hierPath query fragment r)
-  → URI userInfo hosts host port path hierPath query fragment
+  ∷ ∀ userInfo hosts path hierPath query fragment r
+  . Record (URIPrintOptions userInfo hosts path hierPath query fragment r)
+  → URI userInfo hosts path hierPath query fragment
   → String
 print opts (URI s h q f) =
   String.joinWith "" $ Array.catMaybes
@@ -102,9 +93,9 @@ print opts (URI s h q f) =
     ]
 
 _scheme
-  ∷ ∀ userInfo hosts host port path hierPath query fragment
+  ∷ ∀ userInfo hosts path hierPath query fragment
   . Lens'
-      (URI userInfo hosts host port path hierPath query fragment)
+      (URI userInfo hosts path hierPath query fragment)
       Scheme
 _scheme =
   lens
@@ -112,19 +103,19 @@ _scheme =
     (\(URI _ h q f) s → URI s h q f)
 
 _hierPart
-  ∷ ∀ userInfo hosts host port path hierPath query fragment
+  ∷ ∀ userInfo hosts path hierPath query fragment
   . Lens'
-      (URI userInfo hosts host port path hierPath query fragment)
-      (HierarchicalPart userInfo hosts host port path hierPath)
+      (URI userInfo hosts path hierPath query fragment)
+      (HierarchicalPart userInfo hosts path hierPath)
 _hierPart =
   lens
     (\(URI _ h _ _) → h)
     (\(URI s _ q f) h → URI s h q f)
 
 _query
-  ∷ ∀ userInfo hosts host port path hierPath query fragment
+  ∷ ∀ userInfo hosts path hierPath query fragment
   . Lens'
-      (URI userInfo hosts host port path hierPath query fragment)
+      (URI userInfo hosts path hierPath query fragment)
       (Maybe query)
 _query =
   lens
@@ -132,9 +123,9 @@ _query =
     (\(URI s h _ f) q → URI s h q f)
 
 _fragment
-  ∷ ∀ userInfo hosts host port path hierPath query fragment
+  ∷ ∀ userInfo hosts path hierPath query fragment
   . Lens'
-      (URI userInfo hosts host port path hierPath query fragment)
+      (URI userInfo hosts path hierPath query fragment)
       (Maybe fragment)
 _fragment =
   lens

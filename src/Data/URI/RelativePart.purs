@@ -20,14 +20,11 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Either (Either(..), either)
-import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Traversal', wander)
 import Data.Maybe (Maybe(..), maybe)
-import Data.Ord (class Ord1)
 import Data.String as String
-import Data.These (These)
 import Data.URI.Authority (Authority(..), Host(..), HostsParseOptions, Port(..), RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
 import Data.URI.Common (URIPartParseError)
@@ -41,34 +38,30 @@ import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
 
 -- | The "relative part" of a relative reference.
-data RelativePart userInfo hosts host port path relPath
-  = RelativePartAuth (Authority userInfo hosts host port) (Maybe path)
+data RelativePart userInfo hosts path relPath
+  = RelativePartAuth (Authority userInfo hosts) (Maybe path)
   | RelativePartNoAuth (Maybe relPath)
 
-derive instance eqRelativePart ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port, Eq path, Eq relPath) ⇒ Eq (RelativePart userInfo hosts host port path relPath)
-derive instance ordRelativePart ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port, Ord path, Ord relPath) ⇒ Ord (RelativePart userInfo hosts host port path relPath)
-derive instance genericRelativePart ∷ Generic (RelativePart userInfo hosts host port path relPath) _
-instance showRelativePart ∷ (Show userInfo, Show (hosts (These host port)), Show port, Show path, Show relPath) ⇒ Show (RelativePart userInfo hosts host port path relPath) where show = genericShow
+derive instance eqRelativePart ∷ (Eq userInfo, Eq hosts, Eq path, Eq relPath) ⇒ Eq (RelativePart userInfo hosts path relPath)
+derive instance ordRelativePart ∷ (Ord userInfo, Ord hosts, Ord path, Ord relPath) ⇒ Ord (RelativePart userInfo hosts path relPath)
+derive instance genericRelativePart ∷ Generic (RelativePart userInfo hosts path relPath) _
+instance showRelativePart ∷ (Show userInfo, Show hosts, Show path, Show relPath) ⇒ Show (RelativePart userInfo hosts path relPath) where show = genericShow
 
-type RelativePartOptions userInfo hosts host port path relPath =
-  RelativePartParseOptions userInfo hosts host port path relPath
-    (RelativePartPrintOptions userInfo hosts host port path relPath ())
+type RelativePartOptions userInfo hosts path relPath =
+  RelativePartParseOptions userInfo hosts path relPath
+    (RelativePartPrintOptions userInfo hosts path relPath ())
 
-type RelativePartParseOptions userInfo hosts host port path relPath r =
+type RelativePartParseOptions userInfo hosts path relPath r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ HostsParseOptions hosts
-  , parseHost ∷ Host → Either URIPartParseError host
-  , parsePort ∷ Port → Either URIPartParseError port
+  , parseHosts ∷ Parser String hosts
   , parsePath ∷ Path → Either URIPartParseError path
   , parseRelPath ∷ RelPath → Either URIPartParseError relPath
   | r
   )
 
-type RelativePartPrintOptions userInfo hosts host port path relPath r =
+type RelativePartPrintOptions userInfo hosts path relPath r =
   ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts String → String
-  , printHost ∷ host → Host
-  , printPort ∷ port → Port
+  , printHosts ∷ hosts → String
   , printPath ∷ path → Path
   , printRelPath ∷ relPath → RelPath
   | r
@@ -77,9 +70,9 @@ type RelativePartPrintOptions userInfo hosts host port path relPath r =
 type RelPath = Either PathAbsolute PathNoScheme
 
 parser
-  ∷ ∀ userInfo hosts host port path relPath r
-  . Record (RelativePartParseOptions userInfo hosts host port path relPath r)
-  → Parser String (RelativePart userInfo hosts host port path relPath)
+  ∷ ∀ userInfo hosts path relPath r
+  . Record (RelativePartParseOptions userInfo hosts path relPath r)
+  → Parser String (RelativePart userInfo hosts path relPath)
 parser opts = withAuth <|> withoutAuth
   where
   withAuth =
@@ -94,10 +87,9 @@ parser opts = withAuth <|> withoutAuth
     <|> pure Nothing
 
 print
-  ∷ ∀ userInfo hosts host port path relPath r
-  . Functor hosts
-  ⇒ Record (RelativePartPrintOptions userInfo hosts host port path relPath r)
-  → RelativePart userInfo hosts host port path relPath → String
+  ∷ ∀ userInfo hosts path relPath r
+  . Record (RelativePartPrintOptions userInfo hosts path relPath r)
+  → RelativePart userInfo hosts path relPath → String
 print opts = case _ of
   RelativePartAuth a p →
     String.joinWith "" $ Array.catMaybes
@@ -108,27 +100,27 @@ print opts = case _ of
     maybe "" (either PathAbs.print PathNoScheme.print <<< opts.printRelPath) p
 
 _authority
-  ∷ ∀ userInfo hosts host port path relPath
+  ∷ ∀ userInfo hosts path relPath
   . Traversal'
-      (RelativePart userInfo hosts host port path relPath)
-      (Authority userInfo hosts host port)
+      (RelativePart userInfo hosts path relPath)
+      (Authority userInfo hosts)
 _authority = wander \f → case _ of
   RelativePartAuth a p → flip RelativePartAuth p <$> f a
   a → pure a
 
 _path
-  ∷ ∀ userInfo hosts host port path relPath
+  ∷ ∀ userInfo hosts path relPath
   . Traversal'
-      (RelativePart userInfo hosts host port path relPath)
+      (RelativePart userInfo hosts path relPath)
       (Maybe path)
 _path = wander \f → case _ of
   RelativePartAuth a p → RelativePartAuth a <$> f p
   a → pure a
 
 _relPath
-  ∷ ∀ userInfo hosts host port path relPath
+  ∷ ∀ userInfo hosts path relPath
   . Traversal'
-      (RelativePart userInfo hosts host port path relPath)
+      (RelativePart userInfo hosts path relPath)
       (Maybe relPath)
 _relPath = wander \f a → case a of
   RelativePartNoAuth p → RelativePartNoAuth <$> f p

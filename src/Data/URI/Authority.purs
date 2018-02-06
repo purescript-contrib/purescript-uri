@@ -15,60 +15,43 @@ module Data.URI.Authority
 
 import Prelude
 
-import Data.Either (Either(..))
-import Data.Eq (class Eq1, eq1)
+import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.List (List)
-import Data.Maybe (Maybe(..), maybe)
-import Data.Ord (class Ord1, compare1)
-import Data.These (These(..))
+import Data.Maybe (Maybe(..))
 import Data.URI.Common (URIPartParseError)
 import Data.URI.Host (Host(..), RegName, _IPv4Address, _IPv6Address, _NameAddress)
-import Data.URI.Host as Host
 import Data.URI.Port (Port(..))
-import Data.URI.Port as Port
 import Data.URI.UserInfo (UserInfo)
 import Data.URI.UserInfo as UserInfo
 import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators (optionMaybe, sepBy1, try)
+import Text.Parsing.Parser.Combinators (optionMaybe, try)
 import Text.Parsing.Parser.String (char, string)
 
 -- | The authority part of a URI. For example: `purescript.org`,
 -- | `localhost:3000`, `user@example.net`
-data Authority userInfo hosts host port = Authority (Maybe userInfo) (hosts (These host port))
+data Authority userInfo hosts = Authority (Maybe userInfo) hosts
 
-instance eqAuthority ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port) ⇒ Eq (Authority userInfo hosts host port) where
-  eq (Authority ui1 hs1) (Authority ui2 hs2) = eq ui1 ui2 && eq1 hs1 hs2
+derive instance eqAuthority ∷ (Eq userInfo, Eq hosts) ⇒ Eq (Authority userInfo hosts)
+derive instance ordAuthority ∷ (Ord userInfo, Ord hosts) ⇒ Ord (Authority userInfo hosts)
+derive instance genericAuthority ∷ Generic (Authority userInfo hosts) _
+instance showAuthority ∷ (Show userInfo, Show hosts) ⇒ Show (Authority userInfo hosts) where show = genericShow
 
-instance ordAuthority ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port) ⇒ Ord (Authority userInfo hosts host port) where
-  compare (Authority ui1 hs1) (Authority ui2 hs2) =
-    case compare ui1 ui2 of
-      EQ → compare1 hs1 hs2
-      o → o
+type AuthorityOptions userInfo hosts =
+  AuthorityParseOptions userInfo hosts
+    (AuthorityPrintOptions userInfo hosts ())
 
-derive instance genericAuthority ∷ Generic (Authority userInfo hosts host port) _
-
-instance showAuthority ∷ (Show userInfo, Show (hosts (These host port)), Show port) ⇒ Show (Authority userInfo hosts host port) where show = genericShow
-
-type AuthorityOptions userInfo hosts host port =
-  AuthorityParseOptions userInfo hosts host port
-    (AuthorityPrintOptions userInfo hosts host port ())
-
-type AuthorityParseOptions userInfo hosts host port r =
+type AuthorityParseOptions userInfo hosts r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ HostsParseOptions hosts
-  , parseHost ∷ Host → Either URIPartParseError host
-  , parsePort ∷ Port → Either URIPartParseError port
+  , parseHosts ∷ Parser String hosts
   | r
   )
 
-type AuthorityPrintOptions userInfo hosts host port r =
+type AuthorityPrintOptions userInfo hosts r =
   ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts String → String
-  , printHost ∷ host → Host
-  , printPort ∷ port → Port
+  , printHosts ∷ hosts → String
   | r
   )
 
@@ -79,52 +62,28 @@ type HostsParseOptions hosts
       { split ∷ Parser String Unit, build ∷ List a → hosts a }
 
 parser
-  ∷ ∀ userInfo hosts host port r
-  . Record (AuthorityParseOptions userInfo hosts host port r)
-  → Parser String (Authority userInfo hosts host port)
+  ∷ ∀ userInfo hosts r
+  . Record (AuthorityParseOptions userInfo hosts r)
+  → Parser String (Authority userInfo hosts)
 parser opts = do
   _ ← string "//"
   ui ← optionMaybe $ try (UserInfo.parser opts.parseUserInfo <* char '@')
-  hosts ← case opts.parseHosts of
-    Left build → do
-      host ← optionMaybe (Host.parser opts.parseHost)
-      port ← optionMaybe (char ':' *> Port.parser opts.parsePort)
-      pure $ build case host, port of
-        Just h, Nothing → Just (This h)
-        Nothing, Just p → Just (That p)
-        Just h, Just p → Just (Both h p)
-        Nothing, Nothing → Nothing
-    Right { split, build } → do
-      hosts ←
-        flip sepBy1 split $
-          Both
-            <$> Host.parser opts.parseHost
-            <*> (char ':' *> Port.parser opts.parsePort)
-      pure $ build hosts
+  hosts ← opts.parseHosts
   pure $ Authority ui hosts
 
 print
-  ∷ ∀ userInfo hosts host port r
-  . Functor hosts
-  ⇒ Record (AuthorityPrintOptions userInfo hosts host port r)
-  → Authority userInfo hosts host port
+  ∷ ∀ userInfo hosts r
+  . Record (AuthorityPrintOptions userInfo hosts r)
+  → Authority userInfo hosts
   → String
-print opts (Authority ui hs) =
-  "//" <> printUserInfo ui <> opts.printHosts (printHostAndPort <$> hs)
-  where
-  printUserInfo =
-    maybe "" (\u → UserInfo.print opts.printUserInfo u <> "@")
-  printHostAndPort (This h) =
-    Host.print opts.printHost h
-  printHostAndPort (That p) =
-    ":" <> Port.print opts.printPort p
-  printHostAndPort (Both h p) =
-    Host.print opts.printHost h <> ":" <> Port.print opts.printPort p
+print opts (Authority mui hs) = case mui of
+  Just ui → "//" <> UserInfo.print opts.printUserInfo ui <> "@" <> opts.printHosts hs
+  Nothing → "//" <> opts.printHosts hs
 
 _userInfo
-  ∷ ∀ userInfo hosts host port
+  ∷ ∀ userInfo hosts
   . Lens'
-      (Authority userInfo hosts host port)
+      (Authority userInfo hosts)
       (Maybe userInfo)
 _userInfo =
   lens
@@ -132,10 +91,10 @@ _userInfo =
     (\(Authority _ hs) ui → Authority ui hs)
 
 _hosts
-  ∷ ∀ userInfo hosts host port
+  ∷ ∀ userInfo hosts
   . Lens'
-      (Authority userInfo hosts host port)
-      (hosts (These host port))
+      (Authority userInfo hosts)
+      hosts
 _hosts =
   lens
     (\(Authority _ hs) → hs)

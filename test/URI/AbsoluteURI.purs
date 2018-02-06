@@ -3,12 +3,14 @@ module Test.URI.AbsoluteURI where
 import Prelude
 
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.These (These(..))
 import Data.Tuple (Tuple(..))
 import Data.URI.AbsoluteURI (Authority(..), HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port(..), Query, Scheme(..), AbsoluteURI(..), AbsoluteURIOptions, UserInfo)
 import Data.URI.AbsoluteURI as AbsoluteURI
 import Data.URI.Host.RegName as RegName
+import Data.URI.HostPortPair (HostPortPair)
+import Data.URI.HostPortPair as HostPortPair
 import Data.URI.Path.Segment as PathSegment
 import Data.URI.Query as Query
 import Test.Spec (Spec, describe)
@@ -63,16 +65,12 @@ spec =
 path ∷ Array String → Maybe Path
 path = Just <<< Path <<< map PathSegment.unsafeSegmentFromString
 
-options ∷ Record (AbsoluteURIOptions UserInfo Maybe Host Port Path HierPath Query)
+options ∷ Record (AbsoluteURIOptions UserInfo (HostPortPair Host Port) Path HierPath Query)
 options =
   { parseUserInfo: pure
   , printUserInfo: id
-  , parseHosts: Left id
-  , printHosts: fromMaybe ""
-  , parseHost: pure
-  , printHost: id
-  , parsePort: pure
-  , printPort: id
+  , parseHosts: HostPortPair.parser pure pure
+  , printHosts: HostPortPair.print id id
   , parsePath: pure
   , printPath: id
   , parseHierPath: pure

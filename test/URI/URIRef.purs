@@ -2,14 +2,14 @@ module Test.URI.URIRef where
 
 import Prelude
 
-import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.String as String
+import Data.Maybe (Maybe(..))
 import Data.These (These(..))
 import Data.Tuple (Tuple(..))
 import Data.URI.Fragment as Fragment
 import Data.URI.Host.RegName as RegName
+import Data.URI.HostPortPair (HostPortPair)
+import Data.URI.HostPortPair as HostPortPair
 import Data.URI.Path.Segment as PathSegment
 import Data.URI.Query as Query
 import Data.URI.URIRef (Authority(..), Fragment, HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathNoScheme(..), PathRootless(..), Port(..), Query, RelPath, RelativePart(..), RelativeRef(..), Scheme(..), URI(..), URIRefOptions, UserInfo)
@@ -17,7 +17,6 @@ import Data.URI.URIRef as URIRef
 import Data.URI.UserInfo as UserInfo
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
-import Text.Parsing.Parser.String as PS
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =
@@ -108,38 +107,38 @@ spec =
             (path ["wiki", "URI_scheme"]))
           Nothing
           Nothing))
-    testIso
-      (URIRef.parser optionsMany)
-      (URIRef.print optionsMany)
-      "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
-      (Left
-        (URI
-          (Scheme "mongodb")
-          (HierarchicalPartAuth
-            (Authority
-              (Just (UserInfo.unsafeFromString "foo:bar"))
-              [ This (NameAddress (RegName.unsafeFromString "db1.example.net"))
-              , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port 2500)
-              ])
-            (path ["authdb"]))
-          (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
-          Nothing))
-    testIso
-      (URIRef.parser optionsMany)
-      (URIRef.print optionsMany)
-      "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
-      (Left
-        (URI
-          (Scheme "mongodb")
-          (HierarchicalPartAuth
-            (Authority
-              (Just (UserInfo.unsafeFromString "foo:bar"))
-              [ Both (NameAddress (RegName.unsafeFromString "db1.example.net")) (Port 6)
-              , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port 2500)
-              ])
-            (path ["authdb"]))
-          (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
-          Nothing))
+    -- testIso
+    --   (URIRef.parser optionsMany)
+    --   (URIRef.print optionsMany)
+    --   "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
+    --   (Left
+    --     (URI
+    --       (Scheme "mongodb")
+    --       (HierarchicalPartAuth
+    --         (Authority
+    --           (Just (UserInfo.unsafeFromString "foo:bar"))
+    --           [ This (NameAddress (RegName.unsafeFromString "db1.example.net"))
+    --           , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port 2500)
+    --           ])
+    --         (path ["authdb"]))
+    --       (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
+    --       Nothing))
+    -- testIso
+    --   (URIRef.parser optionsMany)
+    --   (URIRef.print optionsMany)
+    --   "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
+    --   (Left
+    --     (URI
+    --       (Scheme "mongodb")
+    --       (HierarchicalPartAuth
+    --         (Authority
+    --           (Just (UserInfo.unsafeFromString "foo:bar"))
+    --           [ Both (NameAddress (RegName.unsafeFromString "db1.example.net")) (Port 6)
+    --           , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port 2500)
+    --           ])
+    --         (path ["authdb"]))
+    --       (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
+    --       Nothing))
     testIso
       (URIRef.parser optionsSingle)
       (URIRef.print optionsSingle)
@@ -152,22 +151,22 @@ spec =
             Nothing)
           Nothing
           Nothing))
-    testIso
-      (URIRef.parser optionsMany)
-      (URIRef.print optionsMany)
-      "mongodb://192.168.0.1,192.168.0.2"
-      (Left
-        (URI
-          (Scheme "mongodb")
-          (HierarchicalPartAuth
-            (Authority
-              Nothing
-              [ This (IPv4Address "192.168.0.1")
-              , This (IPv4Address "192.168.0.2")
-              ])
-            Nothing)
-          Nothing
-          Nothing))
+    -- testIso
+    --   (URIRef.parser optionsMany)
+    --   (URIRef.print optionsMany)
+    --   "mongodb://192.168.0.1,192.168.0.2"
+    --   (Left
+    --     (URI
+    --       (Scheme "mongodb")
+    --       (HierarchicalPartAuth
+    --         (Authority
+    --           Nothing
+    --           [ This (IPv4Address "192.168.0.1")
+    --           , This (IPv4Address "192.168.0.2")
+    --           ])
+    --         Nothing)
+    --       Nothing
+    --       Nothing))
     testIso
       (URIRef.parser optionsSingle)
       (URIRef.print optionsSingle)
@@ -529,16 +528,12 @@ spec =
 path ∷ Array String → Maybe Path
 path = Just <<< Path <<< map PathSegment.unsafeSegmentFromString
 
-optionsSingle ∷ Record (URIRefOptions UserInfo Maybe Host Port Path HierPath RelPath Query Fragment)
+optionsSingle ∷ Record (URIRefOptions UserInfo (HostPortPair Host Port) Path HierPath RelPath Query Fragment)
 optionsSingle =
   { parseUserInfo: pure
   , printUserInfo: id
-  , parseHosts: Left id
-  , printHosts: fromMaybe ""
-  , parseHost: pure
-  , printHost: id
-  , parsePort: pure
-  , printPort: id
+  , parseHosts: HostPortPair.parser pure pure
+  , printHosts: HostPortPair.print id id
   , parsePath: pure
   , printPath: id
   , parseHierPath: pure
@@ -551,24 +546,24 @@ optionsSingle =
   , printFragment: id
   }
 
-optionsMany ∷ Record (URIRefOptions UserInfo Array Host Port Path HierPath RelPath Query Fragment)
-optionsMany =
-  { parseUserInfo: pure
-  , printUserInfo: id
-  , parseHosts: Right { split: void (PS.char ','), build: Array.fromFoldable }
-  , printHosts: String.joinWith ","
-  , parseHost: pure
-  , printHost: id
-  , parsePort: pure
-  , printPort: id
-  , parsePath: pure
-  , printPath: id
-  , parseHierPath: pure
-  , printHierPath: id
-  , parseRelPath: pure
-  , printRelPath: id
-  , parseQuery: pure
-  , printQuery: id
-  , parseFragment: pure
-  , printFragment: id
-  }
+-- optionsMany ∷ Record (URIRefOptions UserInfo Array Host Port Path HierPath RelPath Query Fragment)
+-- optionsMany =
+--   { parseUserInfo: pure
+--   , printUserInfo: id
+--   , parseHosts: Right { split: void (PS.char ','), build: Array.fromFoldable }
+--   , printHosts: String.joinWith ","
+--   , parseHost: pure
+--   , printHost: id
+--   , parsePort: pure
+--   , printPort: id
+--   , parsePath: pure
+--   , printPath: id
+--   , parseHierPath: pure
+--   , printHierPath: id
+--   , parseRelPath: pure
+--   , printRelPath: id
+--   , parseQuery: pure
+--   , printQuery: id
+--   , parseFragment: pure
+--   , printFragment: id
+--   }

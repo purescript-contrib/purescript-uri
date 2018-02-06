@@ -17,6 +17,7 @@ import Data.String as String
 import Data.URI.Common (URIPartParseError, digit, wrapParser)
 import Global (readInt)
 import Text.Parsing.Parser (Parser, fail)
+import Text.Parsing.Parser.String (char)
 
 -- | A port number.
 newtype Port = Port Int
@@ -29,10 +30,10 @@ instance showPort ∷ Show Port where show = genericShow
 
 parser ∷ ∀ p. (Port → Either URIPartParseError p) → Parser String p
 parser p = wrapParser p do
-  s ← String.fromCharArray <$> Array.some digit
+  s ← String.fromCharArray <$> (char ':' *> Array.some digit)
   case fromNumber $ readInt 10 s of
     Just x → pure (Port x)
     _ → fail "Expected valid port number"
 
 print ∷ ∀ p. (p → Port) → p → String
-print = map (\(Port x) → show x)
+print = map (\(Port x) → ":" <> show x)

@@ -20,15 +20,11 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Either (Either(..), either)
-import Data.Eq (class Eq1)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Traversal', wander)
 import Data.Maybe (Maybe(..), maybe)
-import Data.Ord (class Ord1)
 import Data.String as String
-import Data.These (These)
-import Data.Tuple (Tuple)
 import Data.URI.Authority (Authority(..), Host(..), HostsParseOptions, Port(..), RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
 import Data.URI.Common (URIPartParseError)
@@ -42,34 +38,30 @@ import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
 
 -- | The "hierarchical part" of a generic or absolute URI.
-data HierarchicalPart userInfo hosts host port path hierPath
-  = HierarchicalPartAuth (Authority userInfo hosts host port) (Maybe path)
+data HierarchicalPart userInfo hosts path hierPath
+  = HierarchicalPartAuth (Authority userInfo hosts) (Maybe path)
   | HierarchicalPartNoAuth (Maybe hierPath)
 
-derive instance eqHierarchicalPart ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port, Eq path, Eq hierPath) ⇒ Eq (HierarchicalPart userInfo hosts host port path hierPath)
-derive instance ordHierarchicalPart ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port, Ord path, Ord hierPath) ⇒ Ord (HierarchicalPart userInfo hosts host port path hierPath)
-derive instance genericHierarchicalPart ∷ Generic (HierarchicalPart userInfo hosts host port path hierPath) _
-instance showHierarchicalPart ∷ (Show userInfo, Show (hosts (These host port)), Show host, Show port, Show path, Show hierPath) ⇒ Show (HierarchicalPart userInfo hosts host port path hierPath) where show = genericShow
+derive instance eqHierarchicalPart ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath) ⇒ Eq (HierarchicalPart userInfo hosts path hierPath)
+derive instance ordHierarchicalPart ∷ (Ord userInfo, Ord hosts, Ord path, Ord hierPath) ⇒ Ord (HierarchicalPart userInfo hosts path hierPath)
+derive instance genericHierarchicalPart ∷ Generic (HierarchicalPart userInfo hosts path hierPath) _
+instance showHierarchicalPart ∷ (Show userInfo, Show hosts, Show path, Show hierPath) ⇒ Show (HierarchicalPart userInfo hosts path hierPath) where show = genericShow
 
-type HierarchicalPartOptions userInfo hosts host port path hierPath =
-  HierarchicalPartParseOptions userInfo hosts host port path hierPath
-    (HierarchicalPartPrintOptions userInfo hosts host port path hierPath ())
+type HierarchicalPartOptions userInfo hosts path hierPath =
+  HierarchicalPartParseOptions userInfo hosts path hierPath
+    (HierarchicalPartPrintOptions userInfo hosts path hierPath ())
 
-type HierarchicalPartParseOptions userInfo hosts host port path hierPath r =
+type HierarchicalPartParseOptions userInfo hosts path hierPath r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ HostsParseOptions hosts
-  , parseHost ∷ Host → Either URIPartParseError host
-  , parsePort ∷ Port → Either URIPartParseError port
+  , parseHosts ∷ Parser String hosts
   , parsePath ∷ Path → Either URIPartParseError path
   , parseHierPath ∷ HierPath → Either URIPartParseError hierPath
   | r
   )
 
-type HierarchicalPartPrintOptions userInfo hosts host port path hierPath r =
+type HierarchicalPartPrintOptions userInfo hosts path hierPath r =
   ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts String → String
-  , printHost ∷ host → Host
-  , printPort ∷ port → Port
+  , printHosts ∷ hosts → String
   , printPath ∷ path → Path
   , printHierPath ∷ hierPath → HierPath
   | r
@@ -78,9 +70,9 @@ type HierarchicalPartPrintOptions userInfo hosts host port path hierPath r =
 type HierPath = Either PathAbsolute PathRootless
 
 parser
-  ∷ ∀ userInfo hosts host port path hierPath r
-  . Record (HierarchicalPartParseOptions userInfo hosts host port path hierPath r)
-  → Parser String (HierarchicalPart userInfo hosts host port path hierPath)
+  ∷ ∀ userInfo hosts path hierPath r
+  . Record (HierarchicalPartParseOptions userInfo hosts path hierPath r)
+  → Parser String (HierarchicalPart userInfo hosts path hierPath)
 parser opts = withAuth <|> withoutAuth
   where
   withAuth =
@@ -95,10 +87,9 @@ parser opts = withAuth <|> withoutAuth
     <|> pure Nothing
 
 print
-  ∷ ∀ userInfo hosts host port path hierPath r
-  . Functor hosts
-  ⇒ Record (HierarchicalPartPrintOptions userInfo hosts host port path hierPath r)
-  → HierarchicalPart userInfo hosts host port path hierPath → String
+  ∷ ∀ userInfo hosts path hierPath r
+  . Record (HierarchicalPartPrintOptions userInfo hosts path hierPath r)
+  → HierarchicalPart userInfo hosts path hierPath → String
 print opts = case _ of
   HierarchicalPartAuth a p →
     String.joinWith "" $ Array.catMaybes
@@ -109,27 +100,27 @@ print opts = case _ of
     maybe "" (either PathAbs.print PathRootless.print <<< opts.printHierPath) p
 
 _authority
-  ∷ ∀ userInfo hosts host port path hierPath
+  ∷ ∀ userInfo hosts path hierPath
   . Traversal'
-      (HierarchicalPart userInfo hosts host port path hierPath)
-      (Authority userInfo hosts host port)
+      (HierarchicalPart userInfo hosts path hierPath)
+      (Authority userInfo hosts)
 _authority = wander \f → case _ of
   HierarchicalPartAuth a p → flip HierarchicalPartAuth p <$> f a
   a → pure a
 
 _path
-  ∷ ∀ userInfo hosts host port path hierPath
+  ∷ ∀ userInfo hosts path hierPath
   . Traversal'
-      (HierarchicalPart userInfo hosts host port path hierPath)
+      (HierarchicalPart userInfo hosts path hierPath)
       (Maybe path)
 _path = wander \f → case _ of
   HierarchicalPartAuth a p → HierarchicalPartAuth a <$> f p
   a → pure a
 
 _hierPath
-  ∷ ∀ userInfo hosts host port path hierPath
+  ∷ ∀ userInfo hosts path hierPath
   . Traversal'
-      (HierarchicalPart userInfo hosts host port path hierPath)
+      (HierarchicalPart userInfo hosts path hierPath)
       (Maybe hierPath)
 _hierPath = wander \f → case _ of
   HierarchicalPartNoAuth p → HierarchicalPartNoAuth <$> f p

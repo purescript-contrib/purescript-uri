@@ -44,20 +44,18 @@ import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (try)
 
 -- | An alias for the most common use case of resource identifiers.
-type URIRef userInfo hosts host port path hierPath relPath query fragment =
+type URIRef userInfo hosts path hierPath relPath query fragment =
   Either
-    (URI.URI userInfo hosts host port path hierPath query fragment)
-    (RelativeRef.RelativeRef userInfo hosts host port path relPath query fragment)
+    (URI.URI userInfo hosts path hierPath query fragment)
+    (RelativeRef.RelativeRef userInfo hosts path relPath query fragment)
 
-type URIRefOptions userInfo hosts host port path hierPath relPath query fragment =
-  URIRefParseOptions userInfo hosts host port path hierPath relPath query fragment
-    (URIRefPrintOptions userInfo hosts host port path hierPath relPath query fragment ())
+type URIRefOptions userInfo hosts path hierPath relPath query fragment =
+  URIRefParseOptions userInfo hosts path hierPath relPath query fragment
+    (URIRefPrintOptions userInfo hosts path hierPath relPath query fragment ())
 
-type URIRefParseOptions userInfo hosts host port path hierPath relPath query fragment r =
+type URIRefParseOptions userInfo hosts path hierPath relPath query fragment r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ HostsParseOptions hosts
-  , parseHost ∷ Host → Either URIPartParseError host
-  , parsePort ∷ Port → Either URIPartParseError port
+  , parseHosts ∷ Parser String hosts
   , parsePath ∷ Path → Either URIPartParseError path
   , parseHierPath ∷ Either PathAbsolute PathRootless → Either URIPartParseError hierPath
   , parseRelPath ∷ Either PathAbsolute PathNoScheme → Either URIPartParseError relPath
@@ -66,11 +64,9 @@ type URIRefParseOptions userInfo hosts host port path hierPath relPath query fra
   | r
   )
 
-type URIRefPrintOptions userInfo hosts host port path hierPath relPath query fragment r =
+type URIRefPrintOptions userInfo hosts path hierPath relPath query fragment r =
   ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts String → String
-  , printHost ∷ host → Host
-  , printPort ∷ port → Port
+  , printHosts ∷ hosts → String
   , printPath ∷ path → Path
   , printHierPath ∷ hierPath → Either PathAbsolute PathRootless
   , printRelPath ∷ relPath → Either PathAbsolute PathNoScheme
@@ -80,18 +76,17 @@ type URIRefPrintOptions userInfo hosts host port path hierPath relPath query fra
   )
 
 parser
-  ∷ ∀ userInfo hosts host port path hierPath relPath query fragment r
-  . Record (URIRefParseOptions userInfo hosts host port path hierPath relPath query fragment r)
-  → Parser String (URIRef userInfo hosts host port path hierPath relPath query fragment)
+  ∷ ∀ userInfo hosts path hierPath relPath query fragment r
+  . Record (URIRefParseOptions userInfo hosts path hierPath relPath query fragment r)
+  → Parser String (URIRef userInfo hosts path hierPath relPath query fragment)
 parser opts
   = (Left <$> try (URI.parser opts))
   <|> (Right <$> RelativeRef.parser opts)
 
 print
-  ∷ ∀ userInfo hosts host port path hierPath relPath query fragment r
-  . Functor hosts
-  ⇒ Record (URIRefPrintOptions userInfo hosts host port path hierPath relPath query fragment r)
-  → URIRef userInfo hosts host port path hierPath relPath query fragment
+  ∷ ∀ userInfo hosts path hierPath relPath query fragment r
+  . Record (URIRefPrintOptions userInfo hosts path hierPath relPath query fragment r)
+  → URIRef userInfo hosts path hierPath relPath query fragment
   → String
 print opts =
   either
