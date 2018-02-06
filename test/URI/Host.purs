@@ -30,8 +30,8 @@ spec = do
         (runParser "192.168.001.1" (Host.parser pure))
 
   describe "Host parser/printer" do
-    testIso (Host.parser pure) (Host.print id) "localhost" (NameAddress (RegName.fromString "localhost"))
-    testIso (Host.parser pure) (Host.print id) "github.com" (NameAddress (RegName.fromString "github.com"))
-    testIso (Host.parser pure) (Host.print id) "www.multipart.domain.example.com" (NameAddress (RegName.fromString "www.multipart.domain.example.com"))
+    testIso (Host.parser pure) (Host.print id) "localhost" (NameAddress (RegName.unsafeFromString "localhost"))
+    testIso (Host.parser pure) (Host.print id) "github.com" (NameAddress (RegName.unsafeFromString "github.com"))
+    testIso (Host.parser pure) (Host.print id) "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString "www.multipart.domain.example.com"))
     testIso (Host.parser pure) (Host.print id) "192.168.0.1" (IPv4Address "192.168.0.1")
     testIso (Host.parser pure) (Host.print id) "[2001:cdba:0000:0000:0000:0000:3257:9652]" (IPv6Address "2001:cdba:0000:0000:0000:0000:3257:9652")

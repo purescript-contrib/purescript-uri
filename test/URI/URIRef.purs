@@ -2,8 +2,11 @@ module Test.URI.URIRef where
 
 import Prelude
 
+import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.String as String
+import Data.These (These(..))
 import Data.Tuple (Tuple(..))
 import Data.URI.Fragment as Fragment
 import Data.URI.Host.RegName as RegName
@@ -14,7 +17,7 @@ import Data.URI.URIRef as URIRef
 import Data.URI.UserInfo as UserInfo
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
-import Text.Parsing.Parser.Combinators (optionMaybe)
+import Text.Parsing.Parser.String as PS
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =
@@ -73,7 +76,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.unsafeFromString "localhost")) Nothing)))
+              (Just (This (NameAddress (RegName.unsafeFromString "localhost")))))
             Nothing)
           Nothing
           Nothing))
@@ -87,7 +90,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.unsafeFromString "1a.example.com")) Nothing)))
+              (Just (This (NameAddress (RegName.unsafeFromString "1a.example.com")))))
             Nothing)
           Nothing
           Nothing))
@@ -101,38 +104,42 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.unsafeFromString "en.wikipedia.org")) Nothing)))
+              (Just (This (NameAddress (RegName.unsafeFromString "en.wikipedia.org")))))
             (path ["wiki", "URI_scheme"]))
           Nothing
           Nothing))
---     -- testIsoURIRef
---     --   "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
---     --   (Left
---     --     (URI
---     --       (Scheme "mongodb")
---     --       (HierarchicalPart
---     --         (Just
---     --           (Authority
---     --             (Just (UserInfo.unsafeFromString "foo:bar"))
---     --             [ Tuple (NameAddress (RegName.unsafeFromString "db1.example.net")) Nothing
---     --             , Tuple (NameAddress (RegName.unsafeFromString "db2.example.net")) (Just (Port 2500))]))
---     --         (Just (Right (rootDir </> file "authdb"))))
---     --       (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
---     --       Nothing))
---     -- testIsoURIRef
---     --   "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
---     --   (Left
---     --     (URI
---     --       (Scheme "mongodb")
---     --       (HierarchicalPart
---     --         (Just
---     --           (Authority
---     --             (Just (UserInfo.unsafeFromString "foo:bar"))
---     --             [ (Tuple (NameAddress (RegName.unsafeFromString "db1.example.net")) (Just (Port 6)))
---     --             , (Tuple (NameAddress (RegName.unsafeFromString "db2.example.net")) (Just (Port 2500)))]))
---     --         (Just (Right (rootDir </> file "authdb"))))
---     --       (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
---     --       Nothing))
+    testIso
+      (URIRef.parser optionsMany)
+      (URIRef.print optionsMany)
+      "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
+      (Left
+        (URI
+          (Scheme "mongodb")
+          (HierarchicalPartAuth
+            (Authority
+              (Just (UserInfo.unsafeFromString "foo:bar"))
+              [ This (NameAddress (RegName.unsafeFromString "db1.example.net"))
+              , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port 2500)
+              ])
+            (path ["authdb"]))
+          (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
+          Nothing))
+    testIso
+      (URIRef.parser optionsMany)
+      (URIRef.print optionsMany)
+      "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
+      (Left
+        (URI
+          (Scheme "mongodb")
+          (HierarchicalPartAuth
+            (Authority
+              (Just (UserInfo.unsafeFromString "foo:bar"))
+              [ Both (NameAddress (RegName.unsafeFromString "db1.example.net")) (Port 6)
+              , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port 2500)
+              ])
+            (path ["authdb"]))
+          (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
+          Nothing))
     testIso
       (URIRef.parser optionsSingle)
       (URIRef.print optionsSingle)
@@ -141,25 +148,26 @@ spec =
         (URI
           (Scheme "mongodb")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (Tuple (IPv4Address "192.168.0.1") Nothing)))
+            (Authority Nothing (Just (This (IPv4Address "192.168.0.1"))))
             Nothing)
           Nothing
           Nothing))
---     -- testIsoURIRef
---     --   "mongodb://192.168.0.1,192.168.0.2"
---     --   (Left
---     --     (URI
---     --       (Scheme "mongodb")
---     --       (HierarchicalPart
---     --         (Just
---     --           (Authority
---     --             Nothing
---     --             [ Tuple (IPv4Address "192.168.0.1") Nothing
---     --             , Tuple (IPv4Address "192.168.0.2") Nothing
---     --             ]))
---     --         Nothing)
---     --       Nothing
---     --       Nothing))
+    testIso
+      (URIRef.parser optionsMany)
+      (URIRef.print optionsMany)
+      "mongodb://192.168.0.1,192.168.0.2"
+      (Left
+        (URI
+          (Scheme "mongodb")
+          (HierarchicalPartAuth
+            (Authority
+              Nothing
+              [ This (IPv4Address "192.168.0.1")
+              , This (IPv4Address "192.168.0.2")
+              ])
+            Nothing)
+          Nothing
+          Nothing))
     testIso
       (URIRef.parser optionsSingle)
       (URIRef.print optionsSingle)
@@ -170,7 +178,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString "sysop:moon"))
-                (Just (Tuple (NameAddress (RegName.unsafeFromString "localhost")) Nothing)))
+                (Just (This (NameAddress (RegName.unsafeFromString "localhost")))))
             Nothing)
           Nothing
           Nothing))
@@ -184,7 +192,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString "sysop:moon"))
-                (Just (Tuple (NameAddress (RegName.unsafeFromString "localhost")) Nothing)))
+                (Just (This (NameAddress (RegName.unsafeFromString "localhost")))))
             (path [""]))
           Nothing
           Nothing))
@@ -198,7 +206,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString "sysop:moon"))
-                (Just (Tuple (NameAddress (RegName.unsafeFromString "localhost")) Nothing)))
+                (Just (This (NameAddress (RegName.unsafeFromString "localhost")))))
             (path ["records"]))
           Nothing
           Nothing))
@@ -212,7 +220,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString "sysop:moon"))
-                (Just (Tuple (NameAddress (RegName.unsafeFromString "localhost")) Nothing)))
+                (Just (This (NameAddress (RegName.unsafeFromString "localhost")))))
             (path ["records", "etc", ""]))
           Nothing
           Nothing))
@@ -226,7 +234,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (IPv6Address "2001:cdba:0000:0000:0000:0000:3257:9652") Nothing)))
+              (Just (This (IPv6Address "2001:cdba:0000:0000:0000:0000:3257:9652"))))
             Nothing)
           Nothing
           Nothing))
@@ -240,7 +248,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (IPv6Address "FE80::0202:B3FF:FE1E:8329") Nothing)))
+              (Just (This (IPv6Address "FE80::0202:B3FF:FE1E:8329"))))
             Nothing)
           Nothing
           Nothing))
@@ -254,7 +262,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (IPv6Address "2001:db8::1") (Just (Port 80)))))
+              (Just (Both (IPv6Address "2001:db8::1") (Port 80))))
             Nothing)
           Nothing
           Nothing))
@@ -268,7 +276,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.unsafeFromString "ftp.is.co.za")) Nothing)))
+              (Just (This (NameAddress (RegName.unsafeFromString "ftp.is.co.za")))))
             (path ["rfc", "rfc1808.txt"]))
           Nothing
           Nothing))
@@ -282,7 +290,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.unsafeFromString "www.ietf.org")) Nothing)))
+              (Just (This (NameAddress (RegName.unsafeFromString "www.ietf.org")))))
             (path ["rfc", "rfc2396.txt"]))
           Nothing
           Nothing))
@@ -296,7 +304,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (IPv6Address "2001:db8::7") Nothing)))
+              (Just (This (IPv6Address "2001:db8::7"))))
             (path ["c=GB"]))
           (Just (Query.unsafeFromString "objectClass?one"))
           Nothing))
@@ -310,7 +318,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (IPv4Address "192.0.2.16") (Just (Port 80)))))
+              (Just (Both (IPv4Address "192.0.2.16") (Port 80))))
             (path [""]))
           Nothing
           Nothing))
@@ -324,7 +332,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.unsafeFromString "example.com")) (Just (Port 8042)))))
+              (Just (Both (NameAddress (RegName.unsafeFromString "example.com")) (Port 8042))))
             (path ["over", "there"]))
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString "nose"))))
@@ -338,7 +346,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.unsafeFromString "example.com")) (Just (Port 8042)))))
+              (Just (Both (NameAddress (RegName.unsafeFromString "example.com")) (Port 8042))))
             (path ["over", "there"]))
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString ""))))
@@ -352,7 +360,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.unsafeFromString "info.example.com")) Nothing)))
+              (Just (This (NameAddress (RegName.unsafeFromString "info.example.com")))))
             Nothing)
           (Just (Query.unsafeFromString "fred"))
           Nothing))
@@ -366,7 +374,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               (Just (UserInfo.unsafeFromString "cnn.example.com&story=breaking_news"))
-              (Just (Tuple (IPv4Address "10.0.0.1") Nothing)))
+              (Just (This (IPv4Address "10.0.0.1"))))
             (path ["top_story.htm"]))
           Nothing
           Nothing))
@@ -423,7 +431,7 @@ spec =
         (URI
           (Scheme "http")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (Tuple (NameAddress (RegName.fromString "www.example.com")) Nothing)))
+            (Authority Nothing (Just (This (NameAddress (RegName.unsafeFromString "www.example.com")))))
             (path ["some%20invented", "url%20with%20spaces.html"]))
           Nothing
           Nothing))
@@ -435,7 +443,7 @@ spec =
         (URI
           (Scheme "http")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (Tuple (NameAddress (RegName.fromString "localhost")) (Just (Port 53174)))))
+            (Authority Nothing (Just (Both (NameAddress (RegName.unsafeFromString "localhost")) (Port 53174))))
             (path ["metadata", "fs", "test", "%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23"]))
           (Just (Query.unsafeFromString ""))
           Nothing))
@@ -499,7 +507,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.fromString "local.slamdata.com")) Nothing)))
+              (Just (This (NameAddress (RegName.unsafeFromString "local.slamdata.com")))))
             (path [""]))
           (Just (Query.unsafeFromString ""))
           (Just (Fragment.unsafeFromString "?sort=asc&q=path%3A%2F&salt=1177214"))))
@@ -513,7 +521,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Tuple (NameAddress (RegName.fromString "local.slamdata.com")) Nothing)))
+              (Just (This (NameAddress (RegName.unsafeFromString "local.slamdata.com")))))
             (path [""]))
           (Just (Query.unsafeFromString ""))
           (Just (Fragment.unsafeFromString "?sort=asc&q=path:/&salt=1177214"))))
@@ -525,8 +533,30 @@ optionsSingle ∷ Record (URIRefOptions UserInfo Maybe Host Port Path HierPath R
 optionsSingle =
   { parseUserInfo: pure
   , printUserInfo: id
-  , parseHosts: optionMaybe
+  , parseHosts: Left id
   , printHosts: fromMaybe ""
+  , parseHost: pure
+  , printHost: id
+  , parsePort: pure
+  , printPort: id
+  , parsePath: pure
+  , printPath: id
+  , parseHierPath: pure
+  , printHierPath: id
+  , parseRelPath: pure
+  , printRelPath: id
+  , parseQuery: pure
+  , printQuery: id
+  , parseFragment: pure
+  , printFragment: id
+  }
+
+optionsMany ∷ Record (URIRefOptions UserInfo Array Host Port Path HierPath RelPath Query Fragment)
+optionsMany =
+  { parseUserInfo: pure
+  , printUserInfo: id
+  , parseHosts: Right { split: void (PS.char ','), build: Array.fromFoldable }
+  , printHosts: String.joinWith ","
   , parseHost: pure
   , printHost: id
   , parsePort: pure

@@ -4,15 +4,15 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.These (These(..))
 import Data.Tuple (Tuple(..))
+import Data.URI.AbsoluteURI (Authority(..), HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port(..), Query, Scheme(..), AbsoluteURI(..), AbsoluteURIOptions, UserInfo)
+import Data.URI.AbsoluteURI as AbsoluteURI
 import Data.URI.Host.RegName as RegName
 import Data.URI.Path.Segment as PathSegment
 import Data.URI.Query as Query
-import Data.URI.AbsoluteURI (Authority(..), HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port(..), Query, Scheme(..), AbsoluteURI(..), AbsoluteURIOptions, UserInfo)
-import Data.URI.AbsoluteURI as AbsoluteURI
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
-import Text.Parsing.Parser.Combinators (optionMaybe)
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =
@@ -26,7 +26,7 @@ spec =
         (HierarchicalPartAuth
           (Authority
             Nothing
-            (Just (Tuple (NameAddress (RegName.fromString "localhost")) Nothing)))
+            (Just (This (NameAddress (RegName.unsafeFromString "localhost")))))
           (path ["testBucket"]))
         (Just (Query.unsafeFromString "password=&docTypeKey=")))
     testIso
@@ -38,7 +38,7 @@ spec =
         (HierarchicalPartAuth
           (Authority
             Nothing
-            (Just (Tuple (NameAddress (RegName.fromString "localhost")) (Just (Port 99999)))))
+            (Just (Both (NameAddress (RegName.unsafeFromString "localhost")) (Port 99999))))
           (path ["testBucket"]))
         (Just (Query.unsafeFromString "password=pass&docTypeKey=type&queryTimeoutSeconds=20")))
     testIso
@@ -67,7 +67,7 @@ options ∷ Record (AbsoluteURIOptions UserInfo Maybe Host Port Path HierPath Qu
 options =
   { parseUserInfo: pure
   , printUserInfo: id
-  , parseHosts: optionMaybe
+  , parseHosts: Left id
   , printHosts: fromMaybe ""
   , parseHost: pure
   , printHost: id

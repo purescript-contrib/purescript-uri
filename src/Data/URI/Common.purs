@@ -71,14 +71,14 @@ pctEncoded = do
 
 parseSubDelims ∷ Parser String Char
 parseSubDelims =
-  oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '='] -- ',']
+  oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=', ',']
 
 printEncoded ∷ Parser String Char → String → String
 printEncoded p s = either (const s) id (runParser s parse)
   where
-  parse ∷ Parser String String
-  parse = (String.joinWith "" <$> Array.many (simpleChar <|> encodedChar)) <* eof
-  simpleChar ∷ Parser String String
-  simpleChar = String.singleton <$> p
-  encodedChar ∷ Parser String String
-  encodedChar = encodeURIComponent <<< String.singleton <$> anyChar
+    parse ∷ Parser String String
+    parse = (String.joinWith "" <$> Array.many (simpleChar <|> encodedChar)) <* eof
+    simpleChar ∷ Parser String String
+    simpleChar = String.singleton <$> p
+    encodedChar ∷ Parser String String
+    encodedChar = encodeURIComponent <<< String.singleton <$> anyChar

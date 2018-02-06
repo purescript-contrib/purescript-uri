@@ -25,11 +25,12 @@ import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
 import Data.String as String
+import Data.These (These)
 import Data.Tuple (Tuple)
 import Data.URI.Common (URIPartParseError)
 import Data.URI.Fragment (Fragment)
 import Data.URI.Fragment as Fragment
-import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), HierPath, Host(..), Path, PathAbsolute, PathRootless, Port(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
+import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), HierPath, Host(..), HostsParseOptions, Path, PathAbsolute, PathRootless, Port(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
 import Data.URI.Query (Query)
 import Data.URI.Query as Query
@@ -45,7 +46,7 @@ data URI userInfo hosts host port path hierPath query fragment = URI Scheme (Hie
 derive instance eqURI ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port, Eq path, Eq hierPath, Eq query, Eq fragment) ⇒ Eq (URI userInfo hosts host port path hierPath query fragment)
 derive instance ordURI ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port, Ord path, Ord hierPath, Ord query, Ord fragment) ⇒ Ord (URI userInfo hosts host port path hierPath query fragment)
 derive instance genericURI ∷ Generic (URI userInfo hosts host port path hierPath query fragment) _
-instance showURI ∷ (Show userInfo, Show (hosts (Tuple host (Maybe port))), Show host, Show port, Show path, Show hierPath, Show query, Show fragment) ⇒ Show (URI userInfo hosts host port path hierPath query fragment) where show = genericShow
+instance showURI ∷ (Show userInfo, Show (hosts (These host port)), Show host, Show port, Show path, Show hierPath, Show query, Show fragment) ⇒ Show (URI userInfo hosts host port path hierPath query fragment) where show = genericShow
 
 type URIOptions userInfo hosts host port path hierPath query fragment =
   URIParseOptions userInfo hosts host port path hierPath query fragment
@@ -53,7 +54,7 @@ type URIOptions userInfo hosts host port path hierPath query fragment =
 
 type URIParseOptions userInfo hosts host port path hierPath query fragment r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHosts ∷ HostsParseOptions hosts
   , parseHost ∷ Host → Either URIPartParseError host
   , parsePort ∷ Port → Either URIPartParseError port
   , parsePath ∷ Path → Either URIPartParseError path

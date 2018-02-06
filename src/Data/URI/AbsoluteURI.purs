@@ -24,9 +24,9 @@ import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
 import Data.String as String
-import Data.Tuple (Tuple)
+import Data.These (These)
 import Data.URI.Common (URIPartParseError)
-import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), HierPath, Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
+import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), HierPath, Host(..), HostsParseOptions, Path(..), PathAbsolute(..), PathRootless(..), Port(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
 import Data.URI.Query (Query)
 import Data.URI.Query as Query
@@ -42,7 +42,7 @@ data AbsoluteURI userInfo hosts host port path hierPath query = AbsoluteURI Sche
 derive instance eqAbsoluteURI ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port, Eq path, Eq hierPath, Eq query) ⇒ Eq (AbsoluteURI userInfo hosts host port path hierPath query)
 derive instance ordAbsoluteURI ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port, Ord path, Ord hierPath, Ord query) ⇒ Ord (AbsoluteURI userInfo hosts host port path hierPath query)
 derive instance genericAbsoluteURI ∷ Generic (AbsoluteURI userInfo hosts host port path hierPath query) _
-instance showAbsoluteURI ∷ (Show userInfo, Show (hosts (Tuple host (Maybe port))), Show host, Show port, Show path, Show hierPath, Show query) ⇒ Show (AbsoluteURI userInfo hosts host port path hierPath query) where show = genericShow
+instance showAbsoluteURI ∷ (Show userInfo, Show (hosts (These host port)), Show host, Show port, Show path, Show hierPath, Show query) ⇒ Show (AbsoluteURI userInfo hosts host port path hierPath query) where show = genericShow
 
 type AbsoluteURIOptions userInfo hosts host port path hierPath query =
   AbsoluteURIParseOptions userInfo hosts host port path hierPath query
@@ -50,7 +50,7 @@ type AbsoluteURIOptions userInfo hosts host port path hierPath query =
 
 type AbsoluteURIParseOptions userInfo hosts host port path hierPath query r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHosts ∷ HostsParseOptions hosts
   , parseHost ∷ Host → Either URIPartParseError host
   , parsePort ∷ Port → Either URIPartParseError port
   , parsePath ∷ Path → Either URIPartParseError path

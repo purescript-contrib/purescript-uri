@@ -24,13 +24,14 @@ import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.Ord (class Ord1)
 import Data.String as String
+import Data.These (These)
 import Data.Tuple (Tuple)
 import Data.URI.Common (URIPartParseError)
 import Data.URI.Fragment (Fragment)
 import Data.URI.Fragment as Fragment
 import Data.URI.Query (Query)
 import Data.URI.Query as Query
-import Data.URI.RelativePart (Authority(..), Host(..), Path, PathAbsolute, PathNoScheme, Port(..), RelativePart(..), RelPath, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
+import Data.URI.RelativePart (Authority(..), Host(..), HostsParseOptions, Path, PathAbsolute, PathNoScheme, Port(..), RelativePart(..), RelPath, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
 import Data.URI.RelativePart as RPart
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
@@ -42,7 +43,7 @@ data RelativeRef userInfo hosts host port path relPath query fragment = Relative
 derive instance eqRelativeRef ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port, Eq path, Eq relPath, Eq query, Eq fragment) ⇒ Eq (RelativeRef userInfo hosts host port path relPath query fragment)
 derive instance ordRelativeRef ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port, Ord path, Ord relPath, Ord query, Ord fragment) ⇒ Ord (RelativeRef userInfo hosts host port path relPath query fragment)
 derive instance genericRelativeRef ∷ Generic (RelativeRef userInfo hosts host port path relPath query fragment) _
-instance showRelativeRef ∷ (Show userInfo, Show (hosts (Tuple host (Maybe port))), Show host, Show port, Show path, Show relPath, Show query, Show fragment) ⇒ Show (RelativeRef userInfo hosts host port path relPath query fragment) where show = genericShow
+instance showRelativeRef ∷ (Show userInfo, Show (hosts (These host port)), Show host, Show port, Show path, Show relPath, Show query, Show fragment) ⇒ Show (RelativeRef userInfo hosts host port path relPath query fragment) where show = genericShow
 
 type RelativeRefOptions userInfo hosts host port path relPath query fragment =
   RelativeRefParseOptions userInfo hosts host port path relPath query fragment
@@ -50,7 +51,7 @@ type RelativeRefOptions userInfo hosts host port path relPath query fragment =
 
 type RelativeRefParseOptions userInfo hosts host port path relPath query fragment r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHosts ∷ HostsParseOptions hosts
   , parseHost ∷ Host → Either URIPartParseError host
   , parsePort ∷ Port → Either URIPartParseError port
   , parsePath ∷ Path → Either URIPartParseError path

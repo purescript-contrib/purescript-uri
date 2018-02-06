@@ -24,7 +24,7 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Either (Either(..), either)
-import Data.URI.Authority (Authority(..))
+import Data.URI.Authority (Authority(..), HostsParseOptions)
 import Data.URI.Common (URIPartParseError)
 import Data.URI.Fragment (Fragment)
 import Data.URI.Host (Host(..), RegName, _IPv4Address, _IPv6Address, _NameAddress)
@@ -55,7 +55,7 @@ type URIRefOptions userInfo hosts host port path hierPath relPath query fragment
 
 type URIRefParseOptions userInfo hosts host port path hierPath relPath query fragment r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHosts ∷ HostsParseOptions hosts
   , parseHost ∷ Host → Either URIPartParseError host
   , parsePort ∷ Port → Either URIPartParseError port
   , parsePath ∷ Path → Either URIPartParseError path

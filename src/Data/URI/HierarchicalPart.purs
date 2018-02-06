@@ -27,8 +27,9 @@ import Data.Lens (Traversal', wander)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Ord (class Ord1)
 import Data.String as String
+import Data.These (These)
 import Data.Tuple (Tuple)
-import Data.URI.Authority (Authority(..), Host(..), Port(..), RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
+import Data.URI.Authority (Authority(..), Host(..), HostsParseOptions, Port(..), RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import Data.URI.Authority as Authority
 import Data.URI.Common (URIPartParseError)
 import Data.URI.Path (Path(..))
@@ -48,7 +49,7 @@ data HierarchicalPart userInfo hosts host port path hierPath
 derive instance eqHierarchicalPart ∷ (Eq userInfo, Eq1 hosts, Eq host, Eq port, Eq path, Eq hierPath) ⇒ Eq (HierarchicalPart userInfo hosts host port path hierPath)
 derive instance ordHierarchicalPart ∷ (Ord userInfo, Ord1 hosts, Ord host, Ord port, Ord path, Ord hierPath) ⇒ Ord (HierarchicalPart userInfo hosts host port path hierPath)
 derive instance genericHierarchicalPart ∷ Generic (HierarchicalPart userInfo hosts host port path hierPath) _
-instance showHierarchicalPart ∷ (Show userInfo, Show (hosts (Tuple host (Maybe port))), Show host, Show port, Show path, Show hierPath) ⇒ Show (HierarchicalPart userInfo hosts host port path hierPath) where show = genericShow
+instance showHierarchicalPart ∷ (Show userInfo, Show (hosts (These host port)), Show host, Show port, Show path, Show hierPath) ⇒ Show (HierarchicalPart userInfo hosts host port path hierPath) where show = genericShow
 
 type HierarchicalPartOptions userInfo hosts host port path hierPath =
   HierarchicalPartParseOptions userInfo hosts host port path hierPath
@@ -56,7 +57,7 @@ type HierarchicalPartOptions userInfo hosts host port path hierPath =
 
 type HierarchicalPartParseOptions userInfo hosts host port path hierPath r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ ∀ a. Parser String a → Parser String (hosts a)
+  , parseHosts ∷ HostsParseOptions hosts
   , parseHost ∷ Host → Either URIPartParseError host
   , parsePort ∷ Port → Either URIPartParseError port
   , parsePath ∷ Path → Either URIPartParseError path
