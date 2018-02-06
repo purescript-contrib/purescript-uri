@@ -49,8 +49,8 @@ parser parseF =
     wrapParser parseF (Fragment <<< String.joinWith ""
       <$> Array.many (pctEncoded <|> String.singleton <$> fragmentChar))
 
-print ∷ ∀ f. (f → Fragment) → f → String
-print printF f = "#" <> unsafeToString (printF f)
+print ∷ Fragment → String
+print (Fragment f) = "#" <> f
 
 -- | The supported fragment characters, excluding percent-encodings.
 fragmentChar ∷ Parser String Char

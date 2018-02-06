@@ -23,8 +23,6 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.URI.Common (pctEncoded, parseSubDelims, parseUnreserved, printEncoded)
@@ -36,8 +34,9 @@ newtype PathSegment = PathSegment String
 
 derive newtype instance eqPathSegment ∷ Eq PathSegment
 derive newtype instance ordPathSegment ∷ Ord PathSegment
-derive instance genericPathSegment ∷ Generic PathSegment _
-instance showPathSegment ∷ Show PathSegment where show = genericShow
+
+instance showPathSegment ∷ Show PathSegment where
+  show (PathSegment s) = "(PathSegment.unsafeFromString " <> show s <> ")"
 
 parseSegment ∷ Parser String PathSegment
 parseSegment =
@@ -61,8 +60,9 @@ newtype PathSegmentNZ = PathSegmentNZ String
 
 derive newtype instance eqPathSegmentNZ ∷ Eq PathSegmentNZ
 derive newtype instance ordPathSegmentNZ ∷ Ord PathSegmentNZ
-derive instance genericPathSegmentNZ ∷ Generic PathSegmentNZ _
-instance showPathSegmentNZ ∷ Show PathSegmentNZ where show = genericShow
+
+instance showPathSegmentNZ ∷ Show PathSegmentNZ where
+  show (PathSegmentNZ s) = "(PathSegmentNZ.unsafeFromString " <> show s <> ")"
 
 parseSegmentNonZero ∷ Parser String PathSegmentNZ
 parseSegmentNonZero =
@@ -88,8 +88,9 @@ newtype PathSegmentNZNC = PathSegmentNZNC String
 
 derive newtype instance eqPathSegmentNZNC ∷ Eq PathSegmentNZNC
 derive newtype instance ordPathSegmentNZNC ∷ Ord PathSegmentNZNC
-derive instance genericPathSegmentNZNC ∷ Generic PathSegmentNZNC _
-instance showPathSegmentNZNC ∷ Show PathSegmentNZNC where show = genericShow
+
+instance showPathSegmentNZNC ∷ Show PathSegmentNZNC where
+  show (PathSegmentNZNC s) = "(PathSegmentNZNC.unsafeFromString " <> show s <> ")"
 
 parseSegmentNonZeroNoColon ∷ Parser String PathSegmentNZNC
 parseSegmentNonZeroNoColon =

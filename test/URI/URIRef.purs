@@ -7,12 +7,16 @@ import Data.Maybe (Maybe(..))
 import Data.These (These(..))
 import Data.Tuple (Tuple(..))
 import Data.URI.Fragment as Fragment
+import Data.URI.Host.IPv4Address as IPv4Address
+import Data.URI.Host.IPv6Address as IPv6Address
 import Data.URI.Host.RegName as RegName
 import Data.URI.HostPortPair (HostPortPair)
 import Data.URI.HostPortPair as HostPortPair
 import Data.URI.Path.Segment as PathSegment
+import Data.URI.Port as Port
 import Data.URI.Query as Query
-import Data.URI.URIRef (Authority(..), Fragment, HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathNoScheme(..), PathRootless(..), Port(..), Query, RelPath, RelativePart(..), RelativeRef(..), Scheme(..), URI(..), URIRefOptions, UserInfo)
+import Data.URI.Scheme as Scheme
+import Data.URI.URIRef (Authority(..), Fragment, HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathNoScheme(..), PathRootless(..), Port, Query, RelPath, RelativePart(..), RelativeRef(..), URI(..), URIRefOptions, UserInfo)
 import Data.URI.URIRef as URIRef
 import Data.URI.UserInfo as UserInfo
 import Test.Spec (Spec, describe)
@@ -27,7 +31,7 @@ spec =
       "sql2:///?q=foo&var.bar=baz"
       (Left
         (URI
-          (Scheme "sql2")
+          (Scheme.unsafeFromString "sql2")
           (HierarchicalPartAuth
             (Authority Nothing Nothing)
             (path [""]))
@@ -39,7 +43,7 @@ spec =
       "sql2://?q=foo&var.bar=baz"
       (Left
         (URI
-          (Scheme "sql2")
+          (Scheme.unsafeFromString "sql2")
           (HierarchicalPartAuth
             (Authority Nothing Nothing)
             Nothing)
@@ -51,7 +55,7 @@ spec =
       "sql2:/?q=foo&var.bar=baz"
       (Left
         (URI
-          (Scheme "sql2")
+          (Scheme.unsafeFromString "sql2")
           (HierarchicalPartNoAuth (Just (Left (PathAbsolute Nothing))))
           (Just (Query.unsafeFromString "q=foo&var.bar=baz"))
           Nothing))
@@ -61,7 +65,7 @@ spec =
       "sql2:?q=foo&var.bar=baz"
       (Left
         (URI
-          (Scheme "sql2")
+          (Scheme.unsafeFromString "sql2")
           (HierarchicalPartNoAuth Nothing)
           (Just (Query.unsafeFromString "q=foo&var.bar=baz"))
           Nothing))
@@ -71,7 +75,7 @@ spec =
       "mongodb://localhost"
       (Left
         (URI
-          (Scheme "mongodb")
+          (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
               Nothing
@@ -85,7 +89,7 @@ spec =
       "https://1a.example.com"
       (Left
         (URI
-          (Scheme "https")
+          (Scheme.unsafeFromString "https")
           (HierarchicalPartAuth
             (Authority
               Nothing
@@ -99,7 +103,7 @@ spec =
       "http://en.wikipedia.org/wiki/URI_scheme"
       (Left
         (URI
-          (Scheme "http")
+          (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
             (Authority
               Nothing
@@ -113,12 +117,12 @@ spec =
     --   "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
     --   (Left
     --     (URI
-    --       (Scheme "mongodb")
+    --       (Scheme.unsafeFromString "mongodb")
     --       (HierarchicalPartAuth
     --         (Authority
     --           (Just (UserInfo.unsafeFromString "foo:bar"))
     --           [ This (NameAddress (RegName.unsafeFromString "db1.example.net"))
-    --           , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port 2500)
+    --           , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port.unsafeFromInt 2500)
     --           ])
     --         (path ["authdb"]))
     --       (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
@@ -129,12 +133,12 @@ spec =
     --   "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
     --   (Left
     --     (URI
-    --       (Scheme "mongodb")
+    --       (Scheme.unsafeFromString "mongodb")
     --       (HierarchicalPartAuth
     --         (Authority
     --           (Just (UserInfo.unsafeFromString "foo:bar"))
-    --           [ Both (NameAddress (RegName.unsafeFromString "db1.example.net")) (Port 6)
-    --           , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port 2500)
+    --           [ Both (NameAddress (RegName.unsafeFromString "db1.example.net")) (Port.unsafeFromInt 6)
+    --           , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port.unsafeFromInt 2500)
     --           ])
     --         (path ["authdb"]))
     --       (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
@@ -145,9 +149,9 @@ spec =
       "mongodb://192.168.0.1"
       (Left
         (URI
-          (Scheme "mongodb")
+          (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (This (IPv4Address "192.168.0.1"))))
+            (Authority Nothing (Just (This (IPv4Address (IPv4Address.unsafeFromOctets 192 168 0 1)))))
             Nothing)
           Nothing
           Nothing))
@@ -157,7 +161,7 @@ spec =
     --   "mongodb://192.168.0.1,192.168.0.2"
     --   (Left
     --     (URI
-    --       (Scheme "mongodb")
+    --       (Scheme.unsafeFromString "mongodb")
     --       (HierarchicalPartAuth
     --         (Authority
     --           Nothing
@@ -173,7 +177,7 @@ spec =
       "mongodb://sysop:moon@localhost"
       (Left
         (URI
-          (Scheme "mongodb")
+          (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString "sysop:moon"))
@@ -187,7 +191,7 @@ spec =
       "mongodb://sysop:moon@localhost/"
       (Left
         (URI
-          (Scheme "mongodb")
+          (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString "sysop:moon"))
@@ -201,7 +205,7 @@ spec =
       "mongodb://sysop:moon@localhost/records"
       (Left
         (URI
-          (Scheme "mongodb")
+          (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString "sysop:moon"))
@@ -215,7 +219,7 @@ spec =
       "mongodb://sysop:moon@localhost/records/etc/"
       (Left
         (URI
-          (Scheme "mongodb")
+          (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString "sysop:moon"))
@@ -229,11 +233,11 @@ spec =
       "foo://[2001:cdba:0000:0000:0000:0000:3257:9652]"
       (Left
         (URI
-          (Scheme "foo")
+          (Scheme.unsafeFromString "foo")
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (IPv6Address "2001:cdba:0000:0000:0000:0000:3257:9652"))))
+              (Just (This (IPv6Address (IPv6Address.unsafeFromString "2001:cdba:0000:0000:0000:0000:3257:9652")))))
             Nothing)
           Nothing
           Nothing))
@@ -243,11 +247,11 @@ spec =
       "foo://[FE80::0202:B3FF:FE1E:8329]"
       (Left
         (URI
-          (Scheme "foo")
+          (Scheme.unsafeFromString "foo")
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (IPv6Address "FE80::0202:B3FF:FE1E:8329"))))
+              (Just (This (IPv6Address (IPv6Address.unsafeFromString "FE80::0202:B3FF:FE1E:8329")))))
             Nothing)
           Nothing
           Nothing))
@@ -257,11 +261,11 @@ spec =
       "foo://[2001:db8::1]:80"
       (Left
         (URI
-          (Scheme "foo")
+          (Scheme.unsafeFromString "foo")
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Both (IPv6Address "2001:db8::1") (Port 80))))
+              (Just (Both (IPv6Address (IPv6Address.unsafeFromString "2001:db8::1")) (Port.unsafeFromInt 80))))
             Nothing)
           Nothing
           Nothing))
@@ -271,7 +275,7 @@ spec =
       "ftp://ftp.is.co.za/rfc/rfc1808.txt"
       (Left
         (URI
-          (Scheme "ftp")
+          (Scheme.unsafeFromString "ftp")
           (HierarchicalPartAuth
             (Authority
               Nothing
@@ -285,7 +289,7 @@ spec =
       "http://www.ietf.org/rfc/rfc2396.txt"
       (Left
         (URI
-          (Scheme "http")
+          (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
             (Authority
               Nothing
@@ -299,11 +303,11 @@ spec =
       "ldap://[2001:db8::7]/c=GB?objectClass?one"
       (Left
         (URI
-          (Scheme "ldap")
+          (Scheme.unsafeFromString "ldap")
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (IPv6Address "2001:db8::7"))))
+              (Just (This (IPv6Address (IPv6Address.unsafeFromString "2001:db8::7")))))
             (path ["c=GB"]))
           (Just (Query.unsafeFromString "objectClass?one"))
           Nothing))
@@ -313,11 +317,11 @@ spec =
       "telnet://192.0.2.16:80/"
       (Left
         (URI
-          (Scheme "telnet")
+          (Scheme.unsafeFromString "telnet")
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Both (IPv4Address "192.0.2.16") (Port 80))))
+              (Just (Both (IPv4Address (IPv4Address.unsafeFromOctets 192 0 2 16)) (Port.unsafeFromInt 80))))
             (path [""]))
           Nothing
           Nothing))
@@ -327,11 +331,11 @@ spec =
       "foo://example.com:8042/over/there?name=ferret#nose"
       (Left
         (URI
-          (Scheme "foo")
+          (Scheme.unsafeFromString "foo")
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Both (NameAddress (RegName.unsafeFromString "example.com")) (Port 8042))))
+              (Just (Both (NameAddress (RegName.unsafeFromString "example.com")) (Port.unsafeFromInt 8042))))
             (path ["over", "there"]))
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString "nose"))))
@@ -341,11 +345,11 @@ spec =
       "foo://example.com:8042/over/there?name=ferret#"
       (Left
         (URI
-          (Scheme "foo")
+          (Scheme.unsafeFromString "foo")
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Both (NameAddress (RegName.unsafeFromString "example.com")) (Port 8042))))
+              (Just (Both (NameAddress (RegName.unsafeFromString "example.com")) (Port.unsafeFromInt 8042))))
             (path ["over", "there"]))
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString ""))))
@@ -355,7 +359,7 @@ spec =
       "foo://info.example.com?fred"
       (Left
         (URI
-          (Scheme "foo")
+          (Scheme.unsafeFromString "foo")
           (HierarchicalPartAuth
             (Authority
               Nothing
@@ -369,11 +373,11 @@ spec =
       "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
       (Left
         (URI
-          (Scheme "ftp")
+          (Scheme.unsafeFromString "ftp")
           (HierarchicalPartAuth
             (Authority
               (Just (UserInfo.unsafeFromString "cnn.example.com&story=breaking_news"))
-              (Just (This (IPv4Address "10.0.0.1"))))
+              (Just (This (IPv4Address (IPv4Address.unsafeFromOctets 10 0 0 1)))))
             (path ["top_story.htm"]))
           Nothing
           Nothing))
@@ -428,7 +432,7 @@ spec =
       "http://www.example.com/some%20invented/url%20with%20spaces.html"
       (Left
         (URI
-          (Scheme "http")
+          (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
             (Authority Nothing (Just (This (NameAddress (RegName.unsafeFromString "www.example.com")))))
             (path ["some%20invented", "url%20with%20spaces.html"]))
@@ -440,9 +444,9 @@ spec =
       "http://localhost:53174/metadata/fs/test/%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23?"
       (Left
         (URI
-          (Scheme "http")
+          (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (Both (NameAddress (RegName.unsafeFromString "localhost")) (Port 53174))))
+            (Authority Nothing (Just (Both (NameAddress (RegName.unsafeFromString "localhost")) (Port.unsafeFromInt 53174))))
             (path ["metadata", "fs", "test", "%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23"]))
           (Just (Query.unsafeFromString ""))
           Nothing))
@@ -452,7 +456,7 @@ spec =
       "news:comp.infosystems.www.servers.unix"
       (Left
         (URI
-          (Scheme "news")
+          (Scheme.unsafeFromString "news")
           (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "comp.infosystems.www.servers.unix") [])))))
           Nothing
           Nothing))
@@ -462,7 +466,7 @@ spec =
       "tel:+1-816-555-1212"
       (Left
         (URI
-          (Scheme "tel")
+          (Scheme.unsafeFromString "tel")
           (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "+1-816-555-1212") [])))))
           Nothing
           Nothing))
@@ -472,7 +476,7 @@ spec =
       "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
       (Left
         (URI
-          (Scheme "urn")
+          (Scheme.unsafeFromString "urn")
           (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "oasis:names:specification:docbook:dtd:xml:4.1.2") [])))))
           Nothing
           Nothing))
@@ -482,7 +486,7 @@ spec =
       "mailto:John.Doe@example.com"
       (Left
         (URI
-          (Scheme "mailto")
+          (Scheme.unsafeFromString "mailto")
           (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "John.Doe@example.com") [])))))
           Nothing
           Nothing))
@@ -492,7 +496,7 @@ spec =
       "mailto:fred@example.com"
       (Left
         (URI
-          (Scheme "mailto")
+          (Scheme.unsafeFromString "mailto")
           (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString "fred@example.com") [])))))
           Nothing
           Nothing))
@@ -502,7 +506,7 @@ spec =
       "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"
       (Left
         (URI
-          (Scheme "http")
+          (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
             (Authority
               Nothing
@@ -516,7 +520,7 @@ spec =
       "http://local.slamdata.com/?#?sort=asc&q=path:/&salt=1177214"
       (Left
         (URI
-          (Scheme "http")
+          (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
             (Authority
               Nothing

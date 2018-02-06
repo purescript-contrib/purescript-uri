@@ -26,11 +26,11 @@ import Data.String as String
 import Data.URI.Common (URIPartParseError)
 import Data.URI.Fragment (Fragment)
 import Data.URI.Fragment as Fragment
-import Data.URI.HierarchicalPart (Authority(..), HierarchicalPart(..), HierPath, Host(..), HostsParseOptions, Path, PathAbsolute, PathRootless, Port(..), UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
+import Data.URI.HierarchicalPart (Authority(..), AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, HierPath, HierarchicalPart(..), HierarchicalPartOptions, HierarchicalPartParseOptions, HierarchicalPartPrintOptions, Host(..), HostsParseOptions, IPv4Address, IPv6Address, Path(..), PathAbsolute(..), PathRootless(..), Port, RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hierPath, _hosts, _path, _userInfo)
 import Data.URI.HierarchicalPart as HPart
 import Data.URI.Query (Query)
 import Data.URI.Query as Query
-import Data.URI.Scheme (Scheme(..))
+import Data.URI.Scheme (Scheme)
 import Data.URI.Scheme as Scheme
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
@@ -88,8 +88,8 @@ print opts (URI s h q f) =
   String.joinWith "" $ Array.catMaybes
     [ Just (Scheme.print s)
     , Just (HPart.print opts h)
-    , Query.print opts.printQuery <$> q
-    , Fragment.print opts.printFragment <$> f
+    , Query.print <<< opts.printQuery <$> q
+    , Fragment.print <<< opts.printFragment <$> f
     ]
 
 _scheme

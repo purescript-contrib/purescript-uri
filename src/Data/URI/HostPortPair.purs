@@ -39,8 +39,8 @@ print printHost printPort = case _ of
   Nothing →
     ""
   Just (This host) →
-    Host.print printHost host
+    Host.print (printHost host)
   Just (That port) →
-    Port.print printPort port
+    Port.print (printPort port)
   Just (Both host port) →
-    Host.print printHost host <> Port.print printPort port
+    Host.print (printHost host) <> Port.print (printPort port)

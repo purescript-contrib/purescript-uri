@@ -49,8 +49,8 @@ parser parseQ =
   where
     p = String.singleton <$> queryChar <|> pctEncoded
 
-print ∷ ∀ q. (q → Query) → q → String
-print printQ q = "?" <> unsafeToString (printQ q)
+print ∷ Query → String
+print (Query s) = "?" <> s
 
 queryChar ∷ Parser String Char
 queryChar

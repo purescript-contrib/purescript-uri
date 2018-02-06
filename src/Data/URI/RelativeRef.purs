@@ -27,7 +27,7 @@ import Data.URI.Fragment (Fragment)
 import Data.URI.Fragment as Fragment
 import Data.URI.Query (Query)
 import Data.URI.Query as Query
-import Data.URI.RelativePart (Authority(..), Host(..), HostsParseOptions, Path, PathAbsolute, PathNoScheme, Port(..), RelativePart(..), RelPath, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _userInfo)
+import Data.URI.RelativePart (Authority(..), AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, Host(..), HostsParseOptions, IPv4Address, IPv6Address, Path, PathAbsolute, PathNoScheme, Port, RegName, RelPath, RelativePart(..), RelativePartOptions, RelativePartParseOptions, RelativePartPrintOptions, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _relPath, _userInfo)
 import Data.URI.RelativePart as RPart
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
@@ -84,8 +84,8 @@ print
 print opts (RelativeRef h q f) =
   String.joinWith "" $ Array.catMaybes
     [ Just (RPart.print opts h)
-    , Query.print opts.printQuery <$> q
-    , Fragment.print opts.printFragment <$> f
+    , Query.print <<< opts.printQuery <$> q
+    , Fragment.print <<< opts.printFragment <$> f
     ]
 
 _relPart

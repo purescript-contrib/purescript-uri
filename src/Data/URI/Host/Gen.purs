@@ -3,13 +3,13 @@ module Data.URI.Host.Gen where
 import Prelude
 
 import Control.Monad.Gen as Gen
-import Data.String as String
-import Data.URI.Host (Host(..))
+import Data.URI.Host (IPv4Address)
+import Data.URI.Host.IPv4Address as IPv4Address
 
-genIPv4 :: forall m. Gen.MonadGen m => m Host
+genIPv4 ∷ ∀ m. Gen.MonadGen m ⇒ m IPv4Address
 genIPv4 = do
-  a <- Gen.chooseInt 0 255
-  b <- Gen.chooseInt 0 255
-  c <- Gen.chooseInt 0 255
-  d <- Gen.chooseInt 0 255
-  pure $ IPv4Address $ String.joinWith "." $ show <$> [a, b, c, d]
+  a ← Gen.chooseInt 0 255
+  b ← Gen.chooseInt 0 255
+  c ← Gen.chooseInt 0 255
+  d ← Gen.chooseInt 0 255
+  pure $ IPv4Address.unsafeFromOctets a b c d
