@@ -26,8 +26,8 @@ spec ∷ ∀ eff. Spec eff Unit
 spec =
   describe "URIRef parser/printer" do
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "sql2:///?q=foo&var.bar=baz"
       (Left
         (URI
@@ -38,8 +38,8 @@ spec =
           (Just (Query.unsafeFromString "q=foo&var.bar=baz"))
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "sql2://?q=foo&var.bar=baz"
       (Left
         (URI
@@ -50,8 +50,8 @@ spec =
           (Just (Query.unsafeFromString "q=foo&var.bar=baz"))
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "sql2:/?q=foo&var.bar=baz"
       (Left
         (URI
@@ -60,8 +60,8 @@ spec =
           (Just (Query.unsafeFromString "q=foo&var.bar=baz"))
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "sql2:?q=foo&var.bar=baz"
       (Left
         (URI
@@ -70,8 +70,8 @@ spec =
           (Just (Query.unsafeFromString "q=foo&var.bar=baz"))
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "mongodb://localhost"
       (Left
         (URI
@@ -84,8 +84,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "https://1a.example.com"
       (Left
         (URI
@@ -98,8 +98,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "http://en.wikipedia.org/wiki/URI_scheme"
       (Left
         (URI
@@ -111,69 +111,21 @@ spec =
             (path ["wiki", "URI_scheme"]))
           Nothing
           Nothing))
-    -- testIso
-    --   (URIRef.parser optionsMany)
-    --   (URIRef.print optionsMany)
-    --   "mongodb://foo:bar@db1.example.net,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
-    --   (Left
-    --     (URI
-    --       (Scheme.unsafeFromString "mongodb")
-    --       (HierarchicalPartAuth
-    --         (Authority
-    --           (Just (UserInfo.unsafeFromString "foo:bar"))
-    --           [ This (NameAddress (RegName.unsafeFromString "db1.example.net"))
-    --           , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port.unsafeFromInt 2500)
-    --           ])
-    --         (path ["authdb"]))
-    --       (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
-    --       Nothing))
-    -- testIso
-    --   (URIRef.parser optionsMany)
-    --   (URIRef.print optionsMany)
-    --   "mongodb://foo:bar@db1.example.net:6,db2.example.net:2500/authdb?replicaSet=test&connectTimeoutMS=300000"
-    --   (Left
-    --     (URI
-    --       (Scheme.unsafeFromString "mongodb")
-    --       (HierarchicalPartAuth
-    --         (Authority
-    --           (Just (UserInfo.unsafeFromString "foo:bar"))
-    --           [ Both (NameAddress (RegName.unsafeFromString "db1.example.net")) (Port.unsafeFromInt 6)
-    --           , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port.unsafeFromInt 2500)
-    --           ])
-    --         (path ["authdb"]))
-    --       (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
-    --       Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "mongodb://192.168.0.1"
       (Left
         (URI
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (This (IPv4Address (IPv4Address.unsafeFromOctets 192 168 0 1)))))
+            (Authority Nothing (Just (This (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1)))))
             Nothing)
           Nothing
           Nothing))
-    -- testIso
-    --   (URIRef.parser optionsMany)
-    --   (URIRef.print optionsMany)
-    --   "mongodb://192.168.0.1,192.168.0.2"
-    --   (Left
-    --     (URI
-    --       (Scheme.unsafeFromString "mongodb")
-    --       (HierarchicalPartAuth
-    --         (Authority
-    --           Nothing
-    --           [ This (IPv4Address "192.168.0.1")
-    --           , This (IPv4Address "192.168.0.2")
-    --           ])
-    --         Nothing)
-    --       Nothing
-    --       Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "mongodb://sysop:moon@localhost"
       (Left
         (URI
@@ -186,8 +138,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "mongodb://sysop:moon@localhost/"
       (Left
         (URI
@@ -200,8 +152,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "mongodb://sysop:moon@localhost/records"
       (Left
         (URI
@@ -214,8 +166,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "mongodb://sysop:moon@localhost/records/etc/"
       (Left
         (URI
@@ -228,8 +180,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "foo://[2001:cdba:0000:0000:0000:0000:3257:9652]"
       (Left
         (URI
@@ -242,8 +194,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "foo://[FE80::0202:B3FF:FE1E:8329]"
       (Left
         (URI
@@ -256,8 +208,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "foo://[2001:db8::1]:80"
       (Left
         (URI
@@ -270,8 +222,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "ftp://ftp.is.co.za/rfc/rfc1808.txt"
       (Left
         (URI
@@ -284,8 +236,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "http://www.ietf.org/rfc/rfc2396.txt"
       (Left
         (URI
@@ -298,8 +250,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "ldap://[2001:db8::7]/c=GB?objectClass?one"
       (Left
         (URI
@@ -312,8 +264,8 @@ spec =
           (Just (Query.unsafeFromString "objectClass?one"))
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "telnet://192.0.2.16:80/"
       (Left
         (URI
@@ -321,13 +273,13 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Both (IPv4Address (IPv4Address.unsafeFromOctets 192 0 2 16)) (Port.unsafeFromInt 80))))
+              (Just (Both (IPv4Address (IPv4Address.unsafeFromInts 192 0 2 16)) (Port.unsafeFromInt 80))))
             (path [""]))
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "foo://example.com:8042/over/there?name=ferret#nose"
       (Left
         (URI
@@ -340,8 +292,8 @@ spec =
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString "nose"))))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "foo://example.com:8042/over/there?name=ferret#"
       (Left
         (URI
@@ -354,8 +306,8 @@ spec =
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString ""))))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "foo://info.example.com?fred"
       (Left
         (URI
@@ -368,8 +320,8 @@ spec =
           (Just (Query.unsafeFromString "fred"))
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "ftp://cnn.example.com&story=breaking_news@10.0.0.1/top_story.htm"
       (Left
         (URI
@@ -377,13 +329,13 @@ spec =
           (HierarchicalPartAuth
             (Authority
               (Just (UserInfo.unsafeFromString "cnn.example.com&story=breaking_news"))
-              (Just (This (IPv4Address (IPv4Address.unsafeFromOctets 10 0 0 1)))))
+              (Just (This (IPv4Address (IPv4Address.unsafeFromInts 10 0 0 1)))))
             (path ["top_story.htm"]))
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "top_story.htm"
       (Right
         (RelativeRef
@@ -391,8 +343,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "../top_story.htm"
       (Right
         (RelativeRef
@@ -400,8 +352,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "/top_story.htm"
       (Right
         (RelativeRef
@@ -409,8 +361,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "/"
       (Right
         (RelativeRef
@@ -418,8 +370,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       ""
       (Right
         (RelativeRef
@@ -427,8 +379,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "http://www.example.com/some%20invented/url%20with%20spaces.html"
       (Left
         (URI
@@ -439,8 +391,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "http://localhost:53174/metadata/fs/test/%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23?"
       (Left
         (URI
@@ -451,8 +403,8 @@ spec =
           (Just (Query.unsafeFromString ""))
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "news:comp.infosystems.www.servers.unix"
       (Left
         (URI
@@ -461,8 +413,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "tel:+1-816-555-1212"
       (Left
         (URI
@@ -471,8 +423,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
       (Left
         (URI
@@ -481,8 +433,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "mailto:John.Doe@example.com"
       (Left
         (URI
@@ -491,8 +443,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "mailto:fred@example.com"
       (Left
         (URI
@@ -501,8 +453,8 @@ spec =
           Nothing
           Nothing))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "http://local.slamdata.com/?#?sort=asc&q=path%3A%2F&salt=1177214"
       (Left
         (URI
@@ -515,8 +467,8 @@ spec =
           (Just (Query.unsafeFromString ""))
           (Just (Fragment.unsafeFromString "?sort=asc&q=path%3A%2F&salt=1177214"))))
     testIso
-      (URIRef.parser optionsSingle)
-      (URIRef.print optionsSingle)
+      (URIRef.parser options)
+      (URIRef.print options)
       "http://local.slamdata.com/?#?sort=asc&q=path:/&salt=1177214"
       (Left
         (URI
@@ -532,8 +484,8 @@ spec =
 path ∷ Array String → Maybe Path
 path = Just <<< Path <<< map PathSegment.unsafeSegmentFromString
 
-optionsSingle ∷ Record (URIRefOptions UserInfo (HostPortPair Host Port) Path HierPath RelPath Query Fragment)
-optionsSingle =
+options ∷ Record (URIRefOptions UserInfo (HostPortPair Host Port) Path HierPath RelPath Query Fragment)
+options =
   { parseUserInfo: pure
   , printUserInfo: id
   , parseHosts: HostPortPair.parser pure pure
@@ -549,25 +501,3 @@ optionsSingle =
   , parseFragment: pure
   , printFragment: id
   }
-
--- optionsMany ∷ Record (URIRefOptions UserInfo Array Host Port Path HierPath RelPath Query Fragment)
--- optionsMany =
---   { parseUserInfo: pure
---   , printUserInfo: id
---   , parseHosts: Right { split: void (PS.char ','), build: Array.fromFoldable }
---   , printHosts: String.joinWith ","
---   , parseHost: pure
---   , printHost: id
---   , parsePort: pure
---   , printPort: id
---   , parsePath: pure
---   , printPath: id
---   , parseHierPath: pure
---   , printHierPath: id
---   , parseRelPath: pure
---   , printRelPath: id
---   , parseQuery: pure
---   , printQuery: id
---   , parseFragment: pure
---   , printFragment: id
---   }

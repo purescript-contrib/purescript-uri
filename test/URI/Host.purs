@@ -35,5 +35,5 @@ spec = do
     testIso (Host.parser pure) Host.print "localhost" (NameAddress (RegName.unsafeFromString "localhost"))
     testIso (Host.parser pure) Host.print "github.com" (NameAddress (RegName.unsafeFromString "github.com"))
     testIso (Host.parser pure) Host.print "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString "www.multipart.domain.example.com"))
-    testIso (Host.parser pure) Host.print "192.168.0.1" (IPv4Address (IPv4Address.unsafeFromOctets 192 168 0 1))
+    testIso (Host.parser pure) Host.print "192.168.0.1" (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1))
     testIso (Host.parser pure) Host.print "[2001:cdba:0000:0000:0000:0000:3257:9652]" (IPv6Address (IPv6Address.unsafeFromString "2001:cdba:0000:0000:0000:0000:3257:9652"))

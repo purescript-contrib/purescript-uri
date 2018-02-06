@@ -12,4 +12,4 @@ genIPv4 = do
   b ← Gen.chooseInt 0 255
   c ← Gen.chooseInt 0 255
   d ← Gen.chooseInt 0 255
-  pure $ IPv4Address.unsafeFromOctets a b c d
+  pure $ IPv4Address.unsafeFromInts a b c d

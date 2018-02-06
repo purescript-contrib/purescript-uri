@@ -18,93 +18,36 @@ spec ∷ ∀ eff. Spec eff Unit
 spec =
   describe "Authority parser/printer" do
     testIso
-      (Authority.parser optionsSingle)
-      (Authority.print optionsSingle)
+      (Authority.parser options)
+      (Authority.print options)
       "//localhost"
       (Authority
         Nothing
         (Just (This (NameAddress (RegName.unsafeFromString "localhost")))))
     testIso
-      (Authority.parser optionsSingle)
-      (Authority.print optionsSingle)
+      (Authority.parser options)
+      (Authority.print options)
       "//localhost:3000"
       (Authority
         Nothing
         (Just (Both (NameAddress (RegName.unsafeFromString "localhost")) (Port.unsafeFromInt 3000))))
     testIso
-      (Authority.parser optionsSingle)
-      (Authority.print optionsSingle)
+      (Authority.parser options)
+      (Authority.print options)
       "//user@localhost:3000"
       (Authority
         (Just (UserInfo.unsafeFromString "user"))
         (Just (Both (NameAddress (RegName.unsafeFromString "localhost")) (Port.unsafeFromInt 3000))))
-    -- testIso
-    --   (Authority.parser optionsMany)
-    --   (Authority.print optionsMany)
-    --   "//mongo-1,mongo-2"
-    --   (Authority
-    --     Nothing
-    --     [ This (NameAddress (RegName.unsafeFromString "mongo-1"))
-    --     , This (NameAddress (RegName.unsafeFromString "mongo-2"))
-    --     ])
-    -- testIso
-    --   (Authority.parser optionsMany)
-    --   (Authority.print optionsMany)
-    --   "//mongo-1:2000,mongo-2:3000"
-    --   (Authority
-    --     Nothing
-    --     [ Both (NameAddress (RegName.unsafeFromString "mongo-1")) (Port.unsafeFromInt 2000)
-    --     , Both (NameAddress (RegName.unsafeFromString "mongo-2")) (Port.unsafeFromInt 3000)
-    --     ])
-    -- testIso
-    --   (Authority.parser optionsMany)
-    --   (Authority.print optionsMany)
-    --   "//mongo-1:2000,mongo-2"
-    --   (Authority
-    --     Nothing
-    --     [ Both (NameAddress (RegName.unsafeFromString "mongo-1")) (Port.unsafeFromInt 2000)
-    --     , This (NameAddress (RegName.unsafeFromString "mongo-2"))
-    --     ])
-    -- testIso
-    --   (Authority.parser optionsMany)
-    --   (Authority.print optionsMany)
-    --   "//mongo-1,mongo-2:3000"
-    --   (Authority
-    --     Nothing
-    --     [ This (NameAddress (RegName.unsafeFromString "mongo-1"))
-    --     , Both (NameAddress (RegName.unsafeFromString "mongo-2")) (Port.unsafeFromInt 3000)
-    --     ])
     testIso
-      (Authority.parser optionsSingle)
-      (Authority.print optionsSingle)
+      (Authority.parser options)
+      (Authority.print options)
       "//:8000"
       (Authority Nothing (Just (That (Port.unsafeFromInt 8000))))
-    -- testIso
-    --   (Authority.parser optionsMany)
-    --   (Authority.print optionsMany)
-    --   "//:2000,:3000"
-    --   (Authority
-    --     Nothing
-    --     [ That (Port.unsafeFromInt 2000)
-    --     , That (Port.unsafeFromInt 3000)
-    --     ])
 
-optionsSingle ∷ Record (AuthorityOptions UserInfo (HostPortPair Host Port))
-optionsSingle =
+options ∷ Record (AuthorityOptions UserInfo (HostPortPair Host Port))
+options =
   { parseUserInfo: pure
   , printUserInfo: id
   , parseHosts: HostPortPair.parser pure pure
   , printHosts: HostPortPair.print id id
   }
-
--- optionsMany ∷ Record (AuthorityOptions UserInfo (HostPortPair Host Port))
--- optionsMany =
---   { parseUserInfo: pure
---   , printUserInfo: id
---   , parseHosts: Right { split: void (PS.char ','), build: Array.fromFoldable }
---   , printHosts: String.joinWith ","
---   , parseHost: pure
---   , printHost: id
---   , parsePort: pure
---   , printPort: id
---   }

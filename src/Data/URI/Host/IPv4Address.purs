@@ -1,7 +1,7 @@
 module Data.URI.Host.IPv4Address
   ( IPv4Address
-  , fromOctets
-  , unsafeFromOctets
+  , fromInts
+  , unsafeFromInts
   , parser
   , print
   ) where
@@ -24,12 +24,12 @@ derive instance eqIPv4Address ∷ Eq IPv4Address
 derive instance ordIPv4Address ∷ Ord IPv4Address
 
 instance showIPv4Address ∷ Show IPv4Address where
-  show (IPv4Address o1 o2 o3 o4) = "(IPv4Address.unsafeFromOctets " <> show o1 <> " " <> show o2 <> " " <> show o3 <> " " <> show o4 <> ")"
+  show (IPv4Address o1 o2 o3 o4) = "(IPv4Address.unsafeFromInts " <> show o1 <> " " <> show o2 <> " " <> show o3 <> " " <> show o4 <> ")"
 
 -- | Constructs a `IPv4Address` part safely: bounds-checks each octet to ensure
 -- | it occurs within the range 0-255 (inclusive).
-fromOctets ∷ Int → Int → Int → Int → Maybe IPv4Address
-fromOctets o1 o2 o3 o4 =
+fromInts ∷ Int → Int → Int → Int → Maybe IPv4Address
+fromInts o1 o2 o3 o4 =
   IPv4Address <$> check o1 <*> check o2 <*> check o3 <*> check o4
   where
     check ∷ Int → Maybe Int
@@ -39,8 +39,8 @@ fromOctets o1 o2 o3 o4 =
 
 -- | Constructs a `IPv4Address` part unsafely: no bounds-checking will be used
 -- | on the passed integers, potentially allowing for invalid IP addresses.
-unsafeFromOctets ∷ Int → Int → Int → Int → IPv4Address
-unsafeFromOctets = IPv4Address
+unsafeFromInts ∷ Int → Int → Int → Int → IPv4Address
+unsafeFromInts = IPv4Address
 
 parser ∷ Parser String IPv4Address
 parser = do
