@@ -35,7 +35,7 @@ equal expected actual =
       "\nexpected: " <> show expected <>
       "\ngot:      " <> show actual
 
-testIso ∷ ∀ a b eff. Eq b ⇒ Show b ⇒ Parser String b → (b → String) → String → b → Spec eff Unit
+testIso ∷ ∀ a eff. Eq a ⇒ Show a ⇒ Parser String a → (a → String) → String → a → Spec eff Unit
 testIso p f value expected = do
   testParser p value expected
   testPrinter f value expected
