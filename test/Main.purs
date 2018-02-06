@@ -10,6 +10,7 @@ import Test.URI.AbsoluteURI as AbsoluteURI
 import Test.URI.Authority as Authority
 import Test.URI.Fragment as Fragment
 import Test.URI.Host as Host
+import Test.URI.Extra.QueryPairs as Extra.QueryPairs
 import Test.URI.Path as Path
 import Test.URI.Port as Port
 import Test.URI.Scheme as Scheme
@@ -28,3 +29,4 @@ main = run [consoleReporter] do
   Path.spec
   URIRef.spec
   AbsoluteURI.spec
+  Extra.QueryPairs.spec
