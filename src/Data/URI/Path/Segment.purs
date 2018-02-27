@@ -23,7 +23,6 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
@@ -104,13 +103,11 @@ segmentNZNCToString (PathSegmentNZNC s) = decodeURIComponent s
 unsafeSegmentNZNCToString ∷ PathSegmentNZNC → String
 unsafeSegmentNZNCToString (PathSegmentNZNC s) = s
 
-segmentNZNCFromString ∷ String → Maybe PathSegmentNZNC
-segmentNZNCFromString = case _ of
-  "" → Nothing
-  s → Just $ PathSegmentNZNC (printEncoded segmentNCChar s)
+segmentNZNCFromString ∷ NonEmptyString → PathSegmentNZNC
+segmentNZNCFromString s = PathSegmentNZNC (printEncoded segmentNCChar $ NES.toString s)
 
-unsafeSegmentNZNCFromString ∷ String → PathSegmentNZNC
-unsafeSegmentNZNCFromString = PathSegmentNZNC
+unsafeSegmentNZNCFromString ∷ NonEmptyString → PathSegmentNZNC
+unsafeSegmentNZNCFromString = NES.toString >>> PathSegmentNZNC
 
 segmentChar ∷ Parser String Char
 segmentChar = segmentNCChar <|> char ':'
