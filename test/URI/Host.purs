@@ -3,12 +3,14 @@ module Test.URI.Host where
 import Prelude
 
 import Data.Either (Either(..))
+import Data.String.NonEmpty as NES
 import Data.URI.Host (Host(..))
 import Data.URI.Host as Host
 import Data.URI.Host.Gen as Host.Gen
 import Data.URI.Host.IPv4Address as IPv4Address
 import Data.URI.Host.IPv6Address as IPv6Address
 import Data.URI.Host.RegName as RegName
+import Partial.Unsafe (unsafePartial)
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -28,12 +30,12 @@ spec = do
 
     it "should not parse 0-lead octets as an IP address" do
       shouldEqual
-        (Right (NameAddress (RegName.unsafeFromString "192.168.001.1")))
+        (Right (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "192.168.001.1")))
         (runParser "192.168.001.1" (Host.parser pure))
 
   describe "Host parser/printer" do
-    testIso (Host.parser pure) Host.print "localhost" (NameAddress (RegName.unsafeFromString "localhost"))
-    testIso (Host.parser pure) Host.print "github.com" (NameAddress (RegName.unsafeFromString "github.com"))
-    testIso (Host.parser pure) Host.print "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString "www.multipart.domain.example.com"))
+    testIso (Host.parser pure) Host.print "localhost" (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost"))
+    testIso (Host.parser pure) Host.print "github.com" (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "github.com"))
+    testIso (Host.parser pure) Host.print "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "www.multipart.domain.example.com"))
     testIso (Host.parser pure) Host.print "192.168.0.1" (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1))
     testIso (Host.parser pure) Host.print "[2001:cdba:0000:0000:0000:0000:3257:9652]" (IPv6Address (IPv6Address.unsafeFromString "2001:cdba:0000:0000:0000:0000:3257:9652"))

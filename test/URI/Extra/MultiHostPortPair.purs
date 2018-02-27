@@ -4,13 +4,14 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Data.String.NonEmpty as NES
 import Data.These (These(..))
 import Data.URI.Authority (Authority(..), Host(..), Port, UserInfo)
 import Data.URI.Authority as Authority
 import Data.URI.Extra.MultiHostPortPair (MultiHostPortPair)
 import Data.URI.Extra.MultiHostPortPair as MultiHostPortPair
-import Data.URI.Host.RegName as RegName
 import Data.URI.Host.IPv4Address as IPv4Address
+import Data.URI.Host.RegName as RegName
 import Data.URI.Path.Segment as PathSegment
 import Data.URI.Port as Port
 import Data.URI.Query as Query
@@ -18,6 +19,7 @@ import Data.URI.Scheme as Scheme
 import Data.URI.URIRef (Fragment, HierPath, HierarchicalPart(..), Path(..), Query, RelPath, URI(..), URIRefOptions)
 import Data.URI.URIRef as URIRef
 import Data.URI.UserInfo as UserInfo
+import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
 
@@ -30,8 +32,8 @@ spec = do
       "//mongo-1,mongo-2"
       (Authority
         Nothing
-        [ This (NameAddress (RegName.unsafeFromString "mongo-1"))
-        , This (NameAddress (RegName.unsafeFromString "mongo-2"))
+        [ This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-1"))
+        , This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-2"))
         ])
     testIso
       (Authority.parser options)
@@ -39,8 +41,8 @@ spec = do
       "//mongo-1:2000,mongo-2:3000"
       (Authority
         Nothing
-        [ Both (NameAddress (RegName.unsafeFromString "mongo-1")) (Port.unsafeFromInt 2000)
-        , Both (NameAddress (RegName.unsafeFromString "mongo-2")) (Port.unsafeFromInt 3000)
+        [ Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-1")) (Port.unsafeFromInt 2000)
+        , Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-2")) (Port.unsafeFromInt 3000)
         ])
     testIso
       (Authority.parser options)
@@ -48,8 +50,8 @@ spec = do
       "//mongo-1:2000,mongo-2"
       (Authority
         Nothing
-        [ Both (NameAddress (RegName.unsafeFromString "mongo-1")) (Port.unsafeFromInt 2000)
-        , This (NameAddress (RegName.unsafeFromString "mongo-2"))
+        [ Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-1")) (Port.unsafeFromInt 2000)
+        , This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-2"))
         ])
     testIso
       (Authority.parser options)
@@ -57,8 +59,8 @@ spec = do
       "//mongo-1,mongo-2:3000"
       (Authority
         Nothing
-        [ This (NameAddress (RegName.unsafeFromString "mongo-1"))
-        , Both (NameAddress (RegName.unsafeFromString "mongo-2")) (Port.unsafeFromInt 3000)
+        [ This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-1"))
+        , Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-2")) (Port.unsafeFromInt 3000)
         ])
     testIso
       (Authority.parser options)
@@ -75,8 +77,8 @@ spec = do
       "//user@mongo-1,mongo-2"
       (Authority
         (Just (UserInfo.unsafeFromString "user"))
-        [ This (NameAddress (RegName.unsafeFromString "mongo-1"))
-        , This (NameAddress (RegName.unsafeFromString "mongo-2"))
+        [ This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-1"))
+        , This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "mongo-2"))
         ])
   describe "URIRef+MultiHostPortPair parser/printer" do
     testIso
@@ -89,8 +91,8 @@ spec = do
           (HierarchicalPartAuth
             (Authority
               (Just (UserInfo.unsafeFromString "foo:bar"))
-              [ This (NameAddress (RegName.unsafeFromString "db1.example.net"))
-              , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port.unsafeFromInt 2500)
+              [ This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "db1.example.net"))
+              , Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "db2.example.net")) (Port.unsafeFromInt 2500)
               ])
             (path ["authdb"]))
           (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
@@ -105,8 +107,8 @@ spec = do
           (HierarchicalPartAuth
             (Authority
               (Just (UserInfo.unsafeFromString "foo:bar"))
-              [ Both (NameAddress (RegName.unsafeFromString "db1.example.net")) (Port.unsafeFromInt 6)
-              , Both (NameAddress (RegName.unsafeFromString "db2.example.net")) (Port.unsafeFromInt 2500)
+              [ Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "db1.example.net")) (Port.unsafeFromInt 6)
+              , Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "db2.example.net")) (Port.unsafeFromInt 2500)
               ])
             (path ["authdb"]))
           (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))

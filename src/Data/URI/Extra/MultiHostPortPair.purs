@@ -11,6 +11,7 @@ import Data.Array as Array
 import Data.Either (Either)
 import Data.Maybe (Maybe(..))
 import Data.String as String
+import Data.String.NonEmpty as NES
 import Data.These (These(..))
 import Data.URI.Common (URIPartParseError, parseUnreserved, pctEncoded, wrapParser)
 import Data.URI.Host (Host(..), RegName)
@@ -20,6 +21,7 @@ import Data.URI.Host.RegName as RegName
 import Data.URI.HostPortPair as HostPortPair
 import Data.URI.Port (Port)
 import Data.URI.Port as Port
+import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.Combinators (optionMaybe, sepBy, try)
 import Text.Parsing.Parser.String (char, oneOf)
@@ -59,7 +61,11 @@ parseHost' p = wrapParser p
   <|> (NameAddress <$> parseRegName')
 
 parseRegName' ∷ Parser String RegName
-parseRegName' = RegName.unsafeFromString <<< String.joinWith "" <$> Array.some p
+parseRegName' = do
+  n ← Array.some p
+  case NES.fromString $ String.joinWith "" n of
+    Just x → pure $ RegName.unsafeFromString x
+    Nothing → unsafeCrashWith "This must be unPathSegment.unsafeSegmentNZFromStringreachable as we shuold parse at least one char in `pctEncoded`"
   where
   p = pctEncoded <|> String.singleton <$> c
   c = parseUnreserved <|> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=']
