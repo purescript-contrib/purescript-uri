@@ -11,9 +11,10 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Either (hush)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.URI.Common (alpha, alphaNum)
+import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, runParser)
 import Text.Parsing.Parser.String (char)
 
@@ -30,7 +31,9 @@ fromString ∷ String → Maybe Scheme
 fromString = map Scheme <<< hush <<< flip runParser parseScheme
 
 unsafeFromString ∷ String → Scheme
-unsafeFromString = Scheme
+unsafeFromString s = case fromString s of
+  Nothing → unsafeCrashWith $ "Got invalid scheme in unsafeFromString : `" <> show s <> "`"
+  Just s' → s'
 
 parser ∷ Parser String Scheme
 parser = Scheme <$> parseScheme <* char ':'
