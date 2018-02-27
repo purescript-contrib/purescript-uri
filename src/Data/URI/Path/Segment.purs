@@ -78,8 +78,8 @@ segmentNZFromString s = PathSegmentNZ (printEncoded segmentChar $ NES.toString s
 segmentNZToString ∷ PathSegmentNZ → String
 segmentNZToString (PathSegmentNZ s) = decodeURIComponent s
 
-unsafeSegmentNZFromString ∷ String → PathSegmentNZ
-unsafeSegmentNZFromString = PathSegmentNZ
+unsafeSegmentNZFromString ∷ NonEmptyString → PathSegmentNZ
+unsafeSegmentNZFromString = NES.toString >>> PathSegmentNZ
 
 unsafeSegmentNZToString ∷ PathSegmentNZ → String
 unsafeSegmentNZToString (PathSegmentNZ s) = s

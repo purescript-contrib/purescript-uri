@@ -43,8 +43,8 @@ toString (RegName s) = decodeURIComponent s
 -- | Constructs a `RegName` part unsafely: no encoding will be applied
 -- | to the value. If an incorrect value is provided, the URI will be invalid
 -- | when printed back.
-unsafeFromString ∷ String → RegName
-unsafeFromString = RegName
+unsafeFromString ∷ NonEmptyString → RegName
+unsafeFromString = NES.toString >>> RegName
 
 -- | Prints `RegName` as a string without performing any decoding of
 -- | percent-encoded octets. Only "unsafe" in the sense that values this
