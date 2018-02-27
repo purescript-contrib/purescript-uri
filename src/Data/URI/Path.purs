@@ -6,6 +6,7 @@ import Data.Array as Array
 import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
+import Data.Monoid (class Monoid)
 import Data.String as String
 import Data.URI.Common (URIPartParseError, wrapParser)
 import Data.URI.Path.Segment (PathSegment, parseSegment, unsafeSegmentToString)
@@ -16,6 +17,8 @@ newtype Path = Path (Array PathSegment)
 
 derive newtype instance eqPath ∷ Eq Path
 derive newtype instance ordPath ∷ Ord Path
+derive newtype instance semigroupPath ∷ Semigroup Path
+derive newtype instance monoidPath ∷ Monoid Path
 derive instance genericPath ∷ Generic Path _
 instance showPath ∷ Show Path where show = genericShow
 
