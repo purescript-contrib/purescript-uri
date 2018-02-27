@@ -25,6 +25,8 @@ import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.String as String
+import Data.String.NonEmpty (NonEmptyString)
+import Data.String.NonEmpty as NES
 import Data.URI.Common (pctEncoded, parseSubDelims, parseUnreserved, printEncoded)
 import Global (decodeURIComponent)
 import Text.Parsing.Parser (Parser)
@@ -70,10 +72,8 @@ parseSegmentNonZero =
     <<< String.joinWith ""
     <$> Array.some (pctEncoded <|> String.singleton <$> segmentChar)
 
-segmentNZFromString ∷ String → Maybe PathSegmentNZ
-segmentNZFromString = case _ of
-  "" → Nothing
-  s → Just $ PathSegmentNZ (printEncoded segmentChar s)
+segmentNZFromString ∷ NonEmptyString → PathSegmentNZ
+segmentNZFromString s = PathSegmentNZ (printEncoded segmentChar $ NES.toString s)
 
 segmentNZToString ∷ PathSegmentNZ → String
 segmentNZToString (PathSegmentNZ s) = decodeURIComponent s

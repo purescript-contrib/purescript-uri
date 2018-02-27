@@ -11,9 +11,10 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid)
 import Data.String as String
+import Data.String.NonEmpty (NonEmptyString)
+import Data.String.NonEmpty as NES
 import Data.URI.Common (pctEncoded, parseSubDelims, parseUnreserved, printEncoded)
 import Global (decodeURIComponent)
 import Text.Parsing.Parser (Parser)
@@ -31,10 +32,8 @@ instance showRegName ∷ Show RegName where
 -- | Constructs a `RegName` part safely: percent-encoding will be
 -- | applied to any character that requires it for the user-info component of a
 -- | URI.
-fromString ∷ String → Maybe RegName
-fromString = case _ of
-  "" → Nothing
-  s → Just $ RegName (printEncoded regNameChar s)
+fromString ∷ NonEmptyString → RegName
+fromString s = RegName (printEncoded regNameChar $ NES.toString s)
 
 -- | Prints `RegName` as a string, decoding any percent-encoded
 -- | characters contained within.
