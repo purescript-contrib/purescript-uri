@@ -38,13 +38,13 @@ spec =
     testIso
       (AbsoluteURI.parser options)
       (AbsoluteURI.print options)
-      "couchbase://localhost:99999/testBucket?password=pass&docTypeKey=type&queryTimeoutSeconds=20"
+      "couchbase://localhost:9999/testBucket?password=pass&docTypeKey=type&queryTimeoutSeconds=20"
       (AbsoluteURI
         (Scheme.unsafeFromString "couchbase")
         (HierarchicalPartAuth
           (Authority
             Nothing
-            (Just (Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")) (Port.unsafeFromInt 99999))))
+            (Just (Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")) (Port.unsafeFromInt 9999))))
           (path ["testBucket"]))
         (Just (Query.unsafeFromString "password=pass&docTypeKey=type&queryTimeoutSeconds=20")))
     testIso
