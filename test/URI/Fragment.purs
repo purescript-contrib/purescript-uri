@@ -2,9 +2,9 @@ module Test.URI.Fragment where
 
 import Prelude
 
-import Data.URI.Fragment as Fragment
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.Fragment as Fragment
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =

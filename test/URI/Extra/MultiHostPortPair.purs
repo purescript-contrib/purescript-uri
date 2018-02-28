@@ -6,22 +6,22 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty as NES
 import Data.These (These(..))
-import Data.URI.Authority (Authority(..), Host(..), Port, UserInfo)
-import Data.URI.Authority as Authority
-import Data.URI.Extra.MultiHostPortPair (MultiHostPortPair)
-import Data.URI.Extra.MultiHostPortPair as MultiHostPortPair
-import Data.URI.Host.IPv4Address as IPv4Address
-import Data.URI.Host.RegName as RegName
-import Data.URI.Path.Segment as PathSegment
-import Data.URI.Port as Port
-import Data.URI.Query as Query
-import Data.URI.Scheme as Scheme
-import Data.URI.URIRef (Fragment, HierPath, HierarchicalPart(..), Path(..), Query, RelPath, URI(..), URIRefOptions)
-import Data.URI.URIRef as URIRef
-import Data.URI.UserInfo as UserInfo
 import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.Authority (Authority(..), Host(..), Port, UserInfo)
+import URI.Authority as Authority
+import URI.Extra.MultiHostPortPair (MultiHostPortPair)
+import URI.Extra.MultiHostPortPair as MultiHostPortPair
+import URI.Host.IPv4Address as IPv4Address
+import URI.Host.RegName as RegName
+import URI.Path.Segment as PathSegment
+import URI.Port as Port
+import URI.Query as Query
+import URI.Scheme as Scheme
+import URI.URIRef (Fragment, HierPath, HierarchicalPart(..), Path(..), Query, RelPath, URI(..), URIRefOptions)
+import URI.URIRef as URIRef
+import URI.UserInfo as UserInfo
 
 spec ∷ ∀ eff. Spec eff Unit
 spec = do

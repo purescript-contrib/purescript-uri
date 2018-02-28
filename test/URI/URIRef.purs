@@ -7,22 +7,22 @@ import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty as NES
 import Data.These (These(..))
 import Data.Tuple (Tuple(..))
-import Data.URI.Fragment as Fragment
-import Data.URI.Host.IPv4Address as IPv4Address
-import Data.URI.Host.IPv6Address as IPv6Address
-import Data.URI.Host.RegName as RegName
-import Data.URI.HostPortPair (HostPortPair)
-import Data.URI.HostPortPair as HostPortPair
-import Data.URI.Path.Segment as PathSegment
-import Data.URI.Port as Port
-import Data.URI.Query as Query
-import Data.URI.Scheme as Scheme
-import Data.URI.URIRef (Authority(..), Fragment, HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathNoScheme(..), PathRootless(..), Port, Query, RelPath, RelativePart(..), RelativeRef(..), URI(..), URIRefOptions, UserInfo)
-import Data.URI.URIRef as URIRef
-import Data.URI.UserInfo as UserInfo
 import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.Fragment as Fragment
+import URI.Host.IPv4Address as IPv4Address
+import URI.Host.IPv6Address as IPv6Address
+import URI.Host.RegName as RegName
+import URI.HostPortPair (HostPortPair)
+import URI.HostPortPair as HostPortPair
+import URI.Path.Segment as PathSegment
+import URI.Port as Port
+import URI.Query as Query
+import URI.Scheme as Scheme
+import URI.URIRef (Authority(..), Fragment, HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathNoScheme(..), PathRootless(..), Port, Query, RelPath, RelativePart(..), RelativeRef(..), URI(..), URIRefOptions, UserInfo)
+import URI.URIRef as URIRef
+import URI.UserInfo as UserInfo
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =

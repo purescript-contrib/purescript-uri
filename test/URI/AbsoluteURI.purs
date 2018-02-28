@@ -7,18 +7,18 @@ import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty as NES
 import Data.These (These(..))
 import Data.Tuple (Tuple(..))
-import Data.URI.AbsoluteURI (Authority(..), HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port, Query, AbsoluteURI(..), AbsoluteURIOptions, UserInfo)
-import Data.URI.AbsoluteURI as AbsoluteURI
-import Data.URI.Host.RegName as RegName
-import Data.URI.HostPortPair (HostPortPair)
-import Data.URI.HostPortPair as HostPortPair
-import Data.URI.Path.Segment as PathSegment
-import Data.URI.Port as Port
-import Data.URI.Query as Query
-import Data.URI.Scheme as Scheme
 import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.AbsoluteURI (Authority(..), HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port, Query, AbsoluteURI(..), AbsoluteURIOptions, UserInfo)
+import URI.AbsoluteURI as AbsoluteURI
+import URI.Host.RegName as RegName
+import URI.HostPortPair (HostPortPair)
+import URI.HostPortPair as HostPortPair
+import URI.Path.Segment as PathSegment
+import URI.Port as Port
+import URI.Query as Query
+import URI.Scheme as Scheme
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =

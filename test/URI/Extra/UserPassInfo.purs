@@ -5,17 +5,17 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty as NES
 import Data.These (These(..))
-import Data.URI.Authority (Authority(..), Host(..), Port)
-import Data.URI.Authority as Authority
-import Data.URI.Extra.UserPassInfo (UserPassInfo(..))
-import Data.URI.Extra.UserPassInfo as UserPassInfo
-import Data.URI.Host.RegName as RegName
-import Data.URI.HostPortPair (HostPortPair)
-import Data.URI.HostPortPair as HostPortPair
-import Data.URI.URIRef (Fragment, HierPath, Path, Query, RelPath, URIRefOptions)
 import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.Authority (Authority(..), Host(..), Port)
+import URI.Authority as Authority
+import URI.Extra.UserPassInfo (UserPassInfo(..))
+import URI.Extra.UserPassInfo as UserPassInfo
+import URI.Host.RegName as RegName
+import URI.HostPortPair (HostPortPair)
+import URI.HostPortPair as HostPortPair
+import URI.URIRef (Fragment, HierPath, Path, Query, RelPath, URIRefOptions)
 
 spec ∷ ∀ eff. Spec eff Unit
 spec = do

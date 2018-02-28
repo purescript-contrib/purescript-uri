@@ -2,11 +2,11 @@ module Test.URI.Path where
 
 import Prelude
 
-import Data.URI.Path (Path(..))
-import Data.URI.Path as Path
-import Data.URI.Path.Segment as PathSegment
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.Path (Path(..))
+import URI.Path as Path
+import URI.Path.Segment as PathSegment
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =

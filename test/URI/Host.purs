@@ -4,18 +4,18 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.String.NonEmpty as NES
-import Data.URI.Host (Host(..))
-import Data.URI.Host as Host
-import Data.URI.Host.Gen as Host.Gen
-import Data.URI.Host.IPv4Address as IPv4Address
-import Data.URI.Host.IPv6Address as IPv6Address
-import Data.URI.Host.RegName as RegName
 import Partial.Unsafe (unsafePartial)
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Util (TestEffects, forAll, testIso)
 import Text.Parsing.Parser (runParser)
+import URI.Host (Host(..))
+import URI.Host as Host
+import URI.Host.Gen as Host.Gen
+import URI.Host.IPv4Address as IPv4Address
+import URI.Host.IPv6Address as IPv6Address
+import URI.Host.RegName as RegName
 
 spec ∷ ∀ eff. Spec (TestEffects eff) Unit
 spec = do

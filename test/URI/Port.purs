@@ -2,9 +2,9 @@ module Test.URI.Port where
 
 import Prelude
 
-import Data.URI.Port as Port
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.Port as Port
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =

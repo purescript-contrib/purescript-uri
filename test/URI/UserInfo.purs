@@ -2,9 +2,9 @@ module Test.URI.UserInfo where
 
 import Prelude
 
-import Data.URI.UserInfo as UserInfo
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.UserInfo as UserInfo
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =

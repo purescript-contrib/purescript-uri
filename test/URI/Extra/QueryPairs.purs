@@ -4,10 +4,10 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
-import Data.URI.Extra.QueryPairs as NQP
-import Data.URI.Query as Query
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.Extra.QueryPairs as NQP
+import URI.Query as Query
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =

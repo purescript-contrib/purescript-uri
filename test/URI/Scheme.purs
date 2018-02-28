@@ -2,9 +2,9 @@ module Test.URI.Scheme where
 
 import Prelude
 
-import Data.URI.Scheme as Scheme
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
+import URI.Scheme as Scheme
 
 spec ∷ ∀ eff. Spec eff Unit
 spec =
