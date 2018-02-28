@@ -14,6 +14,7 @@ import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.URI.Common (URIPartParseError(..), digit, wrapParser)
+import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (try)
 import Text.Parsing.Parser.String (char, satisfy)
@@ -37,10 +38,17 @@ fromInts o1 o2 o3 o4 =
       | i >= 0 && i <= 255 = Just i
       | otherwise = Nothing
 
--- | Constructs a `IPv4Address` part unsafely: no bounds-checking will be used
--- | on the passed integers, potentially allowing for invalid IP addresses.
+-- | Constructs a `IPv4Address` part unsafely: if any of the arguments are
+-- | outside the allowable bounds, a runtime error will be thrown.
+-- |
+-- | This is intended as a convenience when describing `IPv4Address`es
+-- | statically in PureScript code, in all other cases `fromInts` should be
+-- | preferred.
 unsafeFromInts ∷ Int → Int → Int → Int → IPv4Address
-unsafeFromInts = IPv4Address
+unsafeFromInts o1 o2 o3 o4 =
+  case fromInts o1 o2 o3 o4 of
+    Just addr → addr
+    Nothing → unsafeCrashWith "IPv4Address octet was out of range"
 
 parser ∷ Parser String IPv4Address
 parser = do

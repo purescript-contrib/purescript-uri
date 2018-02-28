@@ -18,6 +18,7 @@ import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.URI.Common (URIPartParseError, digit, wrapParser)
 import Global (readInt)
+import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.String (char)
 
@@ -31,13 +32,23 @@ instance showPort ∷ Show Port where show = genericShow
 toInt ∷ Port → Int
 toInt (Port i) = i
 
+-- | Constructs a `Port` safely: bounds-checks the value to ensure it occurs
+-- | within the range 0-65535 (inclusive).
 fromInt ∷ Int → Maybe Port
 fromInt n
   | n >= 0 && n <= 65535 = Just (Port n)
   | otherwise = Nothing
 
+-- | Constructs a `Port` unsafely: if the value is outside the allowable range,
+-- | a runtime error will be thrown.
+-- |
+-- | This is intended as a convenience when describing `Port`s statically in
+-- | PureScript code, in all other cases `fromInt` should be preferred.
 unsafeFromInt ∷ Int → Port
-unsafeFromInt = Port
+unsafeFromInt n =
+  case fromInt n of
+    Just addr → addr
+    Nothing → unsafeCrashWith "Port was out of range"
 
 parser ∷ ∀ p. (Port → Either URIPartParseError p) → Parser String p
 parser p = wrapParser p do
