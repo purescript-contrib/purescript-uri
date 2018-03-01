@@ -7,16 +7,17 @@ module URI.Extra.UserPassInfo
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Either (Either)
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String as String
-import Global (decodeURIComponent)
+import Data.String.NonEmpty (NonEmptyString)
+import Data.String.NonEmpty as NES
 import Text.Parsing.Parser (Parser)
-import URI.Common (parseSubDelims, parseUnreserved, printEncoded)
+import URI.Common (URIPartParseError(..), decodeURIComponent', parseSubDelims, parseUnreserved, printEncoded')
 import URI.UserInfo (UserInfo)
 import URI.UserInfo as UserInfo
 
-newtype UserPassInfo = UserPassInfo { user ∷ String, password ∷ Maybe String }
+newtype UserPassInfo = UserPassInfo { user ∷ NonEmptyString, password ∷ Maybe NonEmptyString }
 
 derive instance eqUserPassInfo ∷ Eq UserPassInfo
 derive instance ordUserPassInfo ∷ Ord UserPassInfo
@@ -25,29 +26,33 @@ instance showUserPassInfo ∷ Show UserPassInfo where
   show (UserPassInfo { user, password }) =
     "(UserPassInfo { user: " <> show user <> ", password: " <> show password <> "})"
 
-parse ∷ ∀ e. UserInfo → Either e UserPassInfo
+parse ∷ UserInfo → Either URIPartParseError UserPassInfo
 parse ui =
   let
     s = UserInfo.unsafeToString ui
   in
-    pure $ UserPassInfo
-      case flip String.splitAt s =<< String.indexOf (String.Pattern ":") s of
-        Just { before, after } →
-          { user: decodeURIComponent before
-          , password: Just (decodeURIComponent (String.drop 1 after))
-          }
-        Nothing →
-          { user: decodeURIComponent s, password: Nothing }
+      case flip NES.splitAt s =<< NES.indexOf (String.Pattern ":") s of
+        Just { before: Nothing } →
+          Left (URIPartParseError "Expected a username before a password segment")
+        Just { before: Just before, after: Just after } →
+          Right $ UserPassInfo
+            { user: decodeURIComponent' before
+            , password: decodeURIComponent' <$> NES.drop 1 after
+            }
+        _ →
+          Right $ UserPassInfo
+            { user: decodeURIComponent' s, password: Nothing }
 
 print ∷ UserPassInfo → UserInfo
 print (UserPassInfo { user, password }) =
   case password of
     Nothing →
-      UserInfo.unsafeFromString (printEncoded userPassInfoChar user)
+      UserInfo.unsafeFromString (printEncoded' userPassInfoChar user)
     Just p →
-      UserInfo.unsafeFromString (printEncoded userPassInfoChar user)
-        <> UserInfo.unsafeFromString ":"
-        <> UserInfo.unsafeFromString (printEncoded userPassInfoChar p)
+      UserInfo.unsafeFromString
+        $ printEncoded' userPassInfoChar user
+        <> NES.singleton ':'
+        <> printEncoded' userPassInfoChar p
 
 userPassInfoChar ∷ Parser String Char
 userPassInfoChar = parseUnreserved <|> parseSubDelims

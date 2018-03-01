@@ -24,7 +24,7 @@ import Data.Maybe (Maybe(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe, try)
 import Text.Parsing.Parser.String (char, string)
-import URI.Common (URIPartParseError)
+import URI.Common (URIPartParseError, wrapParser)
 import URI.Host (Host(..), IPv4Address, IPv6Address, RegName, _IPv4Address, _IPv6Address, _NameAddress)
 import URI.Port (Port)
 import URI.UserInfo (UserInfo)
@@ -67,7 +67,7 @@ parser
   → Parser String (Authority userInfo hosts)
 parser opts = do
   _ ← string "//"
-  ui ← optionMaybe $ try (UserInfo.parser opts.parseUserInfo <* char '@')
+  ui ← optionMaybe $ try (wrapParser opts.parseUserInfo UserInfo.parser <* char '@')
   hosts ← opts.parseHosts
   pure $ Authority ui hosts
 
@@ -77,7 +77,7 @@ print
   → Authority userInfo hosts
   → String
 print opts (Authority mui hs) = case mui of
-  Just ui → "//" <> UserInfo.print opts.printUserInfo ui <> "@" <> opts.printHosts hs
+  Just ui → "//" <> UserInfo.print (opts.printUserInfo ui) <> "@" <> opts.printHosts hs
   Nothing → "//" <> opts.printHosts hs
 
 _userInfo

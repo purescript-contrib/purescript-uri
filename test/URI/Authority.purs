@@ -3,11 +3,9 @@ module Test.URI.Authority where
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Data.String.NonEmpty as NES
 import Data.These (These(..))
-import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
-import Test.Util (testIso)
+import Test.Util (nes, testIso)
 import URI.Authority (Authority(..), AuthorityOptions, Host(..), Port, UserInfo)
 import URI.Authority as Authority
 import URI.Host.RegName as RegName
@@ -25,21 +23,21 @@ spec =
       "//localhost"
       (Authority
         Nothing
-        (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
+        (Just (This (NameAddress (RegName.unsafeFromString (nes "localhost"))))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//localhost:3000"
       (Authority
         Nothing
-        (Just (Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")) (Port.unsafeFromInt 3000))))
+        (Just (Both (NameAddress (RegName.unsafeFromString (nes "localhost"))) (Port.unsafeFromInt 3000))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//user@localhost:3000"
       (Authority
-        (Just (UserInfo.unsafeFromString "user"))
-        (Just (Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")) (Port.unsafeFromInt 3000))))
+        (Just (UserInfo.unsafeFromString (nes "user")))
+        (Just (Both (NameAddress (RegName.unsafeFromString (nes "localhost"))) (Port.unsafeFromInt 3000))))
     testIso
       (Authority.parser options)
       (Authority.print options)

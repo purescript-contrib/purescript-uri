@@ -9,6 +9,8 @@ module URI.Common
   , pctEncoded
   , parseSubDelims
   , printEncoded
+  , printEncoded'
+  , decodeURIComponent'
   ) where
 
 import Prelude
@@ -22,7 +24,10 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Newtype (class Newtype, un)
 import Data.String as String
-import Global (encodeURIComponent)
+import Data.String.NonEmpty (NonEmptyString)
+import Data.String.NonEmpty as NES
+import Global (decodeURIComponent, encodeURIComponent)
+import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..), runParser)
 import Text.Parsing.Parser.String (anyChar, char, eof, oneOf, satisfy)
 
@@ -82,3 +87,11 @@ printEncoded p s = either (const s) id (runParser s parse)
     simpleChar = String.singleton <$> p
     encodedChar ∷ Parser String String
     encodedChar = encodeURIComponent <<< String.singleton <$> anyChar
+
+printEncoded' ∷ Parser String Char → NonEmptyString → NonEmptyString
+printEncoded' p =
+  unsafePartial NES.unsafeFromString <<< printEncoded p <<< NES.toString
+
+decodeURIComponent' ∷ NonEmptyString → NonEmptyString
+decodeURIComponent' =
+  unsafePartial NES.unsafeFromString <<< decodeURIComponent <<< NES.toString

@@ -12,21 +12,25 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.Either (Either)
-import Data.Monoid (class Monoid)
 import Data.String as String
+import Data.String.NonEmpty (NonEmptyString)
+import Data.String.NonEmpty as NES
 import Global (decodeURIComponent)
+import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (URIPartParseError, parseSubDelims, parseUnreserved, pctEncoded, printEncoded, wrapParser)
+import URI.Common (parseSubDelims, parseUnreserved, pctEncoded, printEncoded)
 
 -- | The user info part of an `Authority`. For example: `user`, `foo:bar`.
-newtype UserInfo = UserInfo String
+-- |
+-- | This type treats the entire string as an undifferentiated blob, if you
+-- | would like to specifically deal with the `user:password` format, take a
+-- | look at `URI.Extra.UserPassInfo`.
+newtype UserInfo = UserInfo NonEmptyString
 
 derive newtype instance eqUserInfo ∷ Eq UserInfo
 derive newtype instance ordUserInfo ∷ Ord UserInfo
 derive newtype instance semigroupUserInfo ∷ Semigroup UserInfo
-derive newtype instance monoidUserInfo ∷ Monoid UserInfo
 
 instance showUserInfo ∷ Show UserInfo where
   show (UserInfo s) = "(UserInfo.unsafeFromString " <> show s <> ")"
@@ -34,18 +38,18 @@ instance showUserInfo ∷ Show UserInfo where
 -- | Constructs a `UserInfo` part safely: percent-encoding will be
 -- | applied to any character that requires it for the user-info component of a
 -- | URI.
-fromString ∷ String → UserInfo
-fromString = UserInfo <<< printEncoded userInfoChar
+fromString ∷ NonEmptyString → UserInfo
+fromString = UserInfo <<< nes <<< printEncoded userInfoChar <<< NES.toString
 
--- | Prints `UserInfo` as a string, decoding any percent-encoded
--- | characters contained within.
-toString ∷ UserInfo → String
-toString (UserInfo s) = decodeURIComponent s
+-- | Prints `UserInfo` as a string, decoding any percent-encoded characters
+-- | contained within.
+toString ∷ UserInfo → NonEmptyString
+toString (UserInfo s) = nes (decodeURIComponent (NES.toString s))
 
 -- | Constructs a `UserInfo` part unsafely: no encoding will be applied
 -- | to the value. If an incorrect value is provided, the URI will be invalid
 -- | when printed back.
-unsafeFromString ∷ String → UserInfo
+unsafeFromString ∷ NonEmptyString → UserInfo
 unsafeFromString = UserInfo
 
 -- | Prints `UserInfo` as a string without performing any decoding of
@@ -53,18 +57,23 @@ unsafeFromString = UserInfo
 -- | produces will need further decoding, the name is more for symmetry with
 -- | the `fromString`/`toString` and `unsafeFromString`/`unsafeToString`
 -- | pairings.
-unsafeToString ∷ UserInfo → String
+unsafeToString ∷ UserInfo → NonEmptyString
 unsafeToString (UserInfo s) = s
 
-parser ∷ ∀ ui. (UserInfo → Either URIPartParseError ui) → Parser String ui
-parser p = wrapParser p (UserInfo <<< String.joinWith "" <$> Array.some parse)
+-- | A parser for the `UserInfo` part of a URI.
+parser ∷ Parser String UserInfo
+parser = UserInfo <<< nes <<< String.joinWith "" <$> Array.some parse
   where
   parse ∷ Parser String String
   parse = String.singleton <$> userInfoChar <|> pctEncoded
 
-print ∷ ∀ ui. (ui → UserInfo) → ui → String
-print = map unsafeToString
+-- | A printer for the `UserInfo` part of a URI.
+print ∷ UserInfo → String
+print = NES.toString <<< unsafeToString
 
 -- | The supported user info characters, excluding percent-encodings.
 userInfoChar ∷ Parser String Char
 userInfoChar = parseUnreserved <|> parseSubDelims <|> char ':'
+
+nes ∷ String → NonEmptyString
+nes = unsafePartial NES.unsafeFromString

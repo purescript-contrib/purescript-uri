@@ -9,7 +9,7 @@ import Data.These (These(..))
 import Data.Tuple (Tuple(..))
 import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
-import Test.Util (testIso)
+import Test.Util (nes, testIso)
 import URI.Fragment as Fragment
 import URI.Host.IPv4Address as IPv4Address
 import URI.Host.IPv6Address as IPv6Address
@@ -134,7 +134,7 @@ spec =
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-                (Just (UserInfo.unsafeFromString "sysop:moon"))
+                (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
                 (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
             Nothing)
           Nothing
@@ -148,7 +148,7 @@ spec =
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-                (Just (UserInfo.unsafeFromString "sysop:moon"))
+                (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
                 (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
             (path [""]))
           Nothing
@@ -162,7 +162,7 @@ spec =
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-                (Just (UserInfo.unsafeFromString "sysop:moon"))
+                (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
                 (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
             (path ["records"]))
           Nothing
@@ -176,7 +176,7 @@ spec =
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-                (Just (UserInfo.unsafeFromString "sysop:moon"))
+                (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
                 (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
             (path ["records", "etc", ""]))
           Nothing
@@ -330,7 +330,7 @@ spec =
           (Scheme.unsafeFromString "ftp")
           (HierarchicalPartAuth
             (Authority
-              (Just (UserInfo.unsafeFromString "cnn.example.com&story=breaking_news"))
+              (Just (UserInfo.unsafeFromString (nes "cnn.example.com&story=breaking_news")))
               (Just (This (IPv4Address (IPv4Address.unsafeFromInts 10 0 0 1)))))
             (path ["top_story.htm"]))
           Nothing

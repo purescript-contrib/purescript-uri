@@ -8,6 +8,9 @@ import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Random (RANDOM)
 import Data.Either (Either(..))
+import Data.String.NonEmpty (NonEmptyString)
+import Data.String.NonEmpty as NES
+import Partial.Unsafe (unsafePartial)
 import Test.QuickCheck as QC
 import Test.QuickCheck.Gen as QCG
 import Test.Spec (Spec, it)
@@ -45,3 +48,6 @@ forAll = quickCheck
 
 quickCheck ∷ ∀ eff prop. QC.Testable prop ⇒ prop → Aff (TestEffects eff) Unit
 quickCheck = liftEff <<< QC.quickCheck' 100
+
+nes ∷ String → NonEmptyString
+nes = unsafePartial NES.unsafeFromString
