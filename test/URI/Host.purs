@@ -17,11 +17,18 @@ import URI.Host.RegName as RegName
 
 spec ∷ ∀ eff. Spec (TestEffects eff) Unit
 spec = do
-  describe "parseIPv4Address" do
+  describe "Host parser/printer" do
+    testIso Host.parser Host.print "localhost" (NameAddress (RegName.unsafeFromString $ nes "localhost"))
+    testIso Host.parser Host.print "github.com" (NameAddress (RegName.unsafeFromString $ nes "github.com"))
+    testIso Host.parser Host.print "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString $ nes "www.multipart.domain.example.com"))
+    testIso Host.parser Host.print "192.168.0.1" (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1))
+    testIso Host.parser Host.print "[2001:cdba:0000:0000:0000:0000:3257:9652]" (IPv6Address (IPv6Address.unsafeFromString "2001:cdba:0000:0000:0000:0000:3257:9652"))
 
-    it "Should successfully roundtrip values sent through parseIPv4Address / Host.print" do
+  describe "IPv4Address" do
+
+    it "should successfully roundtrip values sent through Host parse/print" do
       forAll do
-        ipv4 <- Host.Gen.genIPv4
+        ipv4 ← Host.Gen.genIPv4
         let printed = IPv4Address.print ipv4
         let parsed = runParser printed Host.parser
         pure $ pure (IPv4Address ipv4) === parsed
@@ -31,9 +38,9 @@ spec = do
         (Right (NameAddress (RegName.unsafeFromString $ nes "192.168.001.1")))
         (runParser "192.168.001.1" Host.parser)
 
-  describe "Host parser/printer" do
-    testIso Host.parser Host.print "localhost" (NameAddress (RegName.unsafeFromString $ nes "localhost"))
-    testIso Host.parser Host.print "github.com" (NameAddress (RegName.unsafeFromString $ nes "github.com"))
-    testIso Host.parser Host.print "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString $ nes "www.multipart.domain.example.com"))
-    testIso Host.parser Host.print "192.168.0.1" (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1))
-    testIso Host.parser Host.print "[2001:cdba:0000:0000:0000:0000:3257:9652]" (IPv6Address (IPv6Address.unsafeFromString "2001:cdba:0000:0000:0000:0000:3257:9652"))
+  describe "NameAddress" do
+
+    it "should uphold toString / fromString property" do
+      forAll do
+        regName ← Host.Gen.genRegName
+        pure $ RegName.fromString (RegName.toString regName) === regName
