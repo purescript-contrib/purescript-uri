@@ -17,6 +17,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Prism', prism')
 import Data.Maybe (Maybe(..))
+import Data.String.NonEmpty as NES
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (try)
 import URI.Host.IPv4Address (IPv4Address)
@@ -47,7 +48,7 @@ print ∷ Host → String
 print = case _ of
   IPv6Address addr → IPv6Address.unsafeToString addr
   IPv4Address addr → IPv4Address.print addr
-  NameAddress addr → RegName.unsafeToString addr
+  NameAddress addr → NES.toString (RegName.unsafeToString addr)
 
 _IPv6Address ∷ Prism' Host IPv6Address
 _IPv6Address = prism' IPv6Address case _ of
