@@ -15,11 +15,10 @@ import Data.Array as Array
 import Data.String as String
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
-import Global (decodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (parseSubDelims, parseUnreserved, pctEncoded, printEncoded)
+import URI.Common (decodeURIComponent', parseSubDelims, parseUnreserved, pctEncoded, printEncoded')
 
 -- | The user info part of an `Authority`. For example: `user`, `foo:bar`.
 -- |
@@ -39,12 +38,12 @@ instance showUserInfo ∷ Show UserInfo where
 -- | applied to any character that requires it for the user-info component of a
 -- | URI.
 fromString ∷ NonEmptyString → UserInfo
-fromString = UserInfo <<< nes <<< printEncoded userInfoChar <<< NES.toString
+fromString = UserInfo <<< printEncoded' userInfoChar
 
 -- | Prints `UserInfo` as a string, decoding any percent-encoded characters
 -- | contained within.
 toString ∷ UserInfo → NonEmptyString
-toString (UserInfo s) = nes (decodeURIComponent (NES.toString s))
+toString (UserInfo s) = decodeURIComponent' s
 
 -- | Constructs a `UserInfo` part unsafely: no encoding will be applied
 -- | to the value. If an incorrect value is provided, the URI will be invalid
@@ -62,7 +61,10 @@ unsafeToString (UserInfo s) = s
 
 -- | A parser for the `UserInfo` part of a URI.
 parser ∷ Parser String UserInfo
-parser = UserInfo <<< nes <<< String.joinWith "" <$> Array.some parse
+parser =
+  UserInfo
+    <<< unsafePartial NES.unsafeFromString
+    <<< String.joinWith "" <$> Array.some parse
   where
   parse ∷ Parser String String
   parse = String.singleton <$> userInfoChar <|> pctEncoded
@@ -74,6 +76,3 @@ print = NES.toString <<< unsafeToString
 -- | The supported user info characters, excluding percent-encodings.
 userInfoChar ∷ Parser String Char
 userInfoChar = parseUnreserved <|> parseSubDelims <|> char ':'
-
-nes ∷ String → NonEmptyString
-nes = unsafePartial NES.unsafeFromString
