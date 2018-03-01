@@ -34,32 +34,43 @@ derive newtype instance semigroupUserInfo ∷ Semigroup UserInfo
 instance showUserInfo ∷ Show UserInfo where
   show (UserInfo s) = "(UserInfo.unsafeFromString " <> show s <> ")"
 
--- | Constructs a `UserInfo` part safely: percent-encoding will be
--- | applied to any character that requires it for the user-info component of a
--- | URI.
+-- | Constructs a user-info value from a string, percent-encoding any characters
+-- | that require it. Note that running this on a string that has already had
+-- | percent-encoding applied will double-encode it, for those situations use
+-- | `unsafeFromString` instead.
+-- |
+-- | ``` purescript
+-- | fromString "foo" = unsafeFromString "foo"
+-- | fromString "foo@bar" = unsafeFromString "foo%40bar"
+-- | fromString "foo%40bar" = unsafeFromString "foo%2540bar"
+-- | ```
 fromString ∷ NonEmptyString → UserInfo
 fromString = UserInfo <<< printEncoded' userInfoChar
 
--- | Prints `UserInfo` as a string, decoding any percent-encoded characters
--- | contained within.
+-- | Returns the string value for user-info, percent-decoding any characters
+-- | that require it.
+-- |
+-- | ``` purescript
+-- | toString (unsafeFromString "foo") = "foo"
+-- | toString (unsafeFromString "foo%40bar") = "foo@bar"
+-- | ```
 toString ∷ UserInfo → NonEmptyString
 toString (UserInfo s) = decodeURIComponent' s
 
--- | Constructs a `UserInfo` part unsafely: no encoding will be applied
--- | to the value. If an incorrect value is provided, the URI will be invalid
--- | when printed back.
+-- | Constructs a user-info value from a string directly - no percent-encoding
+-- | will be applied. This is useful when using a custom encoding scheme for
+-- | the query, to prevent double-encoding.
 unsafeFromString ∷ NonEmptyString → UserInfo
 unsafeFromString = UserInfo
 
--- | Prints `UserInfo` as a string without performing any decoding of
--- | percent-encoded octets. Only "unsafe" in the sense that values this
--- | produces will need further decoding, the name is more for symmetry with
--- | the `fromString`/`toString` and `unsafeFromString`/`unsafeToString`
--- | pairings.
+-- | Returns the string value for user-info without percent-decoding. Only
+-- | "unsafe" in the sense that values this produces may need further decoding,
+-- | the name is more for symmetry with the `fromString`/`unsafeFromString`
+-- | pairing.
 unsafeToString ∷ UserInfo → NonEmptyString
 unsafeToString (UserInfo s) = s
 
--- | A parser for the `UserInfo` part of a URI.
+-- | A parser for the user-info component of a URI.
 parser ∷ Parser String UserInfo
 parser =
   UserInfo
@@ -69,7 +80,7 @@ parser =
   parse ∷ Parser String String
   parse = String.singleton <$> userInfoChar <|> pctEncoded
 
--- | A printer for the `UserInfo` part of a URI.
+-- | A printer for the user-info component of a URI.
 print ∷ UserInfo → String
 print = NES.toString <<< unsafeToString
 
