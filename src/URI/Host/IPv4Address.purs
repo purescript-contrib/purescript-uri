@@ -19,6 +19,7 @@ import Text.Parsing.Parser.Combinators (try)
 import Text.Parsing.Parser.String (char, satisfy)
 import URI.Common (URIPartParseError(..), digit, wrapParser)
 
+-- | The IPv4 address variation of the host part of a URI.
 data IPv4Address = IPv4Address Int Int Int Int
 
 derive instance eqIPv4Address ∷ Eq IPv4Address
@@ -43,13 +44,14 @@ fromInts o1 o2 o3 o4 =
 -- |
 -- | This is intended as a convenience when describing `IPv4Address`es
 -- | statically in PureScript code, in all other cases `fromInts` should be
--- | preferred.
+-- | used.
 unsafeFromInts ∷ Int → Int → Int → Int → IPv4Address
 unsafeFromInts o1 o2 o3 o4 =
   case fromInts o1 o2 o3 o4 of
     Just addr → addr
     Nothing → unsafeCrashWith "IPv4Address octet was out of range"
 
+-- | A parser for IPv4 addresses.
 parser ∷ Parser String IPv4Address
 parser = do
   o1 ← octet <* char '.'
@@ -58,6 +60,7 @@ parser = do
   o4 ← octet
   pure $ IPv4Address o1 o2 o3 o4
 
+-- | A printer for IPv4 adddresses.
 print ∷ IPv4Address → String
 print (IPv4Address o1 o2 o3 o4) =
   show o1 <> "." <> show o2 <> "." <> show o3 <> "." <> show o4
