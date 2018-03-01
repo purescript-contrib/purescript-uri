@@ -4,12 +4,10 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.String.NonEmpty as NES
 import Data.These (These(..))
 import Data.Tuple (Tuple(..))
-import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
-import Test.Util (testIso)
+import Test.Util (nes, testIso)
 import URI.AbsoluteURI (Authority(..), HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port, Query, AbsoluteURI(..), AbsoluteURIOptions, UserInfo)
 import URI.AbsoluteURI as AbsoluteURI
 import URI.Host.RegName as RegName
@@ -32,7 +30,7 @@ spec =
         (HierarchicalPartAuth
           (Authority
             Nothing
-            (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
+            (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
           (path ["testBucket"]))
         (Just (Query.unsafeFromString "password=&docTypeKey=")))
     testIso
@@ -44,7 +42,7 @@ spec =
         (HierarchicalPartAuth
           (Authority
             Nothing
-            (Just (Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")) (Port.unsafeFromInt 9999))))
+            (Just (Both (NameAddress (RegName.unsafeFromString $ nes "localhost")) (Port.unsafeFromInt 9999))))
           (path ["testBucket"]))
         (Just (Query.unsafeFromString "password=pass&docTypeKey=type&queryTimeoutSeconds=20")))
     testIso
@@ -54,7 +52,7 @@ spec =
       (AbsoluteURI
         (Scheme.unsafeFromString "foo")
         (HierarchicalPartNoAuth
-          (Just (Left (PathAbsolute (Just (Tuple (PathSegment.unsafeSegmentNZFromString $ unsafePartial $ NES.unsafeFromString "abc") [PathSegment.unsafeSegmentFromString "def"]))))))
+          (Just (Left (PathAbsolute (Just (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "abc") [PathSegment.unsafeSegmentFromString "def"]))))))
         Nothing)
     testIso
       (AbsoluteURI.parser options)
@@ -63,7 +61,7 @@ spec =
       (AbsoluteURI
         (Scheme.unsafeFromString "foo")
         (HierarchicalPartNoAuth
-          (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ unsafePartial $ NES.unsafeFromString "abc") [PathSegment.unsafeSegmentFromString "def"])))))
+          (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "abc") [PathSegment.unsafeSegmentFromString "def"])))))
         Nothing)
 
 path ∷ Array String → Maybe Path

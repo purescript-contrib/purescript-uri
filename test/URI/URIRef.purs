@@ -4,10 +4,8 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.String.NonEmpty as NES
 import Data.These (These(..))
 import Data.Tuple (Tuple(..))
-import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
 import Test.Util (nes, testIso)
 import URI.Fragment as Fragment
@@ -81,7 +79,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
             Nothing)
           Nothing
           Nothing))
@@ -95,7 +93,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "1a.example.com")))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes "1a.example.com")))))
             Nothing)
           Nothing
           Nothing))
@@ -109,7 +107,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "en.wikipedia.org")))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes "en.wikipedia.org")))))
             (path ["wiki", "URI_scheme"]))
           Nothing
           Nothing))
@@ -135,7 +133,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
-                (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
+                (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
             Nothing)
           Nothing
           Nothing))
@@ -149,7 +147,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
-                (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
+                (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
             (path [""]))
           Nothing
           Nothing))
@@ -163,7 +161,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
-                (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
+                (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
             (path ["records"]))
           Nothing
           Nothing))
@@ -177,7 +175,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
                 (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
-                (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")))))
+                (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
             (path ["records", "etc", ""]))
           Nothing
           Nothing))
@@ -233,7 +231,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "ftp.is.co.za")))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes "ftp.is.co.za")))))
             (path ["rfc", "rfc1808.txt"]))
           Nothing
           Nothing))
@@ -247,7 +245,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "www.ietf.org")))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes "www.ietf.org")))))
             (path ["rfc", "rfc2396.txt"]))
           Nothing
           Nothing))
@@ -289,7 +287,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "example.com")) (Port.unsafeFromInt 8042))))
+              (Just (Both (NameAddress (RegName.unsafeFromString $ nes "example.com")) (Port.unsafeFromInt 8042))))
             (path ["over", "there"]))
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString "nose"))))
@@ -303,7 +301,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "example.com")) (Port.unsafeFromInt 8042))))
+              (Just (Both (NameAddress (RegName.unsafeFromString $ nes "example.com")) (Port.unsafeFromInt 8042))))
             (path ["over", "there"]))
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString ""))))
@@ -317,7 +315,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "info.example.com")))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes "info.example.com")))))
             Nothing)
           (Just (Query.unsafeFromString "fred"))
           Nothing))
@@ -341,7 +339,7 @@ spec =
       "top_story.htm"
       (Right
         (RelativeRef
-          (RelativePartNoAuth (Just (Right (PathNoScheme (Tuple (PathSegment.unsafeSegmentNZNCFromString $ unsafePartial $ NES.unsafeFromString "top_story.htm") [])))))
+          (RelativePartNoAuth (Just (Right (PathNoScheme (Tuple (PathSegment.unsafeSegmentNZNCFromString $ nes "top_story.htm") [])))))
           Nothing
           Nothing))
     testIso
@@ -350,7 +348,7 @@ spec =
       "../top_story.htm"
       (Right
         (RelativeRef
-          (RelativePartNoAuth (Just (Right (PathNoScheme (Tuple (PathSegment.unsafeSegmentNZNCFromString $ unsafePartial $ NES.unsafeFromString "..") [PathSegment.unsafeSegmentFromString "top_story.htm"])))))
+          (RelativePartNoAuth (Just (Right (PathNoScheme (Tuple (PathSegment.unsafeSegmentNZNCFromString $ nes "..") [PathSegment.unsafeSegmentFromString "top_story.htm"])))))
           Nothing
           Nothing))
     testIso
@@ -359,7 +357,7 @@ spec =
       "/top_story.htm"
       (Right
         (RelativeRef
-          (RelativePartNoAuth (Just (Left (PathAbsolute (Just (Tuple (PathSegment.unsafeSegmentNZFromString $ unsafePartial $ NES.unsafeFromString "top_story.htm") []))))))
+          (RelativePartNoAuth (Just (Left (PathAbsolute (Just (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "top_story.htm") []))))))
           Nothing
           Nothing))
     testIso
@@ -388,7 +386,7 @@ spec =
         (URI
           (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "www.example.com")))))
+            (Authority Nothing (Just (This (NameAddress (RegName.unsafeFromString $ nes "www.example.com")))))
             (path ["some%20invented", "url%20with%20spaces.html"]))
           Nothing
           Nothing))
@@ -400,7 +398,7 @@ spec =
         (URI
           (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (Both (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost")) (Port.unsafeFromInt 53174))))
+            (Authority Nothing (Just (Both (NameAddress (RegName.unsafeFromString $ nes "localhost")) (Port.unsafeFromInt 53174))))
             (path ["metadata", "fs", "test", "%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23"]))
           (Just (Query.unsafeFromString ""))
           Nothing))
@@ -411,7 +409,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "news")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ unsafePartial $ NES.unsafeFromString "comp.infosystems.www.servers.unix") [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "comp.infosystems.www.servers.unix") [])))))
           Nothing
           Nothing))
     testIso
@@ -421,7 +419,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "tel")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ unsafePartial $ NES.unsafeFromString "+1-816-555-1212") [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "+1-816-555-1212") [])))))
           Nothing
           Nothing))
     testIso
@@ -431,7 +429,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "urn")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ unsafePartial $ NES.unsafeFromString "oasis:names:specification:docbook:dtd:xml:4.1.2") [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "oasis:names:specification:docbook:dtd:xml:4.1.2") [])))))
           Nothing
           Nothing))
     testIso
@@ -441,7 +439,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "mailto")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ unsafePartial $ NES.unsafeFromString "John.Doe@example.com") [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "John.Doe@example.com") [])))))
           Nothing
           Nothing))
     testIso
@@ -451,7 +449,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "mailto")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ unsafePartial $ NES.unsafeFromString "fred@example.com") [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "fred@example.com") [])))))
           Nothing
           Nothing))
     testIso
@@ -464,7 +462,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "local.slamdata.com")))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes "local.slamdata.com")))))
             (path [""]))
           (Just (Query.unsafeFromString ""))
           (Just (Fragment.unsafeFromString "?sort=asc&q=path%3A%2F&salt=1177214"))))
@@ -478,7 +476,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "local.slamdata.com")))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes "local.slamdata.com")))))
             (path [""]))
           (Just (Query.unsafeFromString ""))
           (Just (Fragment.unsafeFromString "?sort=asc&q=path:/&salt=1177214"))))

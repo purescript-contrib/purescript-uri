@@ -3,9 +3,7 @@ module Test.URI.Extra.UserPassInfo where
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Data.String.NonEmpty as NES
 import Data.These (These(..))
-import Partial.Unsafe (unsafePartial)
 import Test.Spec (Spec, describe)
 import Test.Util (nes, testIso)
 import URI.Authority (Authority(..), Host(..), Port)
@@ -26,42 +24,42 @@ spec = do
       "//user@host"
       (Authority
         (Just (UserPassInfo { user: nes "user", password: Nothing }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "host")))))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes "host")))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//user:pass@host"
       (Authority
         (Just (UserPassInfo { user: nes "user", password: Just (nes "pass") }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "host")))))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes "host")))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//user:pa%3Ass@host"
       (Authority
         (Just (UserPassInfo { user: nes "user", password: Just (nes "pa:ss") }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "host")))))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes "host")))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//us%3Aer:pa%3Ass@host"
       (Authority
         (Just (UserPassInfo { user: nes "us:er", password: Just (nes "pa:ss") }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "host")))))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes "host")))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//us%3Aer:pa%3Ass@host"
       (Authority
         (Just (UserPassInfo { user: nes "us:er", password: Just (nes "pa:ss") }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "host")))))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes "host")))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//user:p%40ss@host"
       (Authority
         (Just (UserPassInfo { user: nes "user", password: Just (nes "p@ss") }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "host")))))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes "host")))))
 
 options ∷ Record (URIRefOptions UserPassInfo (HostPortPair Host Port) Path HierPath RelPath Query Fragment)
 options =

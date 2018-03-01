@@ -3,12 +3,10 @@ module Test.URI.Host where
 import Prelude
 
 import Data.Either (Either(..))
-import Data.String.NonEmpty as NES
-import Partial.Unsafe (unsafePartial)
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
-import Test.Util (TestEffects, forAll, testIso)
+import Test.Util (TestEffects, forAll, nes, testIso)
 import Text.Parsing.Parser (runParser)
 import URI.Host (Host(..))
 import URI.Host as Host
@@ -30,12 +28,12 @@ spec = do
 
     it "should not parse 0-lead octets as an IP address" do
       shouldEqual
-        (Right (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "192.168.001.1")))
+        (Right (NameAddress (RegName.unsafeFromString $ nes "192.168.001.1")))
         (runParser "192.168.001.1" Host.parser)
 
   describe "Host parser/printer" do
-    testIso Host.parser Host.print "localhost" (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "localhost"))
-    testIso Host.parser Host.print "github.com" (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "github.com"))
-    testIso Host.parser Host.print "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString $ unsafePartial $ NES.unsafeFromString "www.multipart.domain.example.com"))
+    testIso Host.parser Host.print "localhost" (NameAddress (RegName.unsafeFromString $ nes "localhost"))
+    testIso Host.parser Host.print "github.com" (NameAddress (RegName.unsafeFromString $ nes "github.com"))
+    testIso Host.parser Host.print "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString $ nes "www.multipart.domain.example.com"))
     testIso Host.parser Host.print "192.168.0.1" (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1))
     testIso Host.parser Host.print "[2001:cdba:0000:0000:0000:0000:3257:9652]" (IPv6Address (IPv6Address.unsafeFromString "2001:cdba:0000:0000:0000:0000:3257:9652"))
