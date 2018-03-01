@@ -3,14 +3,12 @@ module URI.Path.Rootless where
 import Prelude
 
 import Data.Array as Array
-import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.String as String
 import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (URIPartParseError, wrapParser)
 import URI.Path.Segment (PathSegment, PathSegmentNZ, parseSegment, parseSegmentNonZero, unsafeSegmentNZToString, unsafeSegmentToString)
 
 newtype PathRootless = PathRootless (Tuple PathSegmentNZ (Array PathSegment))
@@ -20,8 +18,8 @@ derive instance ordPathRootless ∷ Ord PathRootless
 derive instance genericPathRootless ∷ Generic PathRootless _
 instance showPathRootless ∷ Show PathRootless where show = genericShow
 
-parse ∷ ∀ p. (PathRootless → Either URIPartParseError p) → Parser String p
-parse p = wrapParser p do
+parse ∷ Parser String PathRootless
+parse = do
   head ← parseSegmentNonZero
   tail ← Array.many (char '/' *> parseSegment)
   pure (PathRootless (Tuple head tail))

@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..))
 import Data.These (These(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
-import URI.Common (URIPartParseError)
+import URI.Common (URIPartParseError, wrapParser)
 import URI.Host (Host)
 import URI.Host as Host
 import URI.Port (Port)
@@ -21,8 +21,8 @@ parser
   → (Port → Either URIPartParseError port)
   → Parser String (HostPortPair host port)
 parser parseHost parsePort = do
-  mh ← optionMaybe (Host.parser parseHost)
-  mp ← optionMaybe (Port.parser parsePort)
+  mh ← optionMaybe (wrapParser parseHost Host.parser)
+  mp ← optionMaybe (wrapParser parsePort Port.parser)
   pure case mh, mp of
     Just h, Nothing → Just (This h)
     Nothing, Just p → Just (That p)

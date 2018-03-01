@@ -12,13 +12,12 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.Either (Either)
 import Data.Monoid (class Monoid)
 import Data.String as String
 import Global (decodeURIComponent)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (URIPartParseError, parseSubDelims, parseUnreserved, pctEncoded, printEncoded, wrapParser)
+import URI.Common (parseSubDelims, parseUnreserved, pctEncoded, printEncoded)
 
 -- | The hash fragment of a URI.
 newtype Fragment = Fragment String
@@ -43,10 +42,10 @@ unsafeFromString = Fragment
 unsafeToString ∷ Fragment → String
 unsafeToString (Fragment s) = s
 
-parser ∷ ∀ f. (Fragment → Either URIPartParseError f) → Parser String f
-parser parseF =
+parser ∷ Parser String Fragment
+parser =
   char '#' *>
-    wrapParser parseF (Fragment <<< String.joinWith ""
+    (Fragment <<< String.joinWith ""
       <$> Array.many (pctEncoded <|> String.singleton <$> fragmentChar))
 
 print ∷ Fragment → String

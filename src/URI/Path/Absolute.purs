@@ -3,7 +3,6 @@ module URI.Path.Absolute where
 import Prelude
 
 import Data.Array as Array
-import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe(..))
@@ -12,7 +11,6 @@ import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
 import Text.Parsing.Parser.String (char)
-import URI.Common (URIPartParseError, wrapParser)
 import URI.Path.Segment (PathSegment, PathSegmentNZ, parseSegment, parseSegmentNonZero, unsafeSegmentNZToString, unsafeSegmentToString)
 
 newtype PathAbsolute = PathAbsolute (Maybe (Tuple PathSegmentNZ (Array PathSegment)))
@@ -22,8 +20,8 @@ derive instance ordPathAbsolute ∷ Ord PathAbsolute
 derive instance genericPathAbsolute ∷ Generic PathAbsolute _
 instance showPathAbsolute ∷ Show PathAbsolute where show = genericShow
 
-parse ∷ ∀ p. (PathAbsolute → Either URIPartParseError p) → Parser String p
-parse p = wrapParser p do
+parse ∷ Parser String PathAbsolute
+parse = do
   _ ← char '/'
   optionMaybe parseSegmentNonZero >>= case _ of
     Just head →

@@ -10,7 +10,6 @@ module URI.Port
 import Prelude
 
 import Data.Array as Array
-import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Int (fromNumber)
@@ -20,7 +19,7 @@ import Global (readInt)
 import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.String (char)
-import URI.Common (URIPartParseError, digit, wrapParser)
+import URI.Common (digit)
 
 newtype Port = Port Int
 
@@ -50,8 +49,8 @@ unsafeFromInt n =
     Just addr → addr
     Nothing → unsafeCrashWith "Port was out of range"
 
-parser ∷ ∀ p. (Port → Either URIPartParseError p) → Parser String p
-parser p = wrapParser p do
+parser ∷ Parser String Port
+parser = do
   s ← String.fromCharArray <$> (char ':' *> Array.some digit)
   case fromNumber $ readInt 10 s of
     Just x → pure (Port x)

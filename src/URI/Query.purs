@@ -12,13 +12,12 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.Either (Either)
 import Data.Monoid (class Monoid)
 import Data.String as String
 import Global (decodeURIComponent)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (URIPartParseError, parseSubDelims, parseUnreserved, pctEncoded, printEncoded, wrapParser)
+import URI.Common (parseSubDelims, parseUnreserved, pctEncoded, printEncoded)
 
 newtype Query = Query String
 
@@ -42,12 +41,11 @@ unsafeFromString = Query
 unsafeToString ∷ Query → String
 unsafeToString (Query s) = s
 
-parser ∷ ∀ q. (Query → Either URIPartParseError q) → Parser String q
-parser parseQ =
+parser ∷ Parser String Query
+parser =
   char '?' *>
-    wrapParser parseQ (Query <<< String.joinWith "" <$> Array.many p)
-  where
-    p = String.singleton <$> queryChar <|> pctEncoded
+    (Query <<< String.joinWith ""
+      <$> Array.many (String.singleton <$> queryChar <|> pctEncoded))
 
 print ∷ Query → String
 print (Query s) = "?" <> s

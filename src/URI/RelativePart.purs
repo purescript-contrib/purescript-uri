@@ -29,7 +29,7 @@ import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
 import URI.Authority (Authority(..), AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, Host(..), HostsParseOptions, IPv4Address, IPv6Address, Port, RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import URI.Authority as Authority
-import URI.Common (URIPartParseError)
+import URI.Common (URIPartParseError, wrapParser)
 import URI.Path (Path)
 import URI.Path as Path
 import URI.Path.Absolute (PathAbsolute)
@@ -78,12 +78,12 @@ parser opts = withAuth <|> withoutAuth
   withAuth =
     RelativePartAuth
       <$> Authority.parser opts
-      <*> optionMaybe (Path.parser opts.parsePath)
+      <*> optionMaybe (wrapParser opts.parsePath Path.parser)
   withoutAuth =
     RelativePartNoAuth <$> noAuthPath
   noAuthPath
-    = (Just <$> PathAbs.parse (opts.parseRelPath <<< Left))
-    <|> (Just <$> PathNoScheme.parse (opts.parseRelPath <<< Right))
+    = (Just <$> wrapParser (opts.parseRelPath <<< Left) PathAbs.parse)
+    <|> (Just <$> wrapParser (opts.parseRelPath <<< Right) PathNoScheme.parse)
     <|> pure Nothing
 
 print

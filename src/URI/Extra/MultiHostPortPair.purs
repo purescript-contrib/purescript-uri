@@ -47,7 +47,7 @@ parsePair
   → Parser String (These host port)
 parsePair parseHost parsePort = do
   mh ← optionMaybe (parseHost' parseHost)
-  mp ← optionMaybe (Port.parser parsePort)
+  mp ← optionMaybe (wrapParser parsePort Port.parser)
   case mh, mp of
     Just h, Nothing → pure (This h)
     Nothing, Just p → pure (That p)

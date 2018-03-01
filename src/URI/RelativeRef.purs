@@ -25,7 +25,7 @@ import Data.String as String
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
 import Text.Parsing.Parser.String (eof)
-import URI.Common (URIPartParseError)
+import URI.Common (URIPartParseError, wrapParser)
 import URI.Fragment (Fragment)
 import URI.Fragment as Fragment
 import URI.Query (Query)
@@ -72,8 +72,8 @@ parser
 parser opts =
   RelativeRef
     <$> RPart.parser opts
-    <*> optionMaybe (Query.parser opts.parseQuery)
-    <*> optionMaybe (Fragment.parser opts.parseFragment)
+    <*> optionMaybe (wrapParser opts.parseQuery Query.parser)
+    <*> optionMaybe (wrapParser opts.parseFragment Fragment.parser)
     <* eof
 
 print
