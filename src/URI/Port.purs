@@ -10,8 +10,6 @@ module URI.Port
 import Prelude
 
 import Data.Array as Array
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Int (fromNumber)
 import Data.Maybe (Maybe(..))
 import Data.String as String
@@ -21,40 +19,47 @@ import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.String (char)
 import Text.Parsing.Parser.Token (digit)
 
+-- | The port component of a host in a URI.
 newtype Port = Port Int
 
 derive newtype instance eqPort ∷ Eq Port
 derive newtype instance ordPort ∷ Ord Port
-derive instance genericPort ∷ Generic Port _
-instance showPort ∷ Show Port where show = genericShow
 
+instance showPort ∷ Show Port where
+  show (Port i) = "(Port.unsafeFromInt " <> show i <> ")"
+
+-- | Returns the port number as an integer.
 toInt ∷ Port → Int
 toInt (Port i) = i
 
--- | Constructs a `Port` safely: bounds-checks the value to ensure it occurs
--- | within the range 0-65535 (inclusive).
+-- | Attempts to create a port from the passed integer. If the value falls
+-- | outside of the range 0-65535 (inclusive) `Nothing` will be returned.
 fromInt ∷ Int → Maybe Port
-fromInt n
-  | n >= 0 && n <= 65535 = Just (Port n)
+fromInt i
+  | i >= 0 && i <= 65535 = Just (Port i)
   | otherwise = Nothing
 
--- | Constructs a `Port` unsafely: if the value is outside the allowable range,
--- | a runtime error will be thrown.
+-- | Constructs a port from an integer directly: if the value is not an
+-- | acceptable port number a runtime error will be thrown.
 -- |
 -- | This is intended as a convenience when describing `Port`s statically in
 -- | PureScript code, in all other cases `fromInt` should be preferred.
 unsafeFromInt ∷ Int → Port
-unsafeFromInt n =
-  case fromInt n of
+unsafeFromInt i =
+  case fromInt i of
     Just addr → addr
-    Nothing → unsafeCrashWith "Port was out of range"
+    Nothing → unsafeCrashWith $ "Port value " <> show i <> " is out of range"
 
+-- | A parser for the port component of a host in a URI. Expects values with a
+-- | `':'` prefix.
 parser ∷ Parser String Port
 parser = do
   s ← String.fromCharArray <$> (char ':' *> Array.some digit)
   case fromNumber $ readInt 10 s of
     Just x → pure (Port x)
-    _ → fail "Expected valid port number"
+    _ → fail "Expected a valid port number"
 
+-- | A printer for the port component of a host in a URI. Will print the value
+-- | with a `':'` prefix.
 print ∷ Port → String
 print (Port x) = ":" <> show x
