@@ -1,3 +1,4 @@
+-- | Common functions used in parsing and printing URI components.
 module URI.Common
   ( URIPartParseError(..)
   , wrapParser
@@ -30,6 +31,7 @@ import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..),
 import Text.Parsing.Parser.String (anyChar, char, eof, oneOf, satisfy)
 import Text.Parsing.Parser.Token (digit, hexDigit)
 
+-- | An error type used when a custom component parser fails to handle a value.
 newtype URIPartParseError = URIPartParseError String
 
 derive newtype instance eqURIPartParseError :: Eq URIPartParseError
