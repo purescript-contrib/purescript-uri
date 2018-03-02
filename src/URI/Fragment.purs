@@ -74,7 +74,7 @@ parser =
     (Fragment <<< String.joinWith ""
       <$> Array.many (pctEncoded <|> String.singleton <$> fragmentChar))
 
--- | A printer for the fragment component of the URI. Will print the value with
+-- | A printer for the fragment component of a URI. Will print the value with
 -- | a `'#'` prefix.
 print ∷ Fragment → String
 print (Fragment f) = "#" <> f

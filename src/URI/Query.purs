@@ -78,7 +78,7 @@ parser =
     (Query <<< String.joinWith ""
       <$> Array.many (String.singleton <$> queryChar <|> pctEncoded))
 
--- | A printer for the query component of the URI. Will print the value with
+-- | A printer for the query component of a URI. Will print the value with
 -- | a `'?'` prefix.
 print ∷ Query → String
 print (Query s) = "?" <> s
