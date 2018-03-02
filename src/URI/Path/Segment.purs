@@ -1,22 +1,25 @@
 module URI.Path.Segment
   ( PathSegment
-  , parseSegment
   , segmentFromString
   , segmentToString
   , unsafeSegmentFromString
   , unsafeSegmentToString
+  , parseSegment
+  , printSegment
   , PathSegmentNZ
-  , parseSegmentNonZero
   , segmentNZFromString
   , segmentNZToString
   , unsafeSegmentNZFromString
   , unsafeSegmentNZToString
+  , parseSegmentNZ
+  , printSegmentNZ
   , PathSegmentNZNC
-  , parseSegmentNonZeroNoColon
   , segmentNZNCFromString
   , segmentNZNCToString
   , unsafeSegmentNZNCFromString
   , unsafeSegmentNZNCToString
+  , parseSegmentNZNC
+  , printSegmentNZNC
   ) where
 
 import Prelude
@@ -27,9 +30,10 @@ import Data.String as String
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
 import Global (decodeURIComponent)
+import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (pctEncoded, subDelims, unreserved, printEncoded)
+import URI.Common (decodeURIComponent', pctEncoded, printEncoded, printEncoded', subDelims, unreserved)
 
 newtype PathSegment = PathSegment String
 
@@ -38,12 +42,6 @@ derive newtype instance ordPathSegment ∷ Ord PathSegment
 
 instance showPathSegment ∷ Show PathSegment where
   show (PathSegment s) = "(PathSegment.unsafeFromString " <> show s <> ")"
-
-parseSegment ∷ Parser String PathSegment
-parseSegment =
-  PathSegment
-    <<< String.joinWith ""
-    <$> Array.many (pctEncoded <|> String.singleton <$> segmentChar)
 
 segmentFromString ∷ String → PathSegment
 segmentFromString = PathSegment <<< printEncoded segmentChar
@@ -57,7 +55,16 @@ unsafeSegmentFromString = PathSegment
 unsafeSegmentToString ∷ PathSegment → String
 unsafeSegmentToString (PathSegment s) = s
 
-newtype PathSegmentNZ = PathSegmentNZ String
+parseSegment ∷ Parser String PathSegment
+parseSegment =
+  PathSegment
+    <<< String.joinWith ""
+    <$> Array.many (pctEncoded <|> String.singleton <$> segmentChar)
+
+printSegment ∷ PathSegment → String
+printSegment = unsafeSegmentToString
+
+newtype PathSegmentNZ = PathSegmentNZ NonEmptyString
 
 derive newtype instance eqPathSegmentNZ ∷ Eq PathSegmentNZ
 derive newtype instance ordPathSegmentNZ ∷ Ord PathSegmentNZ
@@ -65,25 +72,29 @@ derive newtype instance ordPathSegmentNZ ∷ Ord PathSegmentNZ
 instance showPathSegmentNZ ∷ Show PathSegmentNZ where
   show (PathSegmentNZ s) = "(PathSegmentNZ.unsafeFromString " <> show s <> ")"
 
-parseSegmentNonZero ∷ Parser String PathSegmentNZ
-parseSegmentNonZero =
+segmentNZFromString ∷ NonEmptyString → PathSegmentNZ
+segmentNZFromString = PathSegmentNZ <<< printEncoded' segmentChar
+
+segmentNZToString ∷ PathSegmentNZ → NonEmptyString
+segmentNZToString (PathSegmentNZ s) = decodeURIComponent' s
+
+unsafeSegmentNZFromString ∷ NonEmptyString → PathSegmentNZ
+unsafeSegmentNZFromString = PathSegmentNZ
+
+unsafeSegmentNZToString ∷ PathSegmentNZ → NonEmptyString
+unsafeSegmentNZToString (PathSegmentNZ s) = s
+
+parseSegmentNZ ∷ Parser String PathSegmentNZ
+parseSegmentNZ =
   PathSegmentNZ
+    <<< unsafePartial NES.unsafeFromString
     <<< String.joinWith ""
     <$> Array.some (pctEncoded <|> String.singleton <$> segmentChar)
 
-segmentNZFromString ∷ NonEmptyString → PathSegmentNZ
-segmentNZFromString s = PathSegmentNZ (printEncoded segmentChar $ NES.toString s)
+printSegmentNZ ∷ PathSegmentNZ → String
+printSegmentNZ = NES.toString <<< unsafeSegmentNZToString
 
-segmentNZToString ∷ PathSegmentNZ → String
-segmentNZToString (PathSegmentNZ s) = decodeURIComponent s
-
-unsafeSegmentNZFromString ∷ NonEmptyString → PathSegmentNZ
-unsafeSegmentNZFromString = NES.toString >>> PathSegmentNZ
-
-unsafeSegmentNZToString ∷ PathSegmentNZ → String
-unsafeSegmentNZToString (PathSegmentNZ s) = s
-
-newtype PathSegmentNZNC = PathSegmentNZNC String
+newtype PathSegmentNZNC = PathSegmentNZNC NonEmptyString
 
 derive newtype instance eqPathSegmentNZNC ∷ Eq PathSegmentNZNC
 derive newtype instance ordPathSegmentNZNC ∷ Ord PathSegmentNZNC
@@ -91,23 +102,27 @@ derive newtype instance ordPathSegmentNZNC ∷ Ord PathSegmentNZNC
 instance showPathSegmentNZNC ∷ Show PathSegmentNZNC where
   show (PathSegmentNZNC s) = "(PathSegmentNZNC.unsafeFromString " <> show s <> ")"
 
-parseSegmentNonZeroNoColon ∷ Parser String PathSegmentNZNC
-parseSegmentNonZeroNoColon =
+segmentNZNCFromString ∷ NonEmptyString → PathSegmentNZNC
+segmentNZNCFromString = PathSegmentNZNC <<< printEncoded' segmentNCChar
+
+unsafeSegmentNZNCFromString ∷ NonEmptyString → PathSegmentNZNC
+unsafeSegmentNZNCFromString = PathSegmentNZNC
+
+segmentNZNCToString ∷ PathSegmentNZNC → NonEmptyString
+segmentNZNCToString (PathSegmentNZNC s) = decodeURIComponent' s
+
+unsafeSegmentNZNCToString ∷ PathSegmentNZNC → NonEmptyString
+unsafeSegmentNZNCToString (PathSegmentNZNC s) = s
+
+parseSegmentNZNC ∷ Parser String PathSegmentNZNC
+parseSegmentNZNC =
   PathSegmentNZNC
+    <<< unsafePartial NES.unsafeFromString
     <<< String.joinWith ""
     <$> Array.some (pctEncoded <|> String.singleton <$> segmentNCChar)
 
-segmentNZNCToString ∷ PathSegmentNZNC → String
-segmentNZNCToString (PathSegmentNZNC s) = decodeURIComponent s
-
-unsafeSegmentNZNCToString ∷ PathSegmentNZNC → String
-unsafeSegmentNZNCToString (PathSegmentNZNC s) = s
-
-segmentNZNCFromString ∷ NonEmptyString → PathSegmentNZNC
-segmentNZNCFromString s = PathSegmentNZNC (printEncoded segmentNCChar $ NES.toString s)
-
-unsafeSegmentNZNCFromString ∷ NonEmptyString → PathSegmentNZNC
-unsafeSegmentNZNCFromString = NES.toString >>> PathSegmentNZNC
+printSegmentNZNC ∷ PathSegmentNZNC → String
+printSegmentNZNC = NES.toString <<< unsafeSegmentNZNCToString
 
 segmentChar ∷ Parser String Char
 segmentChar = segmentNCChar <|> char ':'

@@ -9,7 +9,7 @@ import Data.String as String
 import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Path.Segment (PathSegment, PathSegmentNZNC, parseSegment, parseSegmentNonZeroNoColon, unsafeSegmentNZNCToString, unsafeSegmentToString)
+import URI.Path.Segment (PathSegment, PathSegmentNZNC, parseSegment, parseSegmentNZNC, printSegmentNZNC, printSegment)
 
 -- | A relative path that doesn't look like a URI scheme, corresponding to
 -- | _path-noscheme_ in the spec. This path cannot start with the character
@@ -26,7 +26,7 @@ instance showPathNoScheme ∷ Show PathNoScheme where show = genericShow
 -- | A parser for a _path-noscheme_ URI component.
 parse ∷ Parser String PathNoScheme
 parse = do
-  head ← parseSegmentNonZeroNoColon
+  head ← parseSegmentNZNC
   tail ← Array.many (char '/' *> parseSegment)
   pure (PathNoScheme (Tuple head tail))
 
@@ -34,5 +34,5 @@ parse = do
 print ∷ PathNoScheme → String
 print (PathNoScheme (Tuple head tail)) =
   case tail of
-    [] → unsafeSegmentNZNCToString head
-    ps → unsafeSegmentNZNCToString head <> "/" <> String.joinWith "/" (map unsafeSegmentToString tail)
+    [] → printSegmentNZNC head
+    ps → printSegmentNZNC head <> "/" <> String.joinWith "/" (map printSegment tail)

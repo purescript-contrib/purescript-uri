@@ -11,7 +11,7 @@ import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
 import Text.Parsing.Parser.String (char)
-import URI.Path.Segment (PathSegment, PathSegmentNZ, parseSegment, parseSegmentNonZero, unsafeSegmentNZToString, unsafeSegmentToString)
+import URI.Path.Segment (PathSegment, PathSegmentNZ, parseSegment, parseSegmentNZ, printSegmentNZ, printSegment)
 
 -- | An absolute path, corresponding to _path-absolute_ in the spec. This path
 -- | cannot represent the value `//` - it must either be `/`, or start with a
@@ -34,7 +34,7 @@ instance showPathAbsolute ∷ Show PathAbsolute where show = genericShow
 parse ∷ Parser String PathAbsolute
 parse = do
   _ ← char '/'
-  optionMaybe parseSegmentNonZero >>= case _ of
+  optionMaybe parseSegmentNZ >>= case _ of
     Just head →
       PathAbsolute <<< Just <<< Tuple head <$> Array.many (char '/' *> parseSegment)
     Nothing →
@@ -46,9 +46,9 @@ print = case _ of
   PathAbsolute Nothing →
     "/"
   PathAbsolute (Just (Tuple head [])) →
-    "/" <> unsafeSegmentNZToString head
+    "/" <> printSegmentNZ head
   PathAbsolute (Just (Tuple head tail)) →
     "/"
-      <> unsafeSegmentNZToString head
+      <> printSegmentNZ head
       <> "/"
-      <> String.joinWith "/" (map unsafeSegmentToString tail)
+      <> String.joinWith "/" (map printSegment tail)
