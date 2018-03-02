@@ -9,6 +9,7 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
 import Data.String as String
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
@@ -21,6 +22,7 @@ newtype UserPassInfo = UserPassInfo { user ∷ NonEmptyString, password ∷ Mayb
 
 derive instance eqUserPassInfo ∷ Eq UserPassInfo
 derive instance ordUserPassInfo ∷ Ord UserPassInfo
+derive instance newtypeUserPassInfo ∷ Newtype UserPassInfo _
 
 instance showUserPassInfo ∷ Show UserPassInfo where
   show (UserPassInfo { user, password }) =
