@@ -37,7 +37,13 @@ import URI.Path.Absolute as PathAbs
 import URI.Path.Rootless (PathRootless(..))
 import URI.Path.Rootless as PathRootless
 
--- | The "hierarchical part" of a generic or absolute URI.
+-- | The "hierarchical part" of a generic or absolute URI. This combines an
+-- | authority (optional) with a path value.
+-- |
+-- | When the authority is present a generic path representation can be used,
+-- | otherwise there are some restrictions on the path construction to ensure
+-- | no ambiguity in parsing (this is per the spec, not a restriction of the
+-- | library).
 data HierarchicalPart userInfo hosts path hierPath
   = HierarchicalPartAuth (Authority userInfo hosts) (Maybe path)
   | HierarchicalPartNoAuth (Maybe hierPath)
@@ -47,10 +53,20 @@ derive instance ordHierarchicalPart ∷ (Ord userInfo, Ord hosts, Ord path, Ord 
 derive instance genericHierarchicalPart ∷ Generic (HierarchicalPart userInfo hosts path hierPath) _
 instance showHierarchicalPart ∷ (Show userInfo, Show hosts, Show path, Show hierPath) ⇒ Show (HierarchicalPart userInfo hosts path hierPath) where show = genericShow
 
+-- | A row type for describing the options fields used by the hierarchical-part
+-- | parser and printer.
+-- |
+-- | Used as `Record (HierarchicalPartOptions userInfo hosts path hierPath)`
+-- | when typing a value.
 type HierarchicalPartOptions userInfo hosts path hierPath =
   HierarchicalPartParseOptions userInfo hosts path hierPath
     (HierarchicalPartPrintOptions userInfo hosts path hierPath ())
 
+-- | A row type for describing the options fields used by the hierarchical-part
+-- | parser.
+-- |
+-- | Used as `Record (HierarchicalPartParseOptions userInfo hosts path hierPath ())`
+-- | when typing a value.
 type HierarchicalPartParseOptions userInfo hosts path hierPath r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
   , parseHosts ∷ Parser String hosts
@@ -59,6 +75,11 @@ type HierarchicalPartParseOptions userInfo hosts path hierPath r =
   | r
   )
 
+-- | A row type for describing the options fields used by the hierarchical-part
+-- | printer.
+-- |
+-- | Used as `Record (HierarchicalPartPrintOptions userInfo hosts path hierPath ())`
+-- | when typing a value.
 type HierarchicalPartPrintOptions userInfo hosts path hierPath r =
   ( printUserInfo ∷ userInfo → UserInfo
   , printHosts ∷ hosts → String
@@ -67,8 +88,19 @@ type HierarchicalPartPrintOptions userInfo hosts path hierPath r =
   | r
   )
 
+-- | The specific path types supported in a hierarchical-part when there is no
+-- | authority present. See [`URI.Path.Absolute`](../URI.Path.Absolute) and
+-- | [`URI.Path.Rootless`](../URI.Path.Rootless) for an explanation of these
+-- | forms.
 type HierPath = Either PathAbsolute PathRootless
 
+-- | A parser for the hierarchical-part of a URI.
+-- |
+-- | Accepts an options record to allow custom representations to be used for
+-- | the URI components. If this is not necessary, `pure` can be used for all
+-- | the options aside from `parseHosts`, which will typically be
+-- | `HostPortPair.parseHosts pure pure`. See [`URI.HostPortPair`](../URI.HostPortPair)
+-- | for more  information on the host/port pair parser.
 parser
   ∷ ∀ userInfo hosts path hierPath r
   . Record (HierarchicalPartParseOptions userInfo hosts path hierPath r)
@@ -86,6 +118,14 @@ parser opts = withAuth <|> withoutAuth
     <|> (Just <$> wrapParser (opts.parseHierPath <<< Right) PathRootless.parse)
     <|> pure Nothing
 
+-- | A printer for the hierarchical-part of a URI.
+-- |
+-- | As a counterpart to the `parser` this function also requires an options
+-- | record that specifies how to print values back from custom representations.
+-- | If this is not necessary, `id` can be used for all the options aside from
+-- | `printHosts`, which will typically be `HostPortPair.printHosts id id`.
+-- | See [`URI.HostPortPair`](../URI.HostPortPair) for more information on the
+-- | host/port pair printer.
 print
   ∷ ∀ userInfo hosts path hierPath r
   . Record (HierarchicalPartPrintOptions userInfo hosts path hierPath r)
@@ -99,6 +139,7 @@ print opts = case _ of
   HierarchicalPartNoAuth p →
     maybe "" (either PathAbs.print PathRootless.print <<< opts.printHierPath) p
 
+-- | An affine traversal for the authority component of a hierarchical-part.
 _authority
   ∷ ∀ userInfo hosts path hierPath
   . Traversal'
@@ -108,6 +149,8 @@ _authority = wander \f → case _ of
   HierarchicalPartAuth a p → flip HierarchicalPartAuth p <$> f a
   a → pure a
 
+-- | An affine traversal for the path component of a hierarchical-part, this
+-- | succeeds when the authority is present also.
 _path
   ∷ ∀ userInfo hosts path hierPath
   . Traversal'
@@ -117,6 +160,8 @@ _path = wander \f → case _ of
   HierarchicalPartAuth a p → HierarchicalPartAuth a <$> f p
   a → pure a
 
+-- | An affine traversal for the path component of a hierarchical-part, this
+-- | succeeds when the authority is not present.
 _hierPath
   ∷ ∀ userInfo hosts path hierPath
   . Traversal'
