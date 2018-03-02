@@ -11,9 +11,9 @@ import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
 import URI.Path.Segment (PathSegment, parseSegment, unsafeSegmentToString)
 
--- | A generic absolute (or empty) path, used in both hierarchical-part and
+-- | A generic absolute-or-empty path, used in both hierarchical-part and
 -- | relative-parts when an authority component is present. Corresponds to
--- | path-abempty in the spec.
+-- | _path-abempty_ in the spec.
 -- |
 -- | A path value of `/` corresponds to `Path [""]`, an empty path is `Path []`.
 newtype Path = Path (Array PathSegment)
@@ -25,11 +25,11 @@ derive newtype instance monoidPath ∷ Monoid Path
 derive instance genericPath ∷ Generic Path _
 instance showPath ∷ Show Path where show = genericShow
 
--- | A parser for a generic absolute path URI component.
+-- | A parser for a _path-abempty_ URI component.
 parser ∷ Parser String Path
 parser = Path <$> Array.many (char '/' *> parseSegment)
 
--- | A printer for a generic absolute path URI component.
+-- | A printer for a _path-abempty_ URI component.
 print ∷ Path → String
 print (Path segs)
   | Array.null segs = ""

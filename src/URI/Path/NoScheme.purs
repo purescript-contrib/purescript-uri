@@ -11,6 +11,11 @@ import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
 import URI.Path.Segment (PathSegment, PathSegmentNZNC, parseSegment, parseSegmentNonZeroNoColon, unsafeSegmentNZNCToString, unsafeSegmentToString)
 
+-- | A relative path that doesn't look like a URI scheme, corresponding to
+-- | _path-noscheme_ in the spec. This path cannot start with the character
+-- | `/`, contain the character `:` before the first `/`, or be entirely empty.
+-- | This type can appear in a relative-part when there is no authority
+-- | component.
 newtype PathNoScheme = PathNoScheme (Tuple PathSegmentNZNC (Array PathSegment))
 
 derive instance eqPathNoScheme ∷ Eq PathNoScheme
@@ -18,12 +23,14 @@ derive instance ordPathNoScheme ∷ Ord PathNoScheme
 derive instance genericPathNoScheme ∷ Generic PathNoScheme _
 instance showPathNoScheme ∷ Show PathNoScheme where show = genericShow
 
+-- | A parser for a _path-noscheme_ URI component.
 parse ∷ Parser String PathNoScheme
 parse = do
   head ← parseSegmentNonZeroNoColon
   tail ← Array.many (char '/' *> parseSegment)
   pure (PathNoScheme (Tuple head tail))
 
+-- | A printer for a _path-noscheme_ URI component.
 print ∷ PathNoScheme → String
 print (PathNoScheme (Tuple head tail)) =
   case tail of
