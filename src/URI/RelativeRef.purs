@@ -30,7 +30,7 @@ import URI.Fragment (Fragment)
 import URI.Fragment as Fragment
 import URI.Query (Query)
 import URI.Query as Query
-import URI.RelativePart (Authority(..), AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, Host(..), HostsParseOptions, IPv4Address, IPv6Address, Path, PathAbsolute, PathNoScheme, Port, RegName, RelPath, RelativePart(..), RelativePartOptions, RelativePartParseOptions, RelativePartPrintOptions, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _relPath, _userInfo)
+import URI.RelativePart (Authority(..), AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, Host(..), IPv4Address, IPv6Address, Path, PathAbsolute, PathNoScheme, Port, RegName, RelPath, RelativePart(..), RelativePartOptions, RelativePartParseOptions, RelativePartPrintOptions, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hosts, _path, _relPath, _userInfo)
 import URI.RelativePart as RPart
 
 -- | A relative reference for a URI.

@@ -3,7 +3,6 @@ module URI.Authority
   , AuthorityOptions
   , AuthorityParseOptions
   , AuthorityPrintOptions
-  , HostsParseOptions
   , parser
   , print
   , _userInfo
@@ -19,7 +18,6 @@ import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
-import Data.List (List)
 import Data.Maybe (Maybe(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe, try)
@@ -31,7 +29,7 @@ import URI.UserInfo (UserInfo)
 import URI.UserInfo as UserInfo
 
 -- | The authority part of a URI. For example: `purescript.org`,
--- | `localhost:3000`, `user@example.net`
+-- | `localhost:3000`, `user@example.net`.
 data Authority userInfo hosts = Authority (Maybe userInfo) hosts
 
 derive instance eqAuthority ∷ (Eq userInfo, Eq hosts) ⇒ Eq (Authority userInfo hosts)
@@ -39,28 +37,36 @@ derive instance ordAuthority ∷ (Ord userInfo, Ord hosts) ⇒ Ord (Authority us
 derive instance genericAuthority ∷ Generic (Authority userInfo hosts) _
 instance showAuthority ∷ (Show userInfo, Show hosts) ⇒ Show (Authority userInfo hosts) where show = genericShow
 
+-- | A row type for describing the options fields used by the authority parser
+-- | and printer.
+-- |
+-- | Used as `Record (AuthorityOptions userInfo hosts)` when typing a value.
 type AuthorityOptions userInfo hosts =
   AuthorityParseOptions userInfo hosts
     (AuthorityPrintOptions userInfo hosts ())
 
+-- | A row type for describing the options fields used by the authority parser.
+-- |
+-- | Used as `Record (AuthorityParseOptions userInfo hosts)` when typing a
+-- | value.
 type AuthorityParseOptions userInfo hosts r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
   , parseHosts ∷ Parser String hosts
   | r
   )
 
+-- | A row type for describing the options fields used by the authority printer.
+-- |
+-- | Used as `Record (AuthorityPrintOptions userInfo hosts)` when typing a
+-- | value.
 type AuthorityPrintOptions userInfo hosts r =
   ( printUserInfo ∷ userInfo → UserInfo
   , printHosts ∷ hosts → String
   | r
   )
 
-type HostsParseOptions hosts
-  = ∀ a
-  . Either
-      (Maybe a → hosts a)
-      { split ∷ Parser String Unit, build ∷ List a → hosts a }
-
+-- | A parser for the authority part of a URI. Expects values with a `"//"`
+-- | prefix.
 parser
   ∷ ∀ userInfo hosts r
   . Record (AuthorityParseOptions userInfo hosts r)
@@ -71,6 +77,8 @@ parser opts = do
   hosts ← opts.parseHosts
   pure $ Authority ui hosts
 
+-- | A printer for the authority part of a URI. Will print the value with a
+-- | `"//"` prefix.
 print
   ∷ ∀ userInfo hosts r
   . Record (AuthorityPrintOptions userInfo hosts r)
@@ -80,6 +88,7 @@ print opts (Authority mui hs) = case mui of
   Just ui → "//" <> UserInfo.print (opts.printUserInfo ui) <> "@" <> opts.printHosts hs
   Nothing → "//" <> opts.printHosts hs
 
+-- | A lens for the user-info component of the authority.
 _userInfo
   ∷ ∀ userInfo hosts
   . Lens'
@@ -90,6 +99,7 @@ _userInfo =
     (\(Authority ui _) → ui)
     (\(Authority _ hs) ui → Authority ui hs)
 
+-- | A lens for the host(s) component of the authority.
 _hosts
   ∷ ∀ userInfo hosts
   . Lens'
