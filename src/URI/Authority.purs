@@ -47,7 +47,7 @@ type AuthorityOptions userInfo hosts =
 
 -- | A row type for describing the options fields used by the authority parser.
 -- |
--- | Used as `Record (AuthorityParseOptions userInfo hosts)` when typing a
+-- | Used as `Record (AuthorityParseOptions userInfo hosts ())` when typing a
 -- | value.
 type AuthorityParseOptions userInfo hosts r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
@@ -57,7 +57,7 @@ type AuthorityParseOptions userInfo hosts r =
 
 -- | A row type for describing the options fields used by the authority printer.
 -- |
--- | Used as `Record (AuthorityPrintOptions userInfo hosts)` when typing a
+-- | Used as `Record (AuthorityPrintOptions userInfo hosts ())` when typing a
 -- | value.
 type AuthorityPrintOptions userInfo hosts r =
   ( printUserInfo ∷ userInfo → UserInfo
