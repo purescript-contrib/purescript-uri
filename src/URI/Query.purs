@@ -63,7 +63,7 @@ toString (Query s) = decodeURIComponent s
 unsafeFromString ∷ String → Query
 unsafeFromString = Query
 
--- | Returns the string value for the query without percent-decoding. Only
+-- | Returns the string value for a query without percent-decoding. Only
 -- | "unsafe" in the sense that values this produces may need further decoding,
 -- | the name is more for symmetry with the `fromString`/`unsafeFromString`
 -- | pairing.
