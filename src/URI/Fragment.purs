@@ -17,7 +17,7 @@ import Data.String as String
 import Global (decodeURIComponent)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (parseSubDelims, parseUnreserved, pctEncoded, printEncoded)
+import URI.Common (subDelims, unreserved, pctEncoded, printEncoded)
 
 -- | The fragment component (hash) of a URI.
 newtype Fragment = Fragment String
@@ -82,5 +82,5 @@ print (Fragment f) = "#" <> f
 -- | The supported fragment characters, excluding percent-encodings.
 fragmentChar ∷ Parser String Char
 fragmentChar =
-  parseUnreserved <|> parseSubDelims
+  unreserved <|> subDelims
     <|> char ':' <|> char '@' <|> char '/' <|> char '?'

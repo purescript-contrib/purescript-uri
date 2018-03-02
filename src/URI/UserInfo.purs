@@ -18,7 +18,7 @@ import Data.String.NonEmpty as NES
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (decodeURIComponent', parseSubDelims, parseUnreserved, pctEncoded, printEncoded')
+import URI.Common (decodeURIComponent', subDelims, unreserved, pctEncoded, printEncoded')
 
 -- | The user info part of an `Authority`. For example: `user`, `foo:bar`.
 -- |
@@ -86,4 +86,4 @@ print = NES.toString <<< unsafeToString
 
 -- | The supported user info characters, excluding percent-encodings.
 userInfoChar ∷ Parser String Char
-userInfoChar = parseUnreserved <|> parseSubDelims <|> char ':'
+userInfoChar = unreserved <|> subDelims <|> char ':'

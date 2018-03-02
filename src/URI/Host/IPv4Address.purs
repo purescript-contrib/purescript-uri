@@ -17,7 +17,8 @@ import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (try)
 import Text.Parsing.Parser.String (char, satisfy)
-import URI.Common (URIPartParseError(..), digit, wrapParser)
+import Text.Parsing.Parser.Token (digit)
+import URI.Common (URIPartParseError(..), wrapParser)
 
 -- | The IPv4 address variation of the host part of a URI.
 data IPv4Address = IPv4Address Int Int Int Int

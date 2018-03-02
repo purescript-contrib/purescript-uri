@@ -2,12 +2,10 @@ module URI.Common
   ( URIPartParseError(..)
   , wrapParser
   , alpha
-  , digit
   , alphaNum
-  , hexDigit
-  , parseUnreserved
+  , unreserved
   , pctEncoded
-  , parseSubDelims
+  , subDelims
   , printEncoded
   , printEncoded'
   , decodeURIComponent'
@@ -30,6 +28,7 @@ import Global (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..), runParser)
 import Text.Parsing.Parser.String (anyChar, char, eof, oneOf, satisfy)
+import Text.Parsing.Parser.Token (digit, hexDigit)
 
 newtype URIPartParseError = URIPartParseError String
 
@@ -39,6 +38,8 @@ derive instance newtypeURIPartParseError :: Newtype URIPartParseError _
 derive instance genericURIPartParseError :: Generic URIPartParseError _
 instance showURIPartParseError :: Show URIPartParseError where show = genericShow
 
+-- | Adapts a parser with a parser-esque function. First the original
+-- | parser runs, then it attempts to refine the result with the function.
 wrapParser
   ∷ ∀ s m a b
   . Monad m
@@ -52,21 +53,25 @@ wrapParser parseA p = ParserT do
     Left (URIPartParseError err) → throwError (ParseError err pos)
     Right b → pure b
 
+-- | Parser for ascii alphabetical characters (upper and lowercase).
 alpha ∷ Parser String Char
 alpha = satisfy \c → (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 
-digit ∷ Parser String Char
-digit = satisfy \c → (c >= '0' && c <= '9')
-
+-- | Parser for ascii alphanumeric characters (upper and lowercase for letters).
 alphaNum ∷ Parser String Char
 alphaNum = alpha <|> digit
 
-hexDigit ∷ Parser String Char
-hexDigit = satisfy \c → (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
+-- | Parser for characters that are allowed in a URI but do not have a reserved
+-- | purpose.
+unreserved ∷ Parser String Char
+unreserved = alphaNum <|> char '-' <|> char '.' <|> char '_' <|> char '~'
 
-parseUnreserved ∷ Parser String Char
-parseUnreserved = alphaNum <|> char '-' <|> char '.' <|> char '_' <|> char '~'
+-- | Parser for the "sub-delims" group of reserved characters.
+subDelims ∷ Parser String Char
+subDelims =
+  oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=', ',']
 
+-- | Parser for a percent-encoded character.
 pctEncoded ∷ Parser String String
 pctEncoded = do
   d0 ← char '%'
@@ -74,10 +79,11 @@ pctEncoded = do
   d2 ← hexDigit
   pure $ String.fromCharArray [d0, d1, d2]
 
-parseSubDelims ∷ Parser String Char
-parseSubDelims =
-  oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=', ',']
-
+-- | A helper function for printing URI components using percent-encoding for
+-- | characters that require it.
+-- |
+-- | Accepts a parser that is used to determine whether a character is allowed
+-- | to appear un-encoded in the URI component and the string to encode.
 printEncoded ∷ Parser String Char → String → String
 printEncoded p s = either (const s) id (runParser s parse)
   where
@@ -88,10 +94,14 @@ printEncoded p s = either (const s) id (runParser s parse)
     encodedChar ∷ Parser String String
     encodedChar = encodeURIComponent <<< String.singleton <$> anyChar
 
+-- | A version of [`printEncoded`](#v:printEncoded) that operates on non-empty
+-- | strings.
 printEncoded' ∷ Parser String Char → NonEmptyString → NonEmptyString
 printEncoded' p =
   unsafePartial NES.unsafeFromString <<< printEncoded p <<< NES.toString
 
+-- | A version of [`decodeURIComponent`](https://pursuit.purescript.org/packages/purescript-globals/docs/Global#v:decodeURIComponent)
+-- | that operates on non-empty strings.
 decodeURIComponent' ∷ NonEmptyString → NonEmptyString
 decodeURIComponent' =
   unsafePartial NES.unsafeFromString <<< decodeURIComponent <<< NES.toString

@@ -13,7 +13,7 @@ import Data.String as String
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators ((<?>))
 import Text.Parsing.Parser.String (char)
-import URI.Common (hexDigit)
+import Text.Parsing.Parser.Token (hexDigit)
 
 -- | This type and parser are much too forgiving currently, allowing almost
 -- | anything through that looks vaguely IPv6ish.
@@ -32,7 +32,10 @@ unsafeToString ∷ IPv6Address → String
 unsafeToString (IPv6Address s) = "[" <> s <> "]"
 
 parser ∷ Parser String IPv6Address
-parser = IPv6Address <$> (char '[' *> (String.fromCharArray <$> Array.some ipv6Char) <* char ']') <?> "IPv6 address"
+parser =
+  IPv6Address
+    <$> (char '[' *> (String.fromCharArray <$> Array.some ipv6Char) <* char ']')
+    <?> "IPv6 address"
   where
     ipv6Char ∷ Parser String Char
     ipv6Char = hexDigit <|> char ':' <|> char '.'

@@ -17,7 +17,7 @@ import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.Combinators (optionMaybe, sepBy, try)
 import Text.Parsing.Parser.String (char, oneOf)
-import URI.Common (URIPartParseError, parseUnreserved, pctEncoded, wrapParser)
+import URI.Common (URIPartParseError, unreserved, pctEncoded, wrapParser)
 import URI.Host (Host(..), RegName)
 import URI.Host.IPv4Address as IPv4Address
 import URI.Host.IPv6Address as IPv6Address
@@ -68,7 +68,7 @@ parseRegName' = do
     Nothing → unsafeCrashWith "This must be unPathSegment.unsafeSegmentNZFromStringreachable as we shuold parse at least one char in `pctEncoded`"
   where
   p = pctEncoded <|> String.singleton <$> c
-  c = parseUnreserved <|> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=']
+  c = unreserved <|> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=']
 
 print
   ∷ ∀ host port

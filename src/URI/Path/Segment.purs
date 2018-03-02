@@ -29,7 +29,7 @@ import Data.String.NonEmpty as NES
 import Global (decodeURIComponent)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (pctEncoded, parseSubDelims, parseUnreserved, printEncoded)
+import URI.Common (pctEncoded, subDelims, unreserved, printEncoded)
 
 newtype PathSegment = PathSegment String
 
@@ -113,4 +113,4 @@ segmentChar ∷ Parser String Char
 segmentChar = segmentNCChar <|> char ':'
 
 segmentNCChar ∷ Parser String Char
-segmentNCChar = parseUnreserved <|> parseSubDelims <|> char '@'
+segmentNCChar = unreserved <|> subDelims <|> char '@'

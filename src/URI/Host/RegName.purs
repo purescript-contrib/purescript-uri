@@ -17,7 +17,7 @@ import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
-import URI.Common (decodeURIComponent', parseSubDelims, parseUnreserved, pctEncoded, printEncoded')
+import URI.Common (decodeURIComponent', subDelims, unreserved, pctEncoded, printEncoded')
 
 -- | The reg-name variation of the host part of a URI. A reg-name is probably
 -- | more commonly referred to as just a host name or domain name (but it is
@@ -82,4 +82,4 @@ print = NES.toString <<< unsafeToString
 
 -- | The supported reg-name characters, excluding percent-encodings.
 regNameChar ∷ Parser String Char
-regNameChar = parseUnreserved <|> parseSubDelims
+regNameChar = unreserved <|> subDelims

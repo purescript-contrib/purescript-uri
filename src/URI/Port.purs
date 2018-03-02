@@ -19,7 +19,7 @@ import Global (readInt)
 import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.String (char)
-import URI.Common (digit)
+import Text.Parsing.Parser.Token (digit)
 
 newtype Port = Port Int
 

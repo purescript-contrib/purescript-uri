@@ -17,7 +17,7 @@ import Data.String as String
 import Global (decodeURIComponent)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
-import URI.Common (parseSubDelims, parseUnreserved, pctEncoded, printEncoded)
+import URI.Common (subDelims, unreserved, pctEncoded, printEncoded)
 
 -- | The query component of a URI.
 -- |
@@ -86,8 +86,8 @@ print (Query s) = "?" <> s
 -- | The supported query characters, excluding percent-encodings.
 queryChar ∷ Parser String Char
 queryChar
-  = parseUnreserved
-  <|> parseSubDelims
+  = unreserved
+  <|> subDelims
   <|> char ':'
   <|> char '@'
   <|> char '/'

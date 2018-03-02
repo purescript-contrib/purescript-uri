@@ -31,7 +31,7 @@ import Global (decodeURIComponent)
 import Text.Parsing.Parser (ParseError(..), Parser, runParser)
 import Text.Parsing.Parser.Combinators (optionMaybe, sepBy)
 import Text.Parsing.Parser.String (char, oneOf)
-import URI.Common (URIPartParseError(..), parseUnreserved, pctEncoded, printEncoded, wrapParser)
+import URI.Common (URIPartParseError(..), unreserved, pctEncoded, printEncoded, wrapParser)
 import URI.Query as Q
 
 newtype Key = Key String
@@ -119,7 +119,7 @@ parsePart parseK parseV = do
 
 keyPartChar ∷ Parser String Char
 keyPartChar
-  = parseUnreserved
+  = unreserved
   <|> oneOf ['!', '$', '\'', '(', ')', '*', '+', ';', ',', ':', '@', '/', '?']
 
 valuePartChar ∷ Parser String Char

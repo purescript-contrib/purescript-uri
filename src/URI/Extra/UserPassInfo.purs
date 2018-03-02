@@ -13,7 +13,7 @@ import Data.String as String
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
 import Text.Parsing.Parser (Parser)
-import URI.Common (URIPartParseError(..), decodeURIComponent', parseSubDelims, parseUnreserved, printEncoded')
+import URI.Common (URIPartParseError(..), decodeURIComponent', subDelims, unreserved, printEncoded')
 import URI.UserInfo (UserInfo)
 import URI.UserInfo as UserInfo
 
@@ -55,4 +55,4 @@ print (UserPassInfo { user, password }) =
         <> printEncoded' userPassInfoChar p
 
 userPassInfoChar ∷ Parser String Char
-userPassInfoChar = parseUnreserved <|> parseSubDelims
+userPassInfoChar = unreserved <|> subDelims
