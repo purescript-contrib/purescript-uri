@@ -124,12 +124,12 @@ spec = do
               [ This (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1))
               , This (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 2))
               ])
-            Nothing)
+            (path []))
           Nothing
           Nothing))
 
-path ∷ Array String → Maybe Path
-path = Just <<< Path <<< map PathSegment.unsafeSegmentFromString
+path ∷ Array String → Path
+path = Path <<< map PathSegment.unsafeSegmentFromString
 
 options ∷ Record (URIRefOptions UserInfo (MultiHostPortPair Host Port) Path HierPath RelPath Query Fragment)
 options =

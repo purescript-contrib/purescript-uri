@@ -64,8 +64,8 @@ spec =
           (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "abc") [PathSegment.unsafeSegmentFromString "def"])))))
         Nothing)
 
-path ∷ Array String → Maybe Path
-path = Just <<< Path <<< map PathSegment.unsafeSegmentFromString
+path ∷ Array String → Path
+path = Path <<< map PathSegment.unsafeSegmentFromString
 
 options ∷ Record (AbsoluteURIOptions UserInfo (HostPortPair Host Port) Path HierPath Query)
 options =

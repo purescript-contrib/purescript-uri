@@ -46,7 +46,7 @@ spec =
           (Scheme.unsafeFromString "sql2")
           (HierarchicalPartAuth
             (Authority Nothing Nothing)
-            Nothing)
+            (path []))
           (Just (Query.unsafeFromString "q=foo&var.bar=baz"))
           Nothing))
     testIso
@@ -80,7 +80,7 @@ spec =
             (Authority
               Nothing
               (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
-            Nothing)
+            (path []))
           Nothing
           Nothing))
     testIso
@@ -94,7 +94,7 @@ spec =
             (Authority
               Nothing
               (Just (This (NameAddress (RegName.unsafeFromString $ nes "1a.example.com")))))
-            Nothing)
+            (path []))
           Nothing
           Nothing))
     testIso
@@ -119,8 +119,10 @@ spec =
         (URI
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (This (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1)))))
-            Nothing)
+            (Authority
+                Nothing
+                (Just (This (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1)))))
+            (path []))
           Nothing
           Nothing))
     testIso
@@ -132,9 +134,9 @@ spec =
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-                (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
-                (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
-            Nothing)
+              (Just (UserInfo.unsafeFromString (nes "sysop:moon")))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
+            (path []))
           Nothing
           Nothing))
     testIso
@@ -190,7 +192,7 @@ spec =
             (Authority
               Nothing
               (Just (This (IPv6Address (IPv6Address.unsafeFromString "2001:cdba:0000:0000:0000:0000:3257:9652")))))
-            Nothing)
+            (path []))
           Nothing
           Nothing))
     testIso
@@ -204,7 +206,7 @@ spec =
             (Authority
               Nothing
               (Just (This (IPv6Address (IPv6Address.unsafeFromString "FE80::0202:B3FF:FE1E:8329")))))
-            Nothing)
+            (path []))
           Nothing
           Nothing))
     testIso
@@ -218,7 +220,7 @@ spec =
             (Authority
               Nothing
               (Just (Both (IPv6Address (IPv6Address.unsafeFromString "2001:db8::1")) (Port.unsafeFromInt 80))))
-            Nothing)
+            (path []))
           Nothing
           Nothing))
     testIso
@@ -316,7 +318,7 @@ spec =
             (Authority
               Nothing
               (Just (This (NameAddress (RegName.unsafeFromString $ nes "info.example.com")))))
-            Nothing)
+            (path []))
           (Just (Query.unsafeFromString "fred"))
           Nothing))
     testIso
@@ -481,8 +483,8 @@ spec =
           (Just (Query.unsafeFromString ""))
           (Just (Fragment.unsafeFromString "?sort=asc&q=path:/&salt=1177214"))))
 
-path ∷ Array String → Maybe Path
-path = Just <<< Path <<< map PathSegment.unsafeSegmentFromString
+path ∷ Array String → Path
+path = Path <<< map PathSegment.unsafeSegmentFromString
 
 options ∷ Record (URIRefOptions UserInfo (HostPortPair Host Port) Path HierPath RelPath Query Fragment)
 options =

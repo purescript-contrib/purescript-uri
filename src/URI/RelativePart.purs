@@ -18,15 +18,12 @@ module URI.RelativePart
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Traversal', wander)
 import Data.Maybe (Maybe(..), maybe)
-import Data.String as String
 import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators (optionMaybe)
 import URI.Authority (Authority(..), AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, Host(..), IPv4Address, IPv6Address, Port, RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import URI.Authority as Authority
 import URI.Common (URIPartParseError, wrapParser)
@@ -39,7 +36,7 @@ import URI.Path.NoScheme as PathNoScheme
 
 -- | The "relative part" of a relative reference.
 data RelativePart userInfo hosts path relPath
-  = RelativePartAuth (Authority userInfo hosts) (Maybe path)
+  = RelativePartAuth (Authority userInfo hosts) path
   | RelativePartNoAuth (Maybe relPath)
 
 derive instance eqRelativePart ∷ (Eq userInfo, Eq hosts, Eq path, Eq relPath) ⇒ Eq (RelativePart userInfo hosts path relPath)
@@ -78,7 +75,7 @@ parser opts = withAuth <|> withoutAuth
   withAuth =
     RelativePartAuth
       <$> Authority.parser opts
-      <*> optionMaybe (wrapParser opts.parsePath Path.parser)
+      <*> wrapParser opts.parsePath Path.parser
   withoutAuth =
     RelativePartNoAuth <$> noAuthPath
   noAuthPath
@@ -92,10 +89,7 @@ print
   → RelativePart userInfo hosts path relPath → String
 print opts = case _ of
   RelativePartAuth a p →
-    String.joinWith "" $ Array.catMaybes
-      [ pure $ Authority.print opts a
-      , Path.print <<< opts.printPath <$> p
-      ]
+    Authority.print opts a <> Path.print (opts.printPath p)
   RelativePartNoAuth p →
     maybe "" (either PathAbs.print PathNoScheme.print <<< opts.printRelPath) p
 
@@ -112,7 +106,7 @@ _path
   ∷ ∀ userInfo hosts path relPath
   . Traversal'
       (RelativePart userInfo hosts path relPath)
-      (Maybe path)
+      path
 _path = wander \f → case _ of
   RelativePartAuth a p → RelativePartAuth a <$> f p
   a → pure a

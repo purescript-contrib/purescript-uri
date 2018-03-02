@@ -18,15 +18,12 @@ module URI.HierarchicalPart
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Traversal', wander)
 import Data.Maybe (Maybe(..), maybe)
-import Data.String as String
 import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators (optionMaybe)
 import URI.Authority (Authority(..), AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, Host(..), IPv4Address, IPv6Address, Port, RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _hosts, _userInfo)
 import URI.Authority as Authority
 import URI.Common (URIPartParseError, wrapParser)
@@ -45,7 +42,7 @@ import URI.Path.Rootless as PathRootless
 -- | no ambiguity in parsing (this is per the spec, not a restriction of the
 -- | library).
 data HierarchicalPart userInfo hosts path hierPath
-  = HierarchicalPartAuth (Authority userInfo hosts) (Maybe path)
+  = HierarchicalPartAuth (Authority userInfo hosts) path
   | HierarchicalPartNoAuth (Maybe hierPath)
 
 derive instance eqHierarchicalPart ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath) ⇒ Eq (HierarchicalPart userInfo hosts path hierPath)
@@ -110,7 +107,7 @@ parser opts = withAuth <|> withoutAuth
   withAuth =
     HierarchicalPartAuth
       <$> Authority.parser opts
-      <*> optionMaybe (wrapParser opts.parsePath Path.parser)
+      <*> wrapParser opts.parsePath Path.parser
   withoutAuth =
     HierarchicalPartNoAuth <$> noAuthPath
   noAuthPath
@@ -132,10 +129,7 @@ print
   → HierarchicalPart userInfo hosts path hierPath → String
 print opts = case _ of
   HierarchicalPartAuth a p →
-    String.joinWith "" $ Array.catMaybes
-      [ pure $ Authority.print opts a
-      , Path.print <<< opts.printPath <$> p
-      ]
+    Authority.print opts a <> Path.print (opts.printPath p)
   HierarchicalPartNoAuth p →
     maybe "" (either PathAbs.print PathRootless.print <<< opts.printHierPath) p
 
@@ -155,7 +149,7 @@ _path
   ∷ ∀ userInfo hosts path hierPath
   . Traversal'
       (HierarchicalPart userInfo hosts path hierPath)
-      (Maybe path)
+      path
 _path = wander \f → case _ of
   HierarchicalPartAuth a p → HierarchicalPartAuth a <$> f p
   a → pure a
