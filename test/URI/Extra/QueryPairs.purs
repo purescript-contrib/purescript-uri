@@ -23,13 +23,13 @@ spec =
         , Tuple (NQP.unsafeKeyFromString "key1") (Just (NQP.unsafeValueFromString "value3"))
         ])
     testIso parser printer
-      "?k%3Dey=value%3D1"
+      "?k%3Dey=value%3D1%3B2"
       (NQP.QueryPairs
-        [ Tuple (NQP.unsafeKeyFromString "k%3Dey") (Just (NQP.unsafeValueFromString "value%3D1")) ])
+        [ Tuple (NQP.unsafeKeyFromString "k%3Dey") (Just (NQP.unsafeValueFromString "value%3D1%3B2")) ])
     testIso parser printer
-      "?k%3Dey=value%3D1"
+      "?k%3Dey=value%3D1%3B2"
       (NQP.QueryPairs
-        [ Tuple (NQP.keyFromString "k=ey") (Just (NQP.valueFromString "value=1")) ])
+        [ Tuple (NQP.keyFromString "k=ey") (Just (NQP.valueFromString "value=1;2")) ])
     testIso parser printer
       "?"
       (NQP.QueryPairs [])
