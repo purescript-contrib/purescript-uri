@@ -120,7 +120,7 @@ parsePart parseK parseV = do
 keyPartChar ∷ Parser String Char
 keyPartChar
   = unreserved
-  <|> oneOf ['!', '$', '\'', '(', ')', '*', '+', ';', ',', ':', '@', '/', '?']
+  <|> oneOf ['!', '$', '\'', '(', ')', '*', '+', ',', ':', '@', '/', '?']
 
 valuePartChar ∷ Parser String Char
 valuePartChar = keyPartChar <|> char '='
