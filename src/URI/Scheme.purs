@@ -17,7 +17,7 @@ import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
 import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, runParser)
-import Text.Parsing.Parser.String (char)
+import Text.Parsing.Parser.String (char, eof)
 import URI.Common (alpha, alphaNum)
 
 -- | The scheme part of an absolute URI. For example: `http`, `ftp`, `git`.
@@ -40,7 +40,7 @@ instance showScheme ∷ Show Scheme where
 -- | fromString "" == Nothing
 -- | ```
 fromString ∷ String → Maybe Scheme
-fromString = map Scheme <<< hush <<< flip runParser parseScheme
+fromString = map Scheme <<< hush <<< flip runParser (parseScheme <* eof)
 
 -- | Constructs a `Scheme` part unsafely: if the value is not an acceptable
 -- | scheme a runtime error will be thrown.
