@@ -25,7 +25,6 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Either (Either(..), either)
 import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators (try)
 import URI.Authority (Authority(..))
 import URI.Common (URIPartParseError)
 import URI.Fragment (Fragment)
@@ -43,16 +42,34 @@ import URI.URI (URI(..), HierarchicalPart(..), HierPath)
 import URI.URI as URI
 import URI.UserInfo (UserInfo)
 
--- | An alias for the most common use case of resource identifiers.
+-- | The most general kind of URI, can either be relative or absolute.
 type URIRef userInfo hosts path hierPath relPath query fragment =
   Either
     (URI.URI userInfo hosts path hierPath query fragment)
     (RelativeRef.RelativeRef userInfo hosts path relPath query fragment)
 
+-- | A row type for describing the options fields used by the general URI
+-- | parser and printer.
+-- |
+-- | Used as `Record (URIRefOptions userInfo hosts path hierPath relPath query fragment)`
+-- | when type anotating an options record.
+-- |
+-- | See below for details of how to use these configuration options.
 type URIRefOptions userInfo hosts path hierPath relPath query fragment =
   URIRefParseOptions userInfo hosts path hierPath relPath query fragment
     (URIRefPrintOptions userInfo hosts path hierPath relPath query fragment ())
 
+-- | A row type for describing the options fields used by the general URI
+-- | parser.
+-- |
+-- | Used as `Record (URIRefParseOptions userInfo hosts path hierPath relPath query fragment ())`
+-- | when type anotating an options record.
+-- |
+-- | Having this options record allows custom representations to be used for
+-- | the URI components. If this is not necessary, `pure` can be used for all
+-- | the options aside from `parseHosts`, which will typically be
+-- | `HostPortPair.parseHosts pure pure`. See [`URI.HostPortPair`](../URI.HostPortPair)
+-- | for more information on the host/port pair parser.
 type URIRefParseOptions userInfo hosts path hierPath relPath query fragment r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
   , parseHosts ∷ Parser String hosts
@@ -64,6 +81,17 @@ type URIRefParseOptions userInfo hosts path hierPath relPath query fragment r =
   | r
   )
 
+-- | A row type for describing the options fields used by the general URI
+-- | printer.
+-- |
+-- | Used as `Record (URIRefPrintOptions userInfo hosts path hierPath relPath query fragment ())`
+-- | when type anotating an options record.
+-- |
+-- | As a reverse of the parse options, this specifies how to print values back
+-- | from custom representations. If this is not necessary, `id` can be used for
+-- | all the options aside from `printHosts`, which will typically be
+-- | `HostPortPair.printHosts id id`. See [`URI.HostPortPair`](../URI.HostPortPair)
+-- | for more information on the host/port pair printer.
 type URIRefPrintOptions userInfo hosts path hierPath relPath query fragment r =
   ( printUserInfo ∷ userInfo → UserInfo
   , printHosts ∷ hosts → String
@@ -75,20 +103,17 @@ type URIRefPrintOptions userInfo hosts path hierPath relPath query fragment r =
   | r
   )
 
+-- | A parser for a general URI.
 parser
   ∷ ∀ userInfo hosts path hierPath relPath query fragment r
   . Record (URIRefParseOptions userInfo hosts path hierPath relPath query fragment r)
   → Parser String (URIRef userInfo hosts path hierPath relPath query fragment)
-parser opts
-  = (Left <$> try (URI.parser opts))
-  <|> (Right <$> RelativeRef.parser opts)
+parser opts = (Left <$> URI.parser opts) <|> (Right <$> RelativeRef.parser opts)
 
+-- | A printer for a general URI.
 print
   ∷ ∀ userInfo hosts path hierPath relPath query fragment r
   . Record (URIRefPrintOptions userInfo hosts path hierPath relPath query fragment r)
   → URIRef userInfo hosts path hierPath relPath query fragment
   → String
-print opts =
-  either
-    (URI.print opts)
-    (RelativeRef.print opts)
+print opts = either (URI.print opts) (RelativeRef.print opts)

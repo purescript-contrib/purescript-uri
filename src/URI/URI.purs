@@ -36,7 +36,9 @@ import URI.Query as Query
 import URI.Scheme (Scheme)
 import URI.Scheme as Scheme
 
--- | A generic URI
+-- | A general purpose absolute URI - similar to `AbsoluteURI` but also admits
+-- | a fragment component. An absolute URI can still contain relative paths
+-- | but is required to have a `Scheme` component.
 data URI userInfo hosts path hierPath query fragment = URI Scheme (HierarchicalPart userInfo hosts path hierPath) (Maybe query) (Maybe fragment)
 
 derive instance eqURI ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query, Eq fragment) ⇒ Eq (URI userInfo hosts path hierPath query fragment)
@@ -44,10 +46,27 @@ derive instance ordURI ∷ (Ord userInfo, Ord hosts, Ord path, Ord hierPath, Ord
 derive instance genericURI ∷ Generic (URI userInfo hosts path hierPath query fragment) _
 instance showURI ∷ (Show userInfo, Show hosts, Show path, Show hierPath, Show query, Show fragment) ⇒ Show (URI userInfo hosts path hierPath query fragment) where show = genericShow
 
+-- | A row type for describing the options fields used by the URI parser and
+-- | printer.
+-- |
+-- | Used as `Record (URIOptions userInfo hosts path hierPath query fragment)`
+-- | when type anotating an options record.
+-- |
+-- | See below for details of how to use these configuration options.
 type URIOptions userInfo hosts path hierPath query fragment =
   URIParseOptions userInfo hosts path hierPath query fragment
     (URIPrintOptions userInfo hosts path hierPath query fragment ())
 
+-- | A row type for describing the options fields used by the URI parser.
+-- |
+-- | Used as `Record (URIParseOptions userInfo hosts path hierPath query fragment ())`
+-- | when type anotating an options record.
+-- |
+-- | Having this options record allows custom representations to be used for
+-- | the URI components. If this is not necessary, `pure` can be used for all
+-- | the options aside from `parseHosts`, which will typically be
+-- | `HostPortPair.parseHosts pure pure`. See [`URI.HostPortPair`](../URI.HostPortPair)
+-- | for more information on the host/port pair parser.
 type URIParseOptions userInfo hosts path hierPath query fragment r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
   , parseHosts ∷ Parser String hosts
@@ -58,6 +77,16 @@ type URIParseOptions userInfo hosts path hierPath query fragment r =
   | r
   )
 
+-- | A row type for describing the options fields used by the URI printer.
+-- |
+-- | Used as `Record (URIPrintOptions userInfo hosts path hierPath query fragment ())`
+-- | when type anotating an options record.
+-- |
+-- | As a reverse of the parse options, this specifies how to print values back
+-- | from custom representations. If this is not necessary, `id` can be used for
+-- | all the options aside from `printHosts`, which will typically be
+-- | `HostPortPair.printHosts id id`. See [`URI.HostPortPair`](../URI.HostPortPair)
+-- | for more information on the host/port pair printer.
 type URIPrintOptions userInfo hosts path hierPath query fragment r =
   ( printUserInfo ∷ userInfo → UserInfo
   , printHosts ∷ hosts → String
@@ -68,6 +97,7 @@ type URIPrintOptions userInfo hosts path hierPath query fragment r =
   | r
   )
 
+-- | A parser for a URI.
 parser
   ∷ ∀ userInfo hosts path hierPath query fragment r
   . Record (URIParseOptions userInfo hosts path hierPath query fragment r)
@@ -79,6 +109,7 @@ parser opts = URI
   <*> optionMaybe (wrapParser opts.parseFragment Fragment.parser)
   <* eof
 
+-- | A printer for a URI.
 print
   ∷ ∀ userInfo hosts path hierPath query fragment r
   . Record (URIPrintOptions userInfo hosts path hierPath query fragment r)
@@ -92,6 +123,7 @@ print opts (URI s h q f) =
     , Fragment.print <<< opts.printFragment <$> f
     ]
 
+-- | The scheme component of a URI.
 _scheme
   ∷ ∀ userInfo hosts path hierPath query fragment
   . Lens'
@@ -102,6 +134,7 @@ _scheme =
     (\(URI s _ _ _) → s)
     (\(URI _ h q f) s → URI s h q f)
 
+-- | The hierarchical-part component of a URI.
 _hierPart
   ∷ ∀ userInfo hosts path hierPath query fragment
   . Lens'
@@ -112,6 +145,7 @@ _hierPart =
     (\(URI _ h _ _) → h)
     (\(URI s _ q f) h → URI s h q f)
 
+-- | The query component of a URI.
 _query
   ∷ ∀ userInfo hosts path hierPath query fragment
   . Lens'
@@ -122,6 +156,7 @@ _query =
     (\(URI _ _ q _) → q)
     (\(URI s h _ f) q → URI s h q f)
 
+-- | The fragment component of a URI.
 _fragment
   ∷ ∀ userInfo hosts path hierPath query fragment
   . Lens'

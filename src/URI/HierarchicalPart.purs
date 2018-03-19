@@ -54,7 +54,7 @@ instance showHierarchicalPart ∷ (Show userInfo, Show hosts, Show path, Show hi
 -- | parser and printer.
 -- |
 -- | Used as `Record (HierarchicalPartOptions userInfo hosts path hierPath)`
--- | when typing a value.
+-- | when type anotating an options record.
 type HierarchicalPartOptions userInfo hosts path hierPath =
   HierarchicalPartParseOptions userInfo hosts path hierPath
     (HierarchicalPartPrintOptions userInfo hosts path hierPath ())
@@ -63,7 +63,7 @@ type HierarchicalPartOptions userInfo hosts path hierPath =
 -- | parser.
 -- |
 -- | Used as `Record (HierarchicalPartParseOptions userInfo hosts path hierPath ())`
--- | when typing a value.
+-- | when type anotating an options record.
 type HierarchicalPartParseOptions userInfo hosts path hierPath r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
   , parseHosts ∷ Parser String hosts
@@ -76,7 +76,7 @@ type HierarchicalPartParseOptions userInfo hosts path hierPath r =
 -- | printer.
 -- |
 -- | Used as `Record (HierarchicalPartPrintOptions userInfo hosts path hierPath ())`
--- | when typing a value.
+-- | when type anotating an options record.
 type HierarchicalPartPrintOptions userInfo hosts path hierPath r =
   ( printUserInfo ∷ userInfo → UserInfo
   , printHosts ∷ hosts → String
@@ -92,12 +92,6 @@ type HierarchicalPartPrintOptions userInfo hosts path hierPath r =
 type HierPath = Either PathAbsolute PathRootless
 
 -- | A parser for the hierarchical-part of a URI.
--- |
--- | Accepts an options record to allow custom representations to be used for
--- | the URI components. If this is not necessary, `pure` can be used for all
--- | the options aside from `parseHosts`, which will typically be
--- | `HostPortPair.parseHosts pure pure`. See [`URI.HostPortPair`](../URI.HostPortPair)
--- | for more  information on the host/port pair parser.
 parser
   ∷ ∀ userInfo hosts path hierPath r
   . Record (HierarchicalPartParseOptions userInfo hosts path hierPath r)
@@ -116,13 +110,6 @@ parser opts = withAuth <|> withoutAuth
     <|> pure Nothing
 
 -- | A printer for the hierarchical-part of a URI.
--- |
--- | As a counterpart to the `parser` this function also requires an options
--- | record that specifies how to print values back from custom representations.
--- | If this is not necessary, `id` can be used for all the options aside from
--- | `printHosts`, which will typically be `HostPortPair.printHosts id id`.
--- | See [`URI.HostPortPair`](../URI.HostPortPair) for more information on the
--- | host/port pair printer.
 print
   ∷ ∀ userInfo hosts path hierPath r
   . Record (HierarchicalPartPrintOptions userInfo hosts path hierPath r)

@@ -33,7 +33,8 @@ import URI.Query as Query
 import URI.Scheme (Scheme)
 import URI.Scheme as Scheme
 
--- | A generic AbsoluteURI
+-- | A strictly absolute URI. An absolute URI can still contain relative paths
+-- | but is required to have a `Scheme` component.
 data AbsoluteURI userInfo hosts path hierPath query = AbsoluteURI Scheme (HierarchicalPart userInfo hosts path hierPath) (Maybe query)
 
 derive instance eqAbsoluteURI ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query) ⇒ Eq (AbsoluteURI userInfo hosts path hierPath query)
@@ -41,10 +42,28 @@ derive instance ordAbsoluteURI ∷ (Ord userInfo, Ord hosts, Ord path, Ord hierP
 derive instance genericAbsoluteURI ∷ Generic (AbsoluteURI userInfo hosts path hierPath query) _
 instance showAbsoluteURI ∷ (Show userInfo, Show hosts, Show path, Show hierPath, Show query) ⇒ Show (AbsoluteURI userInfo hosts path hierPath query) where show = genericShow
 
+-- | A row type for describing the options fields used by the absolute URI
+-- | parser and printer.
+-- |
+-- | Used as `Record (AbsoluteURIOptions userInfo hosts path hierPath query)`
+-- | when type anotating an options record.
+-- |
+-- | See below for details of how to use these configuration options.
 type AbsoluteURIOptions userInfo hosts path hierPath query =
   AbsoluteURIParseOptions userInfo hosts path hierPath query
     (AbsoluteURIPrintOptions userInfo hosts path hierPath query ())
 
+-- | A row type for describing the options fields used by the absolute URI
+-- | parser.
+-- |
+-- | Used as `Record (AbsoluteURIParseOptions userInfo hosts path hierPath query ())`
+-- | when type anotating an options record.
+-- |
+-- | Having this options record allows custom representations to be used for
+-- | the URI components. If this is not necessary, `pure` can be used for all
+-- | the options aside from `parseHosts`, which will typically be
+-- | `HostPortPair.parseHosts pure pure`. See [`URI.HostPortPair`](../URI.HostPortPair)
+-- | for more information on the host/port pair parser.
 type AbsoluteURIParseOptions userInfo hosts path hierPath query r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
   , parseHosts ∷ Parser String hosts
@@ -54,6 +73,17 @@ type AbsoluteURIParseOptions userInfo hosts path hierPath query r =
   | r
   )
 
+-- | A row type for describing the options fields used by the absolute URI
+-- | printer.
+-- |
+-- | Used as `Record (AbsoluteURIPrintOptions userInfo hosts path hierPath query ())`
+-- | when type anotating an options record.
+-- |
+-- | As a reverse of the parse options, this specifies how to print values back
+-- | from custom representations. If this is not necessary, `id` can be used for
+-- | all the options aside from `printHosts`, which will typically be
+-- | `HostPortPair.printHosts id id`. See [`URI.HostPortPair`](../URI.HostPortPair)
+-- | for more information on the host/port pair printer.
 type AbsoluteURIPrintOptions userInfo hosts path hierPath query r =
   ( printUserInfo ∷ userInfo → UserInfo
   , printHosts ∷ hosts → String
@@ -63,6 +93,7 @@ type AbsoluteURIPrintOptions userInfo hosts path hierPath query r =
   | r
   )
 
+-- | A parser for an absolute URI.
 parser
   ∷ ∀ userInfo hosts path hierPath query r
   . Record (AbsoluteURIParseOptions userInfo hosts path hierPath query r)
@@ -73,6 +104,7 @@ parser opts = AbsoluteURI
   <*> optionMaybe (wrapParser opts.parseQuery Query.parser)
   <* eof
 
+-- | A printer for an absolute URI.
 print
   ∷ ∀ userInfo hosts path hierPath query r
   . Record (AbsoluteURIPrintOptions userInfo hosts path hierPath query r)
@@ -85,6 +117,7 @@ print opts (AbsoluteURI s h q) =
     , Query.print <<< opts.printQuery <$> q
     ]
 
+-- | The scheme component of an absolute URI.
 _scheme
   ∷ ∀ userInfo hosts path hierPath query
   . Lens'
@@ -95,6 +128,7 @@ _scheme =
     (\(AbsoluteURI s _ _) → s)
     (\(AbsoluteURI _ h q) s → AbsoluteURI s h q)
 
+-- | The hierarchical-part component of an absolute URI.
 _hierPart
   ∷ ∀ userInfo hosts path hierPath query
   . Lens'
@@ -105,6 +139,7 @@ _hierPart =
     (\(AbsoluteURI _ h _) → h)
     (\(AbsoluteURI s _ q) h → AbsoluteURI s h q)
 
+-- | The query component of an absolute URI.
 _query
   ∷ ∀ userInfo hosts path hierPath query
   . Lens'

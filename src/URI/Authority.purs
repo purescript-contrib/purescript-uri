@@ -40,15 +40,16 @@ instance showAuthority ∷ (Show userInfo, Show hosts) ⇒ Show (Authority userI
 -- | A row type for describing the options fields used by the authority parser
 -- | and printer.
 -- |
--- | Used as `Record (AuthorityOptions userInfo hosts)` when typing a value.
+-- | Used as `Record (AuthorityOptions userInfo hosts)` when type annotating an
+-- | options record.
 type AuthorityOptions userInfo hosts =
   AuthorityParseOptions userInfo hosts
     (AuthorityPrintOptions userInfo hosts ())
 
 -- | A row type for describing the options fields used by the authority parser.
 -- |
--- | Used as `Record (AuthorityParseOptions userInfo hosts ())` when typing a
--- | value.
+-- | Used as `Record (AuthorityParseOptions userInfo hosts ())` when type
+-- | annotating an options record.
 type AuthorityParseOptions userInfo hosts r =
   ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
   , parseHosts ∷ Parser String hosts
@@ -57,8 +58,8 @@ type AuthorityParseOptions userInfo hosts r =
 
 -- | A row type for describing the options fields used by the authority printer.
 -- |
--- | Used as `Record (AuthorityPrintOptions userInfo hosts ())` when typing a
--- | value.
+-- | Used as `Record (AuthorityPrintOptions userInfo hosts ())` when type
+-- | annotating an options record.
 type AuthorityPrintOptions userInfo hosts r =
   ( printUserInfo ∷ userInfo → UserInfo
   , printHosts ∷ hosts → String
