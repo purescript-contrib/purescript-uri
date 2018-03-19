@@ -26,11 +26,10 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.String as String
+import Data.Array.NonEmpty as NEA
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
 import Global (decodeURIComponent)
-import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
 import URI.Common (decodeURIComponent', pctEncoded, printEncoded, printEncoded', subDelims, unreserved)
@@ -76,8 +75,8 @@ unsafeSegmentToString (PathSegment s) = s
 parseSegment ∷ Parser String PathSegment
 parseSegment =
   PathSegment
-    <<< String.joinWith ""
-    <$> Array.many (pctEncoded <|> String.singleton <$> segmentChar)
+    <<< NES.joinWith ""
+    <$> Array.many (pctEncoded <|> NES.singleton <$> segmentChar)
 
 -- | A printer for a _segment_ component of a URI.
 printSegment ∷ PathSegment → String
@@ -122,9 +121,8 @@ unsafeSegmentNZToString (PathSegmentNZ s) = s
 parseSegmentNZ ∷ Parser String PathSegmentNZ
 parseSegmentNZ =
   PathSegmentNZ
-    <<< unsafePartial NES.unsafeFromString
-    <<< String.joinWith ""
-    <$> Array.some (pctEncoded <|> String.singleton <$> segmentChar)
+    <<< NES.join1With ""
+    <$> NEA.some (pctEncoded <|> NES.singleton <$> segmentChar)
 
 -- | A printer for a _segment-nz_ component of a URI.
 printSegmentNZ ∷ PathSegmentNZ → String
@@ -169,9 +167,8 @@ unsafeSegmentNZNCToString (PathSegmentNZNC s) = s
 parseSegmentNZNC ∷ Parser String PathSegmentNZNC
 parseSegmentNZNC =
   PathSegmentNZNC
-    <<< unsafePartial NES.unsafeFromString
-    <<< String.joinWith ""
-    <$> Array.some (pctEncoded <|> String.singleton <$> segmentNCChar)
+    <<< NES.join1With ""
+    <$> NEA.some (pctEncoded <|> NES.singleton <$> segmentNCChar)
 
 -- | A printer for a _segment-nz-nc_ component of a URI.
 printSegmentNZNC ∷ PathSegmentNZNC → String

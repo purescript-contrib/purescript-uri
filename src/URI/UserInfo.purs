@@ -11,11 +11,9 @@ module URI.UserInfo
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
-import Data.String as String
+import Data.Array.NonEmpty as NEA
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
-import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
 import URI.Common (decodeURIComponent', subDelims, unreserved, pctEncoded, printEncoded')
@@ -72,13 +70,10 @@ unsafeToString (UserInfo s) = s
 
 -- | A parser for the user-info component of a URI.
 parser ∷ Parser String UserInfo
-parser =
-  UserInfo
-    <<< unsafePartial NES.unsafeFromString
-    <<< String.joinWith "" <$> Array.some parse
+parser = UserInfo <<< NES.join1With "" <$> NEA.some parse
   where
-  parse ∷ Parser String String
-  parse = String.singleton <$> userInfoChar <|> pctEncoded
+  parse ∷ Parser String NonEmptyString
+  parse = NES.singleton <$> userInfoChar <|> pctEncoded
 
 -- | A printer for the user-info component of a URI.
 print ∷ UserInfo → String

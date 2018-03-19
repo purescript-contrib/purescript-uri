@@ -13,7 +13,7 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Monoid (class Monoid)
-import Data.String as String
+import Data.String.NonEmpty as NES
 import Global (decodeURIComponent)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
@@ -71,8 +71,8 @@ unsafeToString (Fragment s) = s
 parser ∷ Parser String Fragment
 parser =
   char '#' *>
-    (Fragment <<< String.joinWith ""
-      <$> Array.many (pctEncoded <|> String.singleton <$> fragmentChar))
+    (Fragment <<< NES.joinWith ""
+      <$> Array.many (pctEncoded <|> NES.singleton <$> fragmentChar))
 
 -- | A printer for the fragment component of a URI. Will print the value with
 -- | a `'#'` prefix.

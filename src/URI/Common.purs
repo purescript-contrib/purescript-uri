@@ -74,12 +74,12 @@ subDelims =
   oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=', ',']
 
 -- | Parser for a percent-encoded character.
-pctEncoded ∷ Parser String String
+pctEncoded ∷ Parser String NonEmptyString
 pctEncoded = do
   d0 ← char '%'
   d1 ← hexDigit
   d2 ← hexDigit
-  pure $ String.fromCharArray [d0, d1, d2]
+  pure $ NES.singleton d0 <> NES.singleton d1 <> NES.singleton d2
 
 -- | A helper function for printing URI components using percent-encoding for
 -- | characters that require it.

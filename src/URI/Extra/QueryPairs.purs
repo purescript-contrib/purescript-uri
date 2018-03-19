@@ -25,6 +25,7 @@ import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid)
 import Data.String as String
+import Data.String.NonEmpty as NES
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Global (decodeURIComponent)
@@ -110,10 +111,10 @@ parsePart
   → Parser String (Tuple k (Maybe v))
 parsePart parseK parseV = do
   key ← wrapParser (parseK <<< Key) $
-    String.joinWith "" <$> Array.some (String.singleton <$> keyPartChar <|> pctEncoded)
+    NES.joinWith "" <$> Array.some (NES.singleton <$> keyPartChar <|> pctEncoded)
   value ← wrapParser (traverse (parseV <<< Value)) $ optionMaybe do
     _ ← char '='
-    String.joinWith "" <$> Array.many (String.singleton <$> valuePartChar <|> pctEncoded)
+    NES.joinWith "" <$> Array.many (NES.singleton <$> valuePartChar <|> pctEncoded)
   pure $ Tuple key value
 
 

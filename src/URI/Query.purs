@@ -13,7 +13,7 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Monoid (class Monoid)
-import Data.String as String
+import Data.String.NonEmpty as NES
 import Global (decodeURIComponent)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
@@ -75,8 +75,8 @@ unsafeToString (Query s) = s
 parser ∷ Parser String Query
 parser =
   char '?' *>
-    (Query <<< String.joinWith ""
-      <$> Array.many (String.singleton <$> queryChar <|> pctEncoded))
+    (Query <<< NES.joinWith ""
+      <$> Array.many (NES.singleton <$> queryChar <|> pctEncoded))
 
 -- | A printer for the query component of a URI. Will print the value with
 -- | a `'?'` prefix.

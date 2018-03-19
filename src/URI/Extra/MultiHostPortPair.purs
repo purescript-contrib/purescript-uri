@@ -8,12 +8,12 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
+import Data.Array.NonEmpty as NEA
 import Data.Either (Either)
 import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.String.NonEmpty as NES
 import Data.These (These(..))
-import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.Combinators (optionMaybe, sepBy, try)
 import Text.Parsing.Parser.String (char, oneOf)
@@ -61,13 +61,9 @@ parseHost' p = wrapParser p
   <|> (NameAddress <$> parseRegName')
 
 parseRegName' ∷ Parser String RegName
-parseRegName' = do
-  n ← Array.some p
-  case NES.fromString $ String.joinWith "" n of
-    Just x → pure $ RegName.unsafeFromString x
-    Nothing → unsafeCrashWith "This must be unPathSegment.unsafeSegmentNZFromStringreachable as we shuold parse at least one char in `pctEncoded`"
+parseRegName' = RegName.unsafeFromString <<< NES.join1With "" <$> NEA.some p
   where
-  p = pctEncoded <|> String.singleton <$> c
+  p = pctEncoded <|> NES.singleton <$> c
   c = unreserved <|> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=']
 
 print

@@ -11,11 +11,9 @@ module URI.Host.RegName
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
-import Data.String as String
+import Data.Array.NonEmpty as NEA
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty as NES
-import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
 import URI.Common (decodeURIComponent', subDelims, unreserved, pctEncoded, printEncoded')
 
@@ -69,12 +67,9 @@ unsafeToString (RegName s) = s
 
 -- | A parser for reg-names.
 parser ∷ Parser String RegName
-parser =
-  RegName
-    <<< unsafePartial NES.unsafeFromString
-    <<< String.joinWith "" <$> Array.some p
+parser = RegName <<< NES.join1With "" <$> NEA.some p
   where
-  p = pctEncoded <|> String.singleton <$> regNameChar
+  p = pctEncoded <|> NES.singleton <$> regNameChar
 
 -- | A printer for reg-names.
 print ∷ RegName → String
