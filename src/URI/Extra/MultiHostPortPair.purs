@@ -30,8 +30,16 @@ import URI.Port as Port
 -- | `,`, as used by some connection URI schemes. This is not strictly
 -- | compatible with RFC 3986, as in that spec `RegName`s can contain `,`, and
 -- | only one port can be specified in the authority.
+-- |
+-- | A motivating example for where this may be useful: dealing with mongodb
+-- | connection strings.
 type MultiHostPortPair host port = Array (These host port)
 
+-- | A parser for multiple host/port pairs embedded in a URI.
+-- |
+-- | This function allows for the `Host` and `Port` components to be parsed into
+-- | custom representations. If this is not necessary, use `pure` for both of
+-- | these arguments.
 parser
   ∷ ∀ host port
   . (Host → Either URIPartParseError host)
@@ -66,6 +74,11 @@ parseRegName' = RegName.unsafeFromString <<< NES.join1With "" <$> NEA.some p
   p = pctEncoded <|> NES.singleton <$> c
   c = unreserved <|> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=']
 
+-- | A printer for multiple host/port pairs embedded in a URI.
+-- |
+-- | As a counterpart to the `parser` this function also requires the `Host`
+-- | and `Port` components to be printed back from their custom representations.
+-- | If no custom types are being used, pass `id` for both of these arguments.
 print
   ∷ ∀ host port
   . (host → Host)
