@@ -19,9 +19,9 @@ type HostPortPair host port = Maybe (These host port)
 
 -- | A parser for a spec-conformant host/port pair.
 -- |
--- | Additionally, this function allows for the `Host` and `Port` components to
--- | be parsed into custom representations. If this is not necessary, use `pure`
--- | for both these arguments.
+-- | This function allows for the `Host` and `Port` components to be parsed into
+-- | custom representations. If this is not necessary, use `pure` for both of
+-- | these arguments.
 -- |
 -- | Host parsing is dealt with a little differently to all the other URI
 -- | components, as for hosts the control is passed entirely to the component

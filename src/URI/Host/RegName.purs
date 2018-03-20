@@ -6,6 +6,7 @@ module URI.Host.RegName
   , unsafeToString
   , parser
   , print
+  , regNameChar
   ) where
 
 import Prelude

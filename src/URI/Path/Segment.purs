@@ -20,6 +20,8 @@ module URI.Path.Segment
   , unsafeSegmentNZNCToString
   , parseSegmentNZNC
   , printSegmentNZNC
+  , segmentChar
+  , segmentNCChar
   ) where
 
 import Prelude

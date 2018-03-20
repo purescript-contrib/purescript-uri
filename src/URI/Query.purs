@@ -6,6 +6,7 @@ module URI.Query
   , unsafeToString
   , parser
   , print
+  , queryChar
   ) where
 
 import Prelude

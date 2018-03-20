@@ -6,6 +6,7 @@ module URI.UserInfo
   , unsafeToString
   , parser
   , print
+  , userInfoChar
   ) where
 
 import Prelude

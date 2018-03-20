@@ -6,6 +6,7 @@ module URI.Fragment
   , unsafeToString
   , parser
   , print
+  , fragmentChar
   ) where
 
 import Prelude
