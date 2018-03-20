@@ -25,6 +25,7 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Either (Either(..), either)
 import Text.Parsing.Parser (Parser)
+import Text.Parsing.Parser.Combinators (try)
 import URI.Authority (Authority(..))
 import URI.Common (URIPartParseError)
 import URI.Fragment (Fragment)
@@ -108,7 +109,9 @@ parser
   ∷ ∀ userInfo hosts path hierPath relPath query fragment r
   . Record (URIRefParseOptions userInfo hosts path hierPath relPath query fragment r)
   → Parser String (URIRef userInfo hosts path hierPath relPath query fragment)
-parser opts = (Left <$> URI.parser opts) <|> (Right <$> RelativeRef.parser opts)
+parser opts
+  = try (Left <$> URI.parser opts)
+  <|> (Right <$> RelativeRef.parser opts)
 
 -- | A printer for a general URI.
 print
