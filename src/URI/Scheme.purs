@@ -1,6 +1,7 @@
 module URI.Scheme
   ( Scheme
   , fromString
+  , toString
   , unsafeFromString
   , parser
   , print
@@ -41,6 +42,15 @@ instance showScheme ∷ Show Scheme where
 -- | ```
 fromString ∷ String → Maybe Scheme
 fromString = map Scheme <<< hush <<< flip runParser (parseScheme <* eof)
+
+-- | Returns the string value for a scheme.
+-- |
+-- | ``` purescript
+-- | toString (unsafeFromString "http") == "http"
+-- | toString (unsafeFromString "git+ssh") == "git+ssh"
+-- | ```
+toString ∷ Scheme → NonEmptyString
+toString (Scheme s) = s
 
 -- | Constructs a `Scheme` part unsafely: if the value is not an acceptable
 -- | scheme a runtime error will be thrown.
