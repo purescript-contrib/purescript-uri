@@ -12,7 +12,8 @@ import Data.Array.NonEmpty as NEA
 import Data.Either (Either)
 import Data.Maybe (Maybe(..))
 import Data.String as String
-import Data.String.NonEmpty as NES
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
+import Data.String.NonEmpty (join1With) as NES
 import Data.These (These(..))
 import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.Combinators (optionMaybe, sepBy, try)
