@@ -21,7 +21,7 @@
     "purescript-generics-rep": "^6.0.0",
     "purescript-globals": "^4.0.0",
     "purescript-integers": "^4.0.0",
-    "purescript-parsing": "joncfoo/purescript-parsing#update-for-0.12.0",
+    "purescript-parsing": "^5.0.0",
     "purescript-profunctor-lenses": "^4.0.0",
     "purescript-unfoldable": "^4.0.0",
     "purescript-these": "^4.0.0"
