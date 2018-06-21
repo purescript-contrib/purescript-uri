@@ -6,7 +6,7 @@ import Test.Spec (Spec, describe)
 import Test.Util (nes, testIso)
 import URI.UserInfo as UserInfo
 
-spec ∷ ∀ eff. Spec eff Unit
+spec ∷ Spec Unit
 spec =
   describe "UserInfo parser/printer" do
     testIso UserInfo.parser UserInfo.print "user" (UserInfo.fromString (nes "user"))

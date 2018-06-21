@@ -14,7 +14,7 @@ import URI.HostPortPair as HostPortPair
 import URI.Port as Port
 import URI.UserInfo as UserInfo
 
-spec ∷ ∀ eff. Spec eff Unit
+spec ∷ Spec Unit
 spec =
   describe "Authority parser/printer" do
     testIso
@@ -47,7 +47,7 @@ spec =
 options ∷ Record (AuthorityOptions UserInfo (HostPortPair Host Port))
 options =
   { parseUserInfo: pure
-  , printUserInfo: id
+  , printUserInfo: identity
   , parseHosts: HostPortPair.parser pure pure
-  , printHosts: HostPortPair.print id id
+  , printHosts: HostPortPair.print identity identity
   }

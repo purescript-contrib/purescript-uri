@@ -15,7 +15,7 @@ import URI.HostPortPair (HostPortPair)
 import URI.HostPortPair as HostPortPair
 import URI.URIRef (Fragment, HierPath, Path, Query, RelPath, URIRefOptions)
 
-spec ∷ ∀ eff. Spec eff Unit
+spec ∷ Spec Unit
 spec = do
   describe "Authority+UserPassInfo parser/printer" do
     testIso
@@ -66,15 +66,15 @@ options =
   { parseUserInfo: UserPassInfo.parse
   , printUserInfo: UserPassInfo.print
   , parseHosts: HostPortPair.parser pure pure
-  , printHosts: HostPortPair.print id id
+  , printHosts: HostPortPair.print identity identity
   , parsePath: pure
-  , printPath: id
+  , printPath: identity
   , parseHierPath: pure
-  , printHierPath: id
+  , printHierPath: identity
   , parseRelPath: pure
-  , printRelPath: id
+  , printRelPath: identity
   , parseQuery: pure
-  , printQuery: id
+  , printQuery: identity
   , parseFragment: pure
-  , printFragment: id
+  , printFragment: identity
   }

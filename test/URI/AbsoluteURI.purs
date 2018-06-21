@@ -18,7 +18,7 @@ import URI.Port as Port
 import URI.Query as Query
 import URI.Scheme as Scheme
 
-spec ∷ ∀ eff. Spec eff Unit
+spec ∷ Spec Unit
 spec =
   describe "AbsoluteURI parser/printer" do
     testIso
@@ -70,13 +70,13 @@ path = Path <<< map PathSegment.unsafeSegmentFromString
 options ∷ Record (AbsoluteURIOptions UserInfo (HostPortPair Host Port) Path HierPath Query)
 options =
   { parseUserInfo: pure
-  , printUserInfo: id
+  , printUserInfo: identity
   , parseHosts: HostPortPair.parser pure pure
-  , printHosts: HostPortPair.print id id
+  , printHosts: HostPortPair.print identity identity
   , parsePath: pure
-  , printPath: id
+  , printPath: identity
   , parseHierPath: pure
-  , printHierPath: id
+  , printHierPath: identity
   , parseQuery: pure
-  , printQuery: id
+  , printQuery: identity
   }

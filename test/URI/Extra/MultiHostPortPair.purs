@@ -21,7 +21,7 @@ import URI.URIRef (Fragment, HierPath, HierarchicalPart(..), Path(..), Query, Re
 import URI.URIRef as URIRef
 import URI.UserInfo as UserInfo
 
-spec ∷ ∀ eff. Spec eff Unit
+spec ∷ Spec Unit
 spec = do
   describe "Authority+MultiHostPortPair parser/printer" do
     testIso
@@ -134,17 +134,17 @@ path = Path <<< map PathSegment.unsafeSegmentFromString
 options ∷ Record (URIRefOptions UserInfo (MultiHostPortPair Host Port) Path HierPath RelPath Query Fragment)
 options =
   { parseUserInfo: pure
-  , printUserInfo: id
+  , printUserInfo: identity
   , parseHosts: MultiHostPortPair.parser pure pure
-  , printHosts: MultiHostPortPair.print id id
+  , printHosts: MultiHostPortPair.print identity identity
   , parsePath: pure
-  , printPath: id
+  , printPath: identity
   , parseHierPath: pure
-  , printHierPath: id
+  , printHierPath: identity
   , parseRelPath: pure
-  , printRelPath: id
+  , printRelPath: identity
   , parseQuery: pure
-  , printQuery: id
+  , printQuery: identity
   , parseFragment: pure
-  , printFragment: id
+  , printFragment: identity
   }

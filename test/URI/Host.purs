@@ -6,7 +6,7 @@ import Data.Either (Either(..))
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
-import Test.Util (TestEffects, forAll, nes, testIso)
+import Test.Util (forAll, nes, testIso)
 import Text.Parsing.Parser (runParser)
 import URI.Host (Host(..))
 import URI.Host as Host
@@ -15,7 +15,7 @@ import URI.Host.IPv4Address as IPv4Address
 import URI.Host.IPv6Address as IPv6Address
 import URI.Host.RegName as RegName
 
-spec ∷ ∀ eff. Spec (TestEffects eff) Unit
+spec ∷ Spec Unit
 spec = do
   describe "Host parser/printer" do
     testIso Host.parser Host.print "localhost" (NameAddress (RegName.unsafeFromString $ nes "localhost"))

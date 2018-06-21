@@ -10,11 +10,11 @@ import URI.Common (wrapParser)
 import URI.Extra.QueryPairs as NQP
 import URI.Query as Query
 
-spec ∷ ∀ eff. Spec eff Unit
+spec ∷ Spec Unit
 spec =
   describe "QueryPairs printer/parser" do
     let parser = wrapParser (NQP.parse pure pure) Query.parser
-    let printer = Query.print <<< NQP.print id id
+    let printer = Query.print <<< NQP.print identity identity
     testIso parser printer
       "?key1=value1&key2=value2&key1=value3"
       (NQP.QueryPairs
