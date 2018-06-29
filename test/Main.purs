@@ -22,7 +22,7 @@ import Test.URI.UserInfo as UserInfo
 main ∷ Effect Unit
 main = run [consoleReporter] do
   Scheme.spec
-  UserInfo.spec 
+  UserInfo.spec
   Host.spec
   Port.spec
   Fragment.spec
