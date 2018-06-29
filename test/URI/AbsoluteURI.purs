@@ -4,10 +4,12 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Data.String.NonEmpty (nes)
+import Data.Symbol (SProxy(..))
 import Data.These (These(..))
 import Data.Tuple (Tuple(..))
 import Test.Spec (Spec, describe)
-import Test.Util (nes, testIso)
+import Test.Util (testIso)
 import URI.AbsoluteURI (Authority(..), HierPath, HierarchicalPart(..), Host(..), Path(..), PathAbsolute(..), PathRootless(..), Port, Query, AbsoluteURI(..), AbsoluteURIOptions, UserInfo)
 import URI.AbsoluteURI as AbsoluteURI
 import URI.Host.RegName as RegName
@@ -30,7 +32,7 @@ spec =
         (HierarchicalPartAuth
           (Authority
             Nothing
-            (Just (This (NameAddress (RegName.unsafeFromString $ nes "localhost")))))
+            (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "localhost"))))))
           (path ["testBucket"]))
         (Just (Query.unsafeFromString "password=&docTypeKey=")))
     testIso
@@ -42,7 +44,7 @@ spec =
         (HierarchicalPartAuth
           (Authority
             Nothing
-            (Just (Both (NameAddress (RegName.unsafeFromString $ nes "localhost")) (Port.unsafeFromInt 9999))))
+            (Just (Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "localhost"))) (Port.unsafeFromInt 9999))))
           (path ["testBucket"]))
         (Just (Query.unsafeFromString "password=pass&docTypeKey=type&queryTimeoutSeconds=20")))
     testIso
@@ -52,7 +54,7 @@ spec =
       (AbsoluteURI
         (Scheme.unsafeFromString "foo")
         (HierarchicalPartNoAuth
-          (Just (Left (PathAbsolute (Just (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "abc") [PathSegment.unsafeSegmentFromString "def"]))))))
+          (Just (Left (PathAbsolute (Just (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (SProxy :: SProxy "abc")) [PathSegment.unsafeSegmentFromString "def"]))))))
         Nothing)
     testIso
       (AbsoluteURI.parser options)
@@ -61,7 +63,7 @@ spec =
       (AbsoluteURI
         (Scheme.unsafeFromString "foo")
         (HierarchicalPartNoAuth
-          (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes "abc") [PathSegment.unsafeSegmentFromString "def"])))))
+          (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (SProxy :: SProxy "abc")) [PathSegment.unsafeSegmentFromString "def"])))))
         Nothing)
 
 path ∷ Array String → Path

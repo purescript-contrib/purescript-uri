@@ -3,11 +3,8 @@ module Test.Util where
 import Prelude
 
 import Data.Either (Either(..))
-import Data.String.NonEmpty (NonEmptyString)
-import Data.String.NonEmpty as NES
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Partial.Unsafe (unsafePartial)
 import Test.QuickCheck as QC
 import Test.QuickCheck.Gen as QCG
 import Test.Spec (Spec, it)
@@ -43,6 +40,3 @@ forAll = quickCheck
 
 quickCheck ∷ ∀ prop. QC.Testable prop ⇒ prop → Aff Unit
 quickCheck = liftEffect <<< QC.quickCheck' 100
-
-nes ∷ String → NonEmptyString
-nes = unsafePartial NES.unsafeFromString
