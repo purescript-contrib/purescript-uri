@@ -14,7 +14,8 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array.NonEmpty as NEA
 import Data.String.NonEmpty (NonEmptyString)
-import Data.String.NonEmpty as NES
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
+import Data.String.NonEmpty (join1With, toString) as NES
 import Text.Parsing.Parser (Parser)
 import URI.Common (decodeURIComponent', subDelims, unreserved, pctEncoded, printEncoded')
 

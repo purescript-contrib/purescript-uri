@@ -3,9 +3,11 @@ module Test.URI.Authority where
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Data.String.NonEmpty (nes)
+import Data.Symbol (SProxy(..))
 import Data.These (These(..))
 import Test.Spec (Spec, describe)
-import Test.Util (nes, testIso)
+import Test.Util (testIso)
 import URI.Authority (Authority(..), AuthorityOptions, Host(..), Port, UserInfo)
 import URI.Authority as Authority
 import URI.Host.RegName as RegName
@@ -14,7 +16,7 @@ import URI.HostPortPair as HostPortPair
 import URI.Port as Port
 import URI.UserInfo as UserInfo
 
-spec ∷ ∀ eff. Spec eff Unit
+spec ∷ Spec Unit
 spec =
   describe "Authority parser/printer" do
     testIso
@@ -23,21 +25,21 @@ spec =
       "//localhost"
       (Authority
         Nothing
-        (Just (This (NameAddress (RegName.unsafeFromString (nes "localhost"))))))
+        (Just (This (NameAddress (RegName.unsafeFromString (nes (SProxy :: SProxy "localhost")))))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//localhost:3000"
       (Authority
         Nothing
-        (Just (Both (NameAddress (RegName.unsafeFromString (nes "localhost"))) (Port.unsafeFromInt 3000))))
+        (Just (Both (NameAddress (RegName.unsafeFromString (nes (SProxy :: SProxy "localhost")))) (Port.unsafeFromInt 3000))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//user@localhost:3000"
       (Authority
-        (Just (UserInfo.unsafeFromString (nes "user")))
-        (Just (Both (NameAddress (RegName.unsafeFromString (nes "localhost"))) (Port.unsafeFromInt 3000))))
+        (Just (UserInfo.unsafeFromString (nes (SProxy :: SProxy "user"))))
+        (Just (Both (NameAddress (RegName.unsafeFromString (nes (SProxy :: SProxy "localhost")))) (Port.unsafeFromInt 3000))))
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -47,7 +49,7 @@ spec =
 options ∷ Record (AuthorityOptions UserInfo (HostPortPair Host Port))
 options =
   { parseUserInfo: pure
-  , printUserInfo: id
+  , printUserInfo: identity
   , parseHosts: HostPortPair.parser pure pure
-  , printHosts: HostPortPair.print id id
+  , printHosts: HostPortPair.print identity identity
   }

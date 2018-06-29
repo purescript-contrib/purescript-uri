@@ -9,7 +9,7 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.String as String
+import Data.String.CodeUnits as String
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators ((<?>))
 import Text.Parsing.Parser.String (char)

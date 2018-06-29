@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.String as String
 import Data.String.NonEmpty (NonEmptyString)
-import Data.String.NonEmpty as NES
+import Data.String.NonEmpty.CodeUnits (singleton, splitAt, indexOf, drop) as NES
 import Text.Parsing.Parser (Parser)
 import URI.Common (URIPartParseError(..), decodeURIComponent', subDelims, unreserved, printEncoded')
 import URI.UserInfo (UserInfo)
@@ -50,7 +50,7 @@ parse ui =
   let
     s = UserInfo.unsafeToString ui
   in
-    case flip NES.splitAt s =<< NES.indexOf (String.Pattern ":") s of
+    case flip NES.splitAt s <$> NES.indexOf (String.Pattern ":") s of
       Just { before: Nothing } →
         Left (URIPartParseError "Expected a username before a password segment")
       Just { before: Just before, after: Just after } →

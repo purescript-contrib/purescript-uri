@@ -5,7 +5,6 @@ import Prelude
 import Data.Array as Array
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Monoid (class Monoid)
 import Data.String as String
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)

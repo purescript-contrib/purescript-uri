@@ -13,9 +13,9 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
-import Data.Monoid (class Monoid)
-import Data.String.NonEmpty as NES
-import Global (decodeURIComponent)
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
+import Data.String.NonEmpty (joinWith) as NES
+import Global.Unsafe (unsafeDecodeURIComponent)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
 import URI.Common (subDelims, unreserved, pctEncoded, printEncoded)
@@ -52,7 +52,7 @@ fromString = Fragment <<< printEncoded fragmentChar
 -- | toString (unsafeFromString "foo%23bar") = "foo#bar"
 -- | ```
 toString ∷ Fragment → String
-toString (Fragment s) = decodeURIComponent s
+toString (Fragment s) = unsafeDecodeURIComponent s
 
 -- | Constructs a fragment value from a string directly - no percent-encoding
 -- | will be applied. This is useful when using a custom encoding scheme for

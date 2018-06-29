@@ -12,7 +12,7 @@ import Prelude
 import Data.Array as Array
 import Data.Int (fromNumber)
 import Data.Maybe (Maybe(..))
-import Data.String as String
+import Data.String.CodeUnits as String
 import Global (readInt)
 import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, fail)

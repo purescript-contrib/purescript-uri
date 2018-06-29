@@ -8,7 +8,7 @@ import Test.Spec (Spec, describe, it)
 import Test.Util (testIso, equal)
 import URI.Scheme as Scheme
 
-spec ∷ ∀ eff. Spec eff Unit
+spec ∷ Spec Unit
 spec = do
   describe "Scheme parser/printer" do
     testIso Scheme.parser Scheme.print "http:" (Scheme.unsafeFromString "http")

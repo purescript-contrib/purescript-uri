@@ -13,9 +13,10 @@ import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Either (hush)
 import Data.Maybe (Maybe(..))
-import Data.String as String
+import Data.String.CodeUnits as String
 import Data.String.NonEmpty (NonEmptyString)
-import Data.String.NonEmpty as NES
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
+import Data.String.NonEmpty (appendString, toString) as NES
 import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, runParser)
 import Text.Parsing.Parser.String (char, eof)

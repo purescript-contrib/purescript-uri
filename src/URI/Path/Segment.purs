@@ -30,8 +30,9 @@ import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
 import Data.String.NonEmpty (NonEmptyString)
-import Data.String.NonEmpty as NES
-import Global (decodeURIComponent)
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
+import Data.String.NonEmpty (join1With, joinWith, toString) as NES
+import Global.Unsafe (unsafeDecodeURIComponent)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
 import URI.Common (decodeURIComponent', pctEncoded, printEncoded, printEncoded', subDelims, unreserved)
@@ -58,7 +59,7 @@ segmentFromString = PathSegment <<< printEncoded segmentChar
 -- | Returns the string value for a segment, percent-decoding any characters
 -- | that require it.
 segmentToString ∷ PathSegment → String
-segmentToString (PathSegment s) = decodeURIComponent s
+segmentToString (PathSegment s) = unsafeDecodeURIComponent s
 
 -- | Constructs a segment value from a string directly - no percent-encoding
 -- | will be applied. This is useful when using a custom encoding scheme for

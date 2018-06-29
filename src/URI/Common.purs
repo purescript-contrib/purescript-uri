@@ -22,10 +22,12 @@ import Data.Either (Either(..), either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Newtype (class Newtype, un)
-import Data.String as String
+import Data.String (joinWith) as String
+import Data.String.CodeUnits (singleton) as String
 import Data.String.NonEmpty (NonEmptyString)
-import Data.String.NonEmpty as NES
-import Global (decodeURIComponent, encodeURIComponent)
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
+import Data.String.NonEmpty (unsafeFromString, toString) as NES
+import Global.Unsafe (unsafeDecodeURIComponent, unsafeEncodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..), runParser)
 import Text.Parsing.Parser.String (anyChar, char, eof, oneOf, satisfy)
@@ -87,14 +89,14 @@ pctEncoded = do
 -- | Accepts a parser that is used to determine whether a character is allowed
 -- | to appear un-encoded in the URI component and the string to encode.
 printEncoded ∷ Parser String Char → String → String
-printEncoded p s = either (const s) id (runParser s parse)
+printEncoded p s = either (const s) identity (runParser s parse)
   where
     parse ∷ Parser String String
     parse = (String.joinWith "" <$> Array.many (simpleChar <|> encodedChar)) <* eof
     simpleChar ∷ Parser String String
     simpleChar = String.singleton <$> p
     encodedChar ∷ Parser String String
-    encodedChar = encodeURIComponent <<< String.singleton <$> anyChar
+    encodedChar = unsafeEncodeURIComponent <<< String.singleton <$> anyChar
 
 -- | A version of [`printEncoded`](#v:printEncoded) that operates on non-empty
 -- | strings.
@@ -106,4 +108,4 @@ printEncoded' p =
 -- | that operates on non-empty strings.
 decodeURIComponent' ∷ NonEmptyString → NonEmptyString
 decodeURIComponent' =
-  unsafePartial NES.unsafeFromString <<< decodeURIComponent <<< NES.toString
+  unsafePartial NES.unsafeFromString <<< unsafeDecodeURIComponent <<< NES.toString

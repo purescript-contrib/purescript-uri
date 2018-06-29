@@ -6,7 +6,7 @@ import Test.Spec (Spec, describe)
 import Test.Util (testIso)
 import URI.Fragment as Fragment
 
-spec ∷ ∀ eff. Spec eff Unit
+spec ∷ Spec Unit
 spec =
   describe "Fragment parser/printer" do
     testIso Fragment.parser Fragment.print "#" (Fragment.fromString "")

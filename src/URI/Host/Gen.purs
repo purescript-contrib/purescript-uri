@@ -6,7 +6,7 @@ import Control.Monad.Gen as Gen
 import Control.Monad.Rec.Class (class MonadRec)
 import Data.Char.Gen as GenChar
 import Data.String.Gen as GenString
-import Data.String.NonEmpty as NES
+import Data.String.NonEmpty.CodeUnits as NES
 import URI.Host (Host(..), IPv4Address, RegName)
 import URI.Host.IPv4Address as IPv4Address
 import URI.Host.RegName as RegName

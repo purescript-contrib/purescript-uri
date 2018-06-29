@@ -12,7 +12,7 @@ import Control.Alt ((<|>))
 import Data.Either (Either(..))
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
-import Data.String as String
+import Data.String.CodeUnits as String
 import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (try)
