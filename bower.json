@@ -22,7 +22,7 @@
     "purescript-globals": "^4.0.0",
     "purescript-integers": "^4.0.0",
     "purescript-parsing": "^5.0.0",
-    "purescript-profunctor-lenses": "^4.0.0",
+    "purescript-profunctor-lenses": "^5.0.0",
     "purescript-unfoldable": "^4.0.0",
     "purescript-these": "^4.0.0"
   },
