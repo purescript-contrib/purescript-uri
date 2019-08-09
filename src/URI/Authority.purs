@@ -30,7 +30,10 @@ import URI.UserInfo as UserInfo
 
 -- | The authority part of a URI. For example: `purescript.org`,
 -- | `localhost:3000`, `user@example.net`.
-data Authority userInfo hosts = Authority (Maybe userInfo) hosts
+newtype Authority userInfo hosts =
+  Authority { userInfo :: Maybe userInfo
+            , hosts :: hosts
+            }
 
 derive instance eqAuthority ∷ (Eq userInfo, Eq hosts) ⇒ Eq (Authority userInfo hosts)
 derive instance ordAuthority ∷ (Ord userInfo, Ord hosts) ⇒ Ord (Authority userInfo hosts)
@@ -76,7 +79,7 @@ parser opts = do
   _ ← string "//"
   ui ← optionMaybe $ try (wrapParser opts.parseUserInfo UserInfo.parser <* char '@')
   hosts ← opts.parseHosts
-  pure $ Authority ui hosts
+  pure $ Authority { userInfo: ui, hosts }
 
 -- | A printer for the authority part of a URI. Will print the value with a
 -- | `"//"` prefix.
@@ -85,9 +88,9 @@ print
   . Record (AuthorityPrintOptions userInfo hosts r)
   → Authority userInfo hosts
   → String
-print opts (Authority mui hs) = case mui of
-  Just ui → "//" <> UserInfo.print (opts.printUserInfo ui) <> "@" <> opts.printHosts hs
-  Nothing → "//" <> opts.printHosts hs
+print opts (Authority { userInfo, hosts }) = case userInfo of
+  Just ui → "//" <> UserInfo.print (opts.printUserInfo ui) <> "@" <> opts.printHosts hosts
+  Nothing → "//" <> opts.printHosts hosts
 
 -- | A lens for the user-info component of the authority.
 _userInfo
@@ -97,8 +100,8 @@ _userInfo
       (Maybe userInfo)
 _userInfo =
   lens
-    (\(Authority ui _) → ui)
-    (\(Authority _ hs) ui → Authority ui hs)
+    (\(Authority rec) → rec.userInfo)
+    (\(Authority rec) ui → Authority (rec { userInfo = ui }))
 
 -- | A lens for the host(s) component of the authority.
 _hosts
@@ -108,5 +111,5 @@ _hosts
       hosts
 _hosts =
   lens
-    (\(Authority _ hs) → hs)
-    (\(Authority ui _) hs → Authority ui hs)
+    (\(Authority rec) → rec.hosts)
+    (\(Authority rec) h → Authority (rec { hosts = h }))

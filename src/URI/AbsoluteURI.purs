@@ -35,7 +35,11 @@ import URI.Scheme as Scheme
 
 -- | A strictly absolute URI. An absolute URI can still contain relative paths
 -- | but is required to have a `Scheme` component.
-data AbsoluteURI userInfo hosts path hierPath query = AbsoluteURI Scheme (HierarchicalPart userInfo hosts path hierPath) (Maybe query)
+newtype AbsoluteURI userInfo hosts path hierPath query =
+  AbsoluteURI { scheme :: Scheme
+              , hierPart :: HierarchicalPart userInfo hosts path hierPath
+              , query :: Maybe query
+              }
 
 derive instance eqAbsoluteURI ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query) ⇒ Eq (AbsoluteURI userInfo hosts path hierPath query)
 derive instance ordAbsoluteURI ∷ (Ord userInfo, Ord hosts, Ord path, Ord hierPath, Ord query) ⇒ Ord (AbsoluteURI userInfo hosts path hierPath query)
@@ -98,11 +102,12 @@ parser
   ∷ ∀ userInfo hosts path hierPath query r
   . Record (AbsoluteURIParseOptions userInfo hosts path hierPath query r)
   → Parser String (AbsoluteURI userInfo hosts path hierPath query)
-parser opts = AbsoluteURI
-  <$> Scheme.parser
-  <*> HPart.parser opts
-  <*> optionMaybe (wrapParser opts.parseQuery Query.parser)
-  <* eof
+parser opts = ado
+  scheme <- Scheme.parser
+  hierPart <- HPart.parser opts
+  query <- optionMaybe (wrapParser opts.parseQuery Query.parser)
+  eof
+  in AbsoluteURI { scheme, hierPart, query }
 
 -- | A printer for an absolute URI.
 print
@@ -110,11 +115,11 @@ print
   . Record (AbsoluteURIPrintOptions userInfo hosts path hierPath query r)
   → AbsoluteURI userInfo hosts path hierPath query
   → String
-print opts (AbsoluteURI s h q) =
+print opts (AbsoluteURI { scheme, hierPart, query }) =
   String.joinWith "" $ Array.catMaybes
-    [ Just (Scheme.print s)
-    , Just (HPart.print opts h)
-    , Query.print <<< opts.printQuery <$> q
+    [ Just (Scheme.print scheme)
+    , Just (HPart.print opts hierPart)
+    , Query.print <<< opts.printQuery <$> query
     ]
 
 -- | The scheme component of an absolute URI.
@@ -125,8 +130,8 @@ _scheme
       Scheme
 _scheme =
   lens
-    (\(AbsoluteURI s _ _) → s)
-    (\(AbsoluteURI _ h q) s → AbsoluteURI s h q)
+    (\(AbsoluteURI rec) → rec.scheme)
+    (\(AbsoluteURI rec) s → AbsoluteURI (rec { scheme = s }))
 
 -- | The hierarchical-part component of an absolute URI.
 _hierPart
@@ -136,8 +141,8 @@ _hierPart
       (HierarchicalPart userInfo hosts path hierPath)
 _hierPart =
   lens
-    (\(AbsoluteURI _ h _) → h)
-    (\(AbsoluteURI s _ q) h → AbsoluteURI s h q)
+    (\(AbsoluteURI rec) → rec.hierPart)
+    (\(AbsoluteURI rec) h → AbsoluteURI (rec { hierPart = h }))
 
 -- | The query component of an absolute URI.
 _query
@@ -147,5 +152,5 @@ _query
       (Maybe query)
 _query =
   lens
-    (\(AbsoluteURI _ _ q) → q)
-    (\(AbsoluteURI s h _) q → AbsoluteURI s h q)
+    (\(AbsoluteURI rec) → rec.query)
+    (\(AbsoluteURI rec) q → AbsoluteURI (rec { query = q }))

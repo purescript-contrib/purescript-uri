@@ -34,7 +34,11 @@ import URI.RelativePart (Authority(..), AuthorityOptions, AuthorityParseOptions,
 import URI.RelativePart as RPart
 
 -- | A relative URI. Relative in the sense that it lacks a `Scheme` component.
-data RelativeRef userInfo hosts path relPath query fragment = RelativeRef (RelativePart userInfo hosts path relPath) (Maybe query) (Maybe fragment)
+newtype RelativeRef userInfo hosts path relPath query fragment =
+  RelativeRef { relPart :: RelativePart userInfo hosts path relPath
+              , query :: Maybe query
+              , fragment :: Maybe fragment
+              }
 
 derive instance eqRelativeRef ∷ (Eq userInfo, Eq hosts, Eq path, Eq relPath, Eq query, Eq fragment) ⇒ Eq (RelativeRef userInfo hosts path relPath query fragment)
 derive instance ordRelativeRef ∷ (Ord userInfo, Ord hosts, Ord path, Ord relPath, Ord query, Ord fragment) ⇒ Ord (RelativeRef userInfo hosts path relPath query fragment)
@@ -96,12 +100,12 @@ parser
   ∷ ∀ userInfo hosts path relPath query fragment r
   . Record (RelativeRefParseOptions userInfo hosts path relPath query fragment r)
   → Parser String (RelativeRef userInfo hosts path relPath query fragment)
-parser opts =
-  RelativeRef
-    <$> RPart.parser opts
-    <*> optionMaybe (wrapParser opts.parseQuery Query.parser)
-    <*> optionMaybe (wrapParser opts.parseFragment Fragment.parser)
-    <* eof
+parser opts = ado
+  relPart <- RPart.parser opts
+  query <- optionMaybe (wrapParser opts.parseQuery Query.parser)
+  fragment <- optionMaybe (wrapParser opts.parseFragment Fragment.parser)
+  eof
+  in RelativeRef { relPart, query, fragment }
 
 -- | A printer for a relative URI.
 print
@@ -109,11 +113,11 @@ print
   . Record (RelativeRefPrintOptions userInfo hosts path relPath query fragment r)
   → RelativeRef userInfo hosts path relPath query fragment
   → String
-print opts (RelativeRef h q f) =
+print opts (RelativeRef { relPart, query, fragment }) =
   String.joinWith "" $ Array.catMaybes
-    [ Just (RPart.print opts h)
-    , Query.print <<< opts.printQuery <$> q
-    , Fragment.print <<< opts.printFragment <$> f
+    [ Just (RPart.print opts relPart)
+    , Query.print <<< opts.printQuery <$> query
+    , Fragment.print <<< opts.printFragment <$> fragment
     ]
 
 -- | The relative-part component of a relative URI.
@@ -124,8 +128,8 @@ _relPart
       (RelativePart userInfo hosts path relPath)
 _relPart =
   lens
-    (\(RelativeRef r _ _) → r)
-    (\(RelativeRef _ q f) r → RelativeRef r q f)
+    (\(RelativeRef rec) → rec.relPart)
+    (\(RelativeRef rec) r → RelativeRef (rec { relPart = r }))
 
 -- | The query component of a relative URI.
 _query
@@ -135,8 +139,8 @@ _query
       (Maybe query)
 _query =
   lens
-    (\(RelativeRef _ q _) → q)
-    (\(RelativeRef r _ f) q → RelativeRef r q f)
+    (\(RelativeRef rec) → rec.query)
+    (\(RelativeRef rec) q → RelativeRef (rec { query = q }))
 
 -- | The fragment component of a relative URI.
 _fragment
@@ -146,5 +150,5 @@ _fragment
       (Maybe fragment)
 _fragment =
   lens
-    (\(RelativeRef _ _ f) → f)
-    (\(RelativeRef r q _) f → RelativeRef r q f)
+    (\(RelativeRef rec) → rec.fragment)
+    (\(RelativeRef rec) f → RelativeRef (rec { fragment = f }))

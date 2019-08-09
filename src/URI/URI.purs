@@ -39,7 +39,12 @@ import URI.Scheme as Scheme
 -- | A general purpose absolute URI - similar to `AbsoluteURI` but also admits
 -- | a fragment component. An absolute URI can still contain relative paths
 -- | but is required to have a `Scheme` component.
-data URI userInfo hosts path hierPath query fragment = URI Scheme (HierarchicalPart userInfo hosts path hierPath) (Maybe query) (Maybe fragment)
+newtype URI userInfo hosts path hierPath query fragment =
+  URI { scheme :: Scheme
+      , hierPart :: HierarchicalPart userInfo hosts path hierPath
+      , query :: Maybe query
+      , fragment :: Maybe fragment
+      }
 
 derive instance eqURI ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query, Eq fragment) ⇒ Eq (URI userInfo hosts path hierPath query fragment)
 derive instance ordURI ∷ (Ord userInfo, Ord hosts, Ord path, Ord hierPath, Ord query, Ord fragment) ⇒ Ord (URI userInfo hosts path hierPath query fragment)
@@ -102,12 +107,13 @@ parser
   ∷ ∀ userInfo hosts path hierPath query fragment r
   . Record (URIParseOptions userInfo hosts path hierPath query fragment r)
   → Parser String (URI userInfo hosts path hierPath query fragment)
-parser opts = URI
-  <$> Scheme.parser
-  <*> HPart.parser opts
-  <*> optionMaybe (wrapParser opts.parseQuery Query.parser)
-  <*> optionMaybe (wrapParser opts.parseFragment Fragment.parser)
-  <* eof
+parser opts = ado
+  scheme <- Scheme.parser
+  hierPart <- HPart.parser opts
+  query <- optionMaybe (wrapParser opts.parseQuery Query.parser)
+  fragment <- optionMaybe (wrapParser opts.parseFragment Fragment.parser)
+  eof
+  in URI { scheme, hierPart, query, fragment }
 
 -- | A printer for a URI.
 print
@@ -115,12 +121,12 @@ print
   . Record (URIPrintOptions userInfo hosts path hierPath query fragment r)
   → URI userInfo hosts path hierPath query fragment
   → String
-print opts (URI s h q f) =
+print opts (URI { scheme, hierPart, query, fragment }) =
   String.joinWith "" $ Array.catMaybes
-    [ Just (Scheme.print s)
-    , Just (HPart.print opts h)
-    , Query.print <<< opts.printQuery <$> q
-    , Fragment.print <<< opts.printFragment <$> f
+    [ Just (Scheme.print scheme)
+    , Just (HPart.print opts hierPart)
+    , Query.print <<< opts.printQuery <$> query
+    , Fragment.print <<< opts.printFragment <$> fragment
     ]
 
 -- | The scheme component of a URI.
@@ -131,8 +137,8 @@ _scheme
       Scheme
 _scheme =
   lens
-    (\(URI s _ _ _) → s)
-    (\(URI _ h q f) s → URI s h q f)
+    (\(URI rec) → rec.scheme)
+    (\(URI rec) s → URI (rec { scheme = s }))
 
 -- | The hierarchical-part component of a URI.
 _hierPart
@@ -142,8 +148,8 @@ _hierPart
       (HierarchicalPart userInfo hosts path hierPath)
 _hierPart =
   lens
-    (\(URI _ h _ _) → h)
-    (\(URI s _ q f) h → URI s h q f)
+    (\(URI rec) → rec.hierPart)
+    (\(URI rec) h → URI (rec { hierPart = h }))
 
 -- | The query component of a URI.
 _query
@@ -153,8 +159,8 @@ _query
       (Maybe query)
 _query =
   lens
-    (\(URI _ _ q _) → q)
-    (\(URI s h _ f) q → URI s h q f)
+    (\(URI rec) → rec.query)
+    (\(URI rec) q → URI (rec { query = q }))
 
 -- | The fragment component of a URI.
 _fragment
@@ -164,5 +170,5 @@ _fragment
       (Maybe fragment)
 _fragment =
   lens
-    (\(URI _ _ _ f) → f)
-    (\(URI s h q _) f → URI s h q f)
+    (\(URI rec) → rec.fragment)
+    (\(URI rec) f → URI (rec { fragment = f }))
