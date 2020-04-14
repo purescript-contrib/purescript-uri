@@ -83,9 +83,9 @@ type URIParseOptions userInfo hosts path hierPath query fragment r =
 -- | when type anotating an options record.
 -- |
 -- | As a reverse of the parse options, this specifies how to print values back
--- | from custom representations. If this is not necessary, `id` can be used for
+-- | from custom representations. If this is not necessary, `identity` can be used for
 -- | all the options aside from `printHosts`, which will typically be
--- | `HostPortPair.printHosts id id`. See [`URI.HostPortPair`](../URI.HostPortPair)
+-- | `HostPortPair.printHosts identity identity`. See [`URI.HostPortPair`](../URI.HostPortPair)
 -- | for more information on the host/port pair printer.
 type URIPrintOptions userInfo hosts path hierPath query fragment r =
   ( printUserInfo ∷ userInfo → UserInfo
