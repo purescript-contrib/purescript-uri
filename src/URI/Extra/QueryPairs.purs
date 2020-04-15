@@ -87,7 +87,7 @@ parsePart parseK parseV = do
 -- |
 -- | As a counterpart to the `parser` this function also requires the `Key`
 -- | and `Value` components to be printed back from their custom representations.
--- | If no custom types are being used, pass `id` for both of these arguments.
+-- | If no custom types are being used, pass `identity` for both of these arguments.
 print
   ∷ ∀ k v
   . (k → Key)

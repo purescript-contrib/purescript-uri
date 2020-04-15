@@ -53,23 +53,23 @@ Along with these types, you'll want to define an options record that specifies h
 options ∷ Record (URIRefOptions UserInfo (HostPortPair Host Port) Path HierPath RelPath Query Fragment)
 options =
   { parseUserInfo: pure
-  , printUserInfo: id
+  , printUserInfo: identity
   , parseHosts: HostPortPair.parser pure pure
-  , printHosts: HostPortPair.print id id
+  , printHosts: HostPortPair.print identity identity
   , parsePath: pure
-  , printPath: id
+  , printPath: identity
   , parseHierPath: pure
-  , printHierPath: id
+  , printHierPath: identity
   , parseRelPath: pure
-  , printRelPath: id
+  , printRelPath: identity
   , parseQuery: pure
-  , printQuery: id
+  , printQuery: identity
   , parseFragment: pure
-  , printFragment: id
+  , printFragment: identity
   }
 ```
 
-As you can see by all the `pure` and `id`, we're not doing a whole lot here. `parseHosts` is a bit of an exception, but that's just due to the way that case is handled (see [later in this README](#host-parsing) for more details about that).
+As you can see by all the `pure` and `identity`, we're not doing a whole lot here. `parseHosts` is a bit of an exception, but that's just due to the way that case is handled (see [later in this README](#host-parsing) for more details about that).
 
 These types ([`UserInfo`][UserInfo], [`HostPortPair`][HostPortPair], [`Host`][Host], etc.) are all provided by the library, and where necessary can only be constructed via smart constructor. This ensures that percent-encoding is applied to characters where necessary to ensure the constructed values will print as valid URIs, and so on.
 
