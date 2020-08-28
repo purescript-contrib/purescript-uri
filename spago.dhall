@@ -1,14 +1,17 @@
 { name = "uri"
 , dependencies =
-  [ "arrays"
+  [ "aff"
+  , "arrays"
   , "generics-rep"
   , "globals"
   , "integers"
   , "parsing"
   , "profunctor-lenses"
+  , "quickcheck"
   , "these"
   , "unfoldable"
+  , "spec"
   ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs" ]
+, sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }
