@@ -15,8 +15,6 @@ module URI.Authority
 import Prelude
 
 import Data.Either (Either)
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Text.Parsing.Parser (Parser)
@@ -30,15 +28,10 @@ import URI.UserInfo as UserInfo
 
 -- | The authority part of a URI. For example: `purescript.org`,
 -- | `localhost:3000`, `user@example.net`.
-newtype Authority userInfo hosts =
-  Authority { userInfo :: Maybe userInfo
-            , hosts :: hosts
-            }
-
-derive instance eqAuthority ∷ (Eq userInfo, Eq hosts) ⇒ Eq (Authority userInfo hosts)
-derive instance ordAuthority ∷ (Ord userInfo, Ord hosts) ⇒ Ord (Authority userInfo hosts)
-derive instance genericAuthority ∷ Generic (Authority userInfo hosts) _
-instance showAuthority ∷ (Show userInfo, Show hosts) ⇒ Show (Authority userInfo hosts) where show = genericShow
+type Authority userInfo hosts =
+  { userInfo :: Maybe userInfo
+  , hosts :: hosts
+  }
 
 -- | A row type for describing the options fields used by the authority parser
 -- | and printer.
@@ -79,7 +72,7 @@ parser opts = do
   _ ← string "//"
   ui ← optionMaybe $ try (wrapParser opts.parseUserInfo UserInfo.parser <* char '@')
   hosts ← opts.parseHosts
-  pure $ Authority { userInfo: ui, hosts }
+  pure $ { userInfo: ui, hosts }
 
 -- | A printer for the authority part of a URI. Will print the value with a
 -- | `"//"` prefix.
@@ -88,7 +81,7 @@ print
   . Record (AuthorityPrintOptions userInfo hosts r)
   → Authority userInfo hosts
   → String
-print opts (Authority { userInfo, hosts }) = case userInfo of
+print opts { userInfo, hosts } = case userInfo of
   Just ui → "//" <> UserInfo.print (opts.printUserInfo ui) <> "@" <> opts.printHosts hosts
   Nothing → "//" <> opts.printHosts hosts
 
@@ -99,9 +92,7 @@ _userInfo
       (Authority userInfo hosts)
       (Maybe userInfo)
 _userInfo =
-  lens
-    (\(Authority rec) → rec.userInfo)
-    (\(Authority rec) ui → Authority (rec { userInfo = ui }))
+  lens (_.userInfo) (\rec ui -> rec { userInfo = ui })
 
 -- | A lens for the host(s) component of the authority.
 _hosts
@@ -110,6 +101,4 @@ _hosts
       (Authority userInfo hosts)
       hosts
 _hosts =
-  lens
-    (\(Authority rec) → rec.hosts)
-    (\(Authority rec) h → Authority (rec { hosts = h }))
+  lens (_.hosts) (\rec h -> rec { hosts = h })

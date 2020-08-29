@@ -18,8 +18,6 @@ import Prelude
 
 import Data.Array as Array
 import Data.Either (Either)
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.String as String
@@ -29,7 +27,7 @@ import Text.Parsing.Parser.String (eof)
 import URI.Common (URIPartParseError, wrapParser)
 import URI.Fragment (Fragment)
 import URI.Fragment as Fragment
-import URI.HierarchicalPart (Authority(..), AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, HierPath, HierarchicalPart(..), HierarchicalPartOptions, HierarchicalPartParseOptions, HierarchicalPartPrintOptions, Host(..), IPv4Address, IPv6Address, Path(..), PathAbsolute(..), PathRootless(..), Port, RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hierPath, _hosts, _path, _userInfo)
+import URI.HierarchicalPart (Authority, AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, HierPath, HierarchicalPart(..), HierarchicalPartOptions, HierarchicalPartParseOptions, HierarchicalPartPrintOptions, Host(..), IPv4Address, IPv6Address, Path(..), PathAbsolute(..), PathRootless(..), Port, RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hierPath, _hosts, _path, _userInfo)
 import URI.HierarchicalPart as HPart
 import URI.Query (Query)
 import URI.Query as Query
@@ -39,17 +37,12 @@ import URI.Scheme as Scheme
 -- | A general purpose absolute URI - similar to `AbsoluteURI` but also admits
 -- | a fragment component. An absolute URI can still contain relative paths
 -- | but is required to have a `Scheme` component.
-newtype URI userInfo hosts path hierPath query fragment =
-  URI { scheme :: Scheme
-      , hierPart :: HierarchicalPart userInfo hosts path hierPath
-      , query :: Maybe query
-      , fragment :: Maybe fragment
-      }
-
-derive instance eqURI ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query, Eq fragment) ⇒ Eq (URI userInfo hosts path hierPath query fragment)
-derive instance ordURI ∷ (Ord userInfo, Ord hosts, Ord path, Ord hierPath, Ord query, Ord fragment) ⇒ Ord (URI userInfo hosts path hierPath query fragment)
-derive instance genericURI ∷ Generic (URI userInfo hosts path hierPath query fragment) _
-instance showURI ∷ (Show userInfo, Show hosts, Show path, Show hierPath, Show query, Show fragment) ⇒ Show (URI userInfo hosts path hierPath query fragment) where show = genericShow
+type URI userInfo hosts path hierPath query fragment =
+  { scheme :: Scheme
+  , hierPart :: HierarchicalPart userInfo hosts path hierPath
+  , query :: Maybe query
+  , fragment :: Maybe fragment
+  }
 
 -- | A row type for describing the options fields used by the URI parser and
 -- | printer.
@@ -113,7 +106,7 @@ parser opts = ado
   query <- optionMaybe (wrapParser opts.parseQuery Query.parser)
   fragment <- optionMaybe (wrapParser opts.parseFragment Fragment.parser)
   eof
-  in URI { scheme, hierPart, query, fragment }
+  in { scheme, hierPart, query, fragment }
 
 -- | A printer for a URI.
 print
@@ -121,7 +114,7 @@ print
   . Record (URIPrintOptions userInfo hosts path hierPath query fragment r)
   → URI userInfo hosts path hierPath query fragment
   → String
-print opts (URI { scheme, hierPart, query, fragment }) =
+print opts { scheme, hierPart, query, fragment } =
   String.joinWith "" $ Array.catMaybes
     [ Just (Scheme.print scheme)
     , Just (HPart.print opts hierPart)
@@ -136,9 +129,7 @@ _scheme
       (URI userInfo hosts path hierPath query fragment)
       Scheme
 _scheme =
-  lens
-    (\(URI rec) → rec.scheme)
-    (\(URI rec) s → URI (rec { scheme = s }))
+  lens (_.scheme) (\rec s -> rec { scheme = s })
 
 -- | The hierarchical-part component of a URI.
 _hierPart
@@ -147,9 +138,7 @@ _hierPart
       (URI userInfo hosts path hierPath query fragment)
       (HierarchicalPart userInfo hosts path hierPath)
 _hierPart =
-  lens
-    (\(URI rec) → rec.hierPart)
-    (\(URI rec) h → URI (rec { hierPart = h }))
+  lens (_.hierPart) (\rec h -> rec { hierPart = h })
 
 -- | The query component of a URI.
 _query
@@ -158,9 +147,7 @@ _query
       (URI userInfo hosts path hierPath query fragment)
       (Maybe query)
 _query =
-  lens
-    (\(URI rec) → rec.query)
-    (\(URI rec) q → URI (rec { query = q }))
+  lens (_.query) (\rec q -> rec { query = q })
 
 -- | The fragment component of a URI.
 _fragment
@@ -169,6 +156,4 @@ _fragment
       (URI userInfo hosts path hierPath query fragment)
       (Maybe fragment)
 _fragment =
-  lens
-    (\(URI rec) → rec.fragment)
-    (\(URI rec) f → URI (rec { fragment = f }))
+  lens (_.fragment) (\rec f -> rec { fragment = f })
