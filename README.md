@@ -5,7 +5,7 @@
 [![Pursuit](http://pursuit.purescript.org/packages/purescript-uri/badge)](http://pursuit.purescript.org/packages/purescript-uri)
 [![Maintainer: garyb](https://img.shields.io/badge/maintainer-garyb-teal.svg)](http://github.com/garyb)
 
-The library summary hasn't been written yet (contributions are welcome!). The library summary describes the library's purpose in one to three sentences.
+A type-safe parser, printer, and ADT for URLs and URIs based on [RFC 3986](http://tools.ietf.org/html/rfc3986).
 
 ## Installation
 
