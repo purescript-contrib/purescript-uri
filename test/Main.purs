@@ -5,7 +5,7 @@ import Prelude
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Test.Spec.Reporter (consoleReporter)
-import Test.Spec.Runner (run)
+import Test.Spec.Runner (runSpec)
 import Test.URI.AbsoluteURI as AbsoluteURI
 import Test.URI.Authority as Authority
 import Test.URI.Extra.MultiHostPortPair as Extra.MultiHostPortPair
@@ -21,7 +21,7 @@ import Test.URI.UserInfo as UserInfo
 
 
 main ∷ Effect Unit
-main = launchAff_ $ run [consoleReporter] do
+main = launchAff_ $ runSpec [consoleReporter] do
   Scheme.spec
   UserInfo.spec
   Host.spec
