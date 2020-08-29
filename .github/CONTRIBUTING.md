@@ -1,4 +1,4 @@
-# Contributing to uri
+# Contributing to URI
 
 Thanks for your interest in contributing to `purescript-uri`! We welcome new contributions regardless of your level of experience or familiarity with PureScript.
 

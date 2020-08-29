@@ -1,4 +1,4 @@
-# uri
+# URI
 
 [![CI](https://github.com/purescript-contrib/purescript-uri/workflows/CI/badge.svg?branch=main)](https://github.com/purescript-contrib/purescript-uri/actions?query=workflow%3ACI+branch%3Amain)
 [![Release](http://img.shields.io/github/release/purescript-contrib/purescript-uri.svg)](https://github.com/purescript-contrib/purescript-uri/releases)
