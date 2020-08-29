@@ -17,9 +17,11 @@ import Prelude
 
 import Data.Array as Array
 import Data.Either (Either)
-import Data.Lens (Lens', lens)
+import Data.Lens (Lens')
+import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..))
 import Data.String as String
+import Data.Symbol (SProxy(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
 import Text.Parsing.Parser.String (eof)
@@ -119,8 +121,7 @@ _relPart
   . Lens'
       (RelativeRef userInfo hosts path relPath query fragment)
       (RelativePart userInfo hosts path relPath)
-_relPart =
-  lens (_.relPart) (\rec r -> rec { relPart = r})
+_relPart = prop (SProxy :: _ "relPart")
 
 -- | The query component of a relative URI.
 _query
@@ -128,8 +129,7 @@ _query
   . Lens'
       (RelativeRef userInfo hosts path relPath query fragment)
       (Maybe query)
-_query =
-  lens (_.query) (\rec q -> rec {query = q})
+_query = prop (SProxy :: _ "query")
 
 -- | The fragment component of a relative URI.
 _fragment
@@ -137,5 +137,4 @@ _fragment
   . Lens'
       (RelativeRef userInfo hosts path relPath query fragment)
       (Maybe fragment)
-_fragment =
-  lens (_.fragment) (\rec f -> rec { fragment = f})
+_fragment = prop (SProxy :: _ "fragment")

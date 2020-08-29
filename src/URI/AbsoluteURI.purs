@@ -17,9 +17,11 @@ import Prelude
 
 import Data.Array as Array
 import Data.Either (Either)
-import Data.Lens (Lens', lens)
+import Data.Lens (Lens')
+import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..))
 import Data.String as String
+import Data.Symbol (SProxy(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe)
 import Text.Parsing.Parser.String (eof)
@@ -121,8 +123,7 @@ _scheme
   . Lens'
       (AbsoluteURI userInfo hosts path hierPath query)
       Scheme
-_scheme =
-  lens (_.scheme) (\rec s → rec { scheme = s })
+_scheme = prop (SProxy :: _ "scheme")
 
 -- | The hierarchical-part component of an absolute URI.
 _hierPart
@@ -130,8 +131,7 @@ _hierPart
   . Lens'
       (AbsoluteURI userInfo hosts path hierPath query)
       (HierarchicalPart userInfo hosts path hierPath)
-_hierPart =
-  lens (_.hierPart) (\rec h -> rec {hierPart = h})
+_hierPart = prop (SProxy :: _ "hierPart")
 
 -- | The query component of an absolute URI.
 _query
@@ -139,5 +139,4 @@ _query
   . Lens'
       (AbsoluteURI userInfo hosts path hierPath query)
       (Maybe query)
-_query =
-  lens (_.query) (\rec q -> rec {query = q})
+_query = prop (SProxy :: _ "query")

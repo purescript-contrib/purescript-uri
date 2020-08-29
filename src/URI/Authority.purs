@@ -15,8 +15,10 @@ module URI.Authority
 import Prelude
 
 import Data.Either (Either)
-import Data.Lens (Lens', lens)
+import Data.Lens (Lens')
+import Data.Lens.Record (prop)
 import Data.Maybe (Maybe(..))
+import Data.Symbol (SProxy(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe, try)
 import Text.Parsing.Parser.String (char, string)
@@ -91,8 +93,7 @@ _userInfo
   . Lens'
       (Authority userInfo hosts)
       (Maybe userInfo)
-_userInfo =
-  lens (_.userInfo) (\rec ui -> rec { userInfo = ui })
+_userInfo = prop (SProxy :: _ "userInfo")
 
 -- | A lens for the host(s) component of the authority.
 _hosts
@@ -100,5 +101,4 @@ _hosts
   . Lens'
       (Authority userInfo hosts)
       hosts
-_hosts =
-  lens (_.hosts) (\rec h -> rec { hosts = h })
+_hosts = prop (SProxy :: _ "hosts")
