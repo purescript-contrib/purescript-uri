@@ -135,3 +135,4 @@ This version is intended for use with PureScript v0.8.4+
 
 ## [v0.1.0-rc.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v0.1.0-rc.1) - 2015-07-14
 
+- Initial release candidate

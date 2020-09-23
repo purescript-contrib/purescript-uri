@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "purescript-quickcheck": "^6.1.0",
-    "purescript-spec": "^3.0.0"
+    "purescript-spec": "^4.0.1",
+    "purescript-aff": "^5.1.2"
   }
 }
