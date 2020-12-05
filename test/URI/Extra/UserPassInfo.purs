@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty (nes)
-import Data.Symbol (SProxy(..))
+import Type.Proxy (Proxy(..))
 import Data.These (These(..))
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
@@ -25,43 +25,43 @@ spec = do
       (Authority.print options)
       "//user@host"
       (Authority
-        (Just (UserPassInfo { user: nes (SProxy :: SProxy "user"), password: Nothing }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "host"))))))
+        (Just (UserPassInfo { user: nes (Proxy :: Proxy "user"), password: Nothing }))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host"))))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//user:pass@host"
       (Authority
-        (Just (UserPassInfo { user: nes (SProxy :: SProxy "user"), password: Just (nes (SProxy :: SProxy "pass")) }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "host"))))))
+        (Just (UserPassInfo { user: nes (Proxy :: Proxy "user"), password: Just (nes (Proxy :: Proxy "pass")) }))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host"))))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//user:pa%3Ass@host"
       (Authority
-        (Just (UserPassInfo { user: nes (SProxy :: SProxy "user"), password: Just (nes (SProxy :: SProxy "pa:ss")) }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "host"))))))
+        (Just (UserPassInfo { user: nes (Proxy :: Proxy "user"), password: Just (nes (Proxy :: Proxy "pa:ss")) }))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host"))))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//us%3Aer:pa%3Ass@host"
       (Authority
-        (Just (UserPassInfo { user: nes (SProxy :: SProxy "us:er"), password: Just (nes (SProxy :: SProxy "pa:ss")) }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "host"))))))
+        (Just (UserPassInfo { user: nes (Proxy :: Proxy "us:er"), password: Just (nes (Proxy :: Proxy "pa:ss")) }))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host"))))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//us%3Aer:pa%3Ass@host"
       (Authority
-        (Just (UserPassInfo { user: nes (SProxy :: SProxy "us:er"), password: Just (nes (SProxy :: SProxy "pa:ss")) }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "host"))))))
+        (Just (UserPassInfo { user: nes (Proxy :: Proxy "us:er"), password: Just (nes (Proxy :: Proxy "pa:ss")) }))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host"))))))
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//user:p%40ss@host"
       (Authority
-        (Just (UserPassInfo { user: nes (SProxy :: SProxy "user"), password: Just (nes (SProxy :: SProxy "p@ss")) }))
-        (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "host"))))))
+        (Just (UserPassInfo { user: nes (Proxy :: Proxy "user"), password: Just (nes (Proxy :: Proxy "p@ss")) }))
+        (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host"))))))
 
 options ∷ Record (URIRefOptions UserPassInfo (HostPortPair Host Port) Path HierPath RelPath Query Fragment)
 options =

@@ -5,7 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty (nes)
-import Data.Symbol (SProxy(..))
+import Type.Proxy (Proxy(..))
 import Data.These (These(..))
 import Test.Spec (Spec, describe)
 import Test.Util (testIso)
@@ -32,8 +32,8 @@ spec = do
       "//mongo-1,mongo-2"
       (Authority
         Nothing
-        [ This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-1")))
-        , This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-2")))
+        [ This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-1")))
+        , This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2")))
         ])
     testIso
       (Authority.parser options)
@@ -41,8 +41,8 @@ spec = do
       "//mongo-1:2000,mongo-2:3000"
       (Authority
         Nothing
-        [ Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-1"))) (Port.unsafeFromInt 2000)
-        , Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-2"))) (Port.unsafeFromInt 3000)
+        [ Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-1"))) (Port.unsafeFromInt 2000)
+        , Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2"))) (Port.unsafeFromInt 3000)
         ])
     testIso
       (Authority.parser options)
@@ -50,8 +50,8 @@ spec = do
       "//mongo-1:2000,mongo-2"
       (Authority
         Nothing
-        [ Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-1"))) (Port.unsafeFromInt 2000)
-        , This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-2")))
+        [ Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-1"))) (Port.unsafeFromInt 2000)
+        , This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2")))
         ])
     testIso
       (Authority.parser options)
@@ -59,8 +59,8 @@ spec = do
       "//mongo-1,mongo-2:3000"
       (Authority
         Nothing
-        [ This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-1")))
-        , Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-2"))) (Port.unsafeFromInt 3000)
+        [ This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-1")))
+        , Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2"))) (Port.unsafeFromInt 3000)
         ])
     testIso
       (Authority.parser options)
@@ -76,9 +76,9 @@ spec = do
       (Authority.print options)
       "//user@mongo-1,mongo-2"
       (Authority
-        (Just (UserInfo.unsafeFromString (nes (SProxy :: SProxy "user"))))
-        [ This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-1")))
-        , This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "mongo-2")))
+        (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "user"))))
+        [ This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-1")))
+        , This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2")))
         ])
   describe "URIRef+MultiHostPortPair parser/printer" do
     testIso
@@ -90,9 +90,9 @@ spec = do
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-              (Just (UserInfo.unsafeFromString (nes (SProxy :: SProxy "foo:bar"))))
-              [ This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "db1.example.net")))
-              , Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "db2.example.net"))) (Port.unsafeFromInt 2500)
+              (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "foo:bar"))))
+              [ This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "db1.example.net")))
+              , Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "db2.example.net"))) (Port.unsafeFromInt 2500)
               ])
             (path ["authdb"]))
           (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
@@ -106,9 +106,9 @@ spec = do
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-              (Just (UserInfo.unsafeFromString (nes (SProxy :: SProxy "foo:bar"))))
-              [ Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "db1.example.net"))) (Port.unsafeFromInt 6)
-              , Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "db2.example.net"))) (Port.unsafeFromInt 2500)
+              (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "foo:bar"))))
+              [ Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "db1.example.net"))) (Port.unsafeFromInt 6)
+              , Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "db2.example.net"))) (Port.unsafeFromInt 2500)
               ])
             (path ["authdb"]))
           (Just (Query.unsafeFromString "replicaSet=test&connectTimeoutMS=300000"))
