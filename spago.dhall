@@ -3,7 +3,7 @@
   [ "aff"
   , "arrays"
   , "generics-rep"
-  , "globals"
+  , "numbers"
   , "integers"
   , "parsing"
   , "profunctor-lenses"
