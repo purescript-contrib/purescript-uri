@@ -4,8 +4,7 @@ import Prelude
 
 import Effect (Effect)
 import Effect.Aff (launchAff_)
-import Test.Spec.Reporter (consoleReporter)
-import Test.Spec.Runner (runSpec)
+import Control.Monad.Reader (runReaderT)
 import Test.URI.AbsoluteURI as AbsoluteURI
 import Test.URI.Authority as Authority
 import Test.URI.Extra.MultiHostPortPair as Extra.MultiHostPortPair
@@ -19,9 +18,8 @@ import Test.URI.Scheme as Scheme
 import Test.URI.URIRef as URIRef
 import Test.URI.UserInfo as UserInfo
 
-
 main ∷ Effect Unit
-main = launchAff_ $ runSpec [consoleReporter] do
+main = launchAff_ $ flip runReaderT 0 do
   Scheme.spec
   UserInfo.spec
   Host.spec

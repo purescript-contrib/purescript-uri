@@ -27,8 +27,8 @@
     "purescript-these": "main"
   },
   "devDependencies": {
+    "purescript-assert": "master",
     "purescript-quickcheck": "master",
-    "purescript-spec": "master",
     "purescript-aff": "main"
   }
 }

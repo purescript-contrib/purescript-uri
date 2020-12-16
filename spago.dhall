@@ -2,6 +2,7 @@
 , dependencies =
   [ "aff"
   , "arrays"
+  , "assert"
   , "generics-rep"
   , "integers"
   , "js-uri"
@@ -9,8 +10,8 @@
   , "parsing"
   , "profunctor-lenses"
   , "quickcheck"
-  , "spec"
   , "these"
+  , "transformers"
   , "unfoldable"
   ]
 , packages = ./packages.dhall
