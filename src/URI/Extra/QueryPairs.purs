@@ -24,13 +24,14 @@ import Data.Bifunctor (bimap)
 import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromJust)
 import Data.String as String
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Data.String.NonEmpty (joinWith) as NES
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
-import Global.Unsafe (unsafeDecodeURIComponent)
+import JSURI (decodeURIComponent)
+import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (ParseError(..), Parser, runParser)
 import Text.Parsing.Parser.Combinators (optionMaybe, sepBy)
 import Text.Parsing.Parser.String (char, oneOf)
@@ -136,7 +137,7 @@ keyFromString = Key <<< printEncoded keyPartChar
 -- | keyToString (unsafeKeyFromString "foo%23bar") = "foo#bar"
 -- | ```
 keyToString ∷ Key → String
-keyToString (Key s) = unsafeDecodeURIComponent s
+keyToString (Key s) = unsafePartial $ fromJust $ decodeURIComponent s
 
 -- | Constructs a key value from a string directly - no percent-encoding
 -- | will be applied. This is useful when using a custom encoding scheme for
@@ -188,7 +189,7 @@ valueFromString =
 -- | valueToString (unsafeValueFromString "foo%23bar") = "foo#bar"
 -- | ```
 valueToString ∷ Value → String
-valueToString (Value s) = unsafeDecodeURIComponent s
+valueToString (Value s) = unsafePartial $ fromJust $ decodeURIComponent s
 
 -- | Constructs a value from a string directly - no percent-encoding
 -- | will be applied. This is useful when using a custom encoding scheme for

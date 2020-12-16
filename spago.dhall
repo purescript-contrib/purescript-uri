@@ -3,14 +3,15 @@
   [ "aff"
   , "arrays"
   , "generics-rep"
-  , "numbers"
   , "integers"
+  , "js-uri"
+  , "numbers"
   , "parsing"
   , "profunctor-lenses"
   , "quickcheck"
+  , "spec"
   , "these"
   , "unfoldable"
-  , "spec"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
