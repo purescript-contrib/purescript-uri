@@ -21,13 +21,14 @@ import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
+import Data.Maybe (fromJust)
 import Data.Newtype (class Newtype, un)
 import Data.String (joinWith) as String
 import Data.String.CodeUnits (singleton) as String
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Data.String.NonEmpty (unsafeFromString, toString) as NES
-import Global.Unsafe (unsafeDecodeURIComponent, unsafeEncodeURIComponent)
+import JSURI (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..), runParser)
 import Text.Parsing.Parser.String (anyChar, char, eof, oneOf, satisfy)
@@ -96,7 +97,7 @@ printEncoded p s = either (const s) identity (runParser s parse)
     simpleChar ∷ Parser String String
     simpleChar = String.singleton <$> p
     encodedChar ∷ Parser String String
-    encodedChar = unsafeEncodeURIComponent <<< String.singleton <$> anyChar
+    encodedChar = unsafePartial fromJust <<< encodeURIComponent <<< String.singleton <$> anyChar
 
 -- | A version of [`printEncoded`](#v:printEncoded) that operates on non-empty
 -- | strings.
@@ -104,8 +105,8 @@ printEncoded' ∷ Parser String Char → NonEmptyString → NonEmptyString
 printEncoded' p =
   unsafePartial NES.unsafeFromString <<< printEncoded p <<< NES.toString
 
--- | A version of [`decodeURIComponent`](https://pursuit.purescript.org/packages/purescript-globals/docs/Global#v:decodeURIComponent)
+-- | A version of [`decodeURIComponent`](https://pursuit.purescript.org/packages/purescript-jsuri/docs/JSURI#v:decodeURIComponent)
 -- | that operates on non-empty strings.
 decodeURIComponent' ∷ NonEmptyString → NonEmptyString
 decodeURIComponent' =
-  unsafePartial NES.unsafeFromString <<< unsafeDecodeURIComponent <<< NES.toString
+  unsafePartial NES.unsafeFromString <<< unsafePartial fromJust <<< decodeURIComponent <<< NES.toString

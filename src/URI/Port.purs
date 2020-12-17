@@ -10,10 +10,9 @@ module URI.Port
 import Prelude
 
 import Data.Array as Array
-import Data.Int (fromNumber)
+import Data.Int (decimal, fromStringAs)
 import Data.Maybe (Maybe(..))
 import Data.String.CodeUnits as String
-import Global (readInt)
 import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.String (char)
@@ -55,7 +54,7 @@ unsafeFromInt i =
 parser ∷ Parser String Port
 parser = do
   s ← String.fromCharArray <$> (char ':' *> Array.some digit)
-  case fromNumber $ readInt 10 s of
+  case fromStringAs decimal s of
     Just x → pure (Port x)
     _ → fail "Expected a valid port number"
 

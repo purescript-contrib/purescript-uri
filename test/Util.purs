@@ -3,12 +3,10 @@ module Test.Util where
 import Prelude
 
 import Data.Either (Either(..))
-import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Test.QuickCheck as QC
 import Test.QuickCheck.Gen as QCG
-import Test.Spec (Spec, it)
-import Test.Spec.Assertions (fail)
+import Test.Spec (Spec, it, fail)
 import Text.Parsing.Parser (Parser, runParser)
 
 testPrinter ∷ ∀ a. Show a ⇒ (a → String) → String → a → Spec Unit
@@ -23,7 +21,7 @@ testParser p value expected =
     ("parses: " <> value)
     (equal (Right expected) (runParser value p))
 
-equal :: forall a. Eq a => Show a => a -> a -> Aff Unit
+equal :: forall a. Eq a => Show a => a -> a -> Spec Unit
 equal expected actual =
   when (expected /= actual) do
     fail $
@@ -35,8 +33,8 @@ testIso p f value expected = do
   testParser p value expected
   testPrinter f value expected
 
-forAll ∷ ∀ prop. QC.Testable prop ⇒ QCG.Gen prop → Aff Unit
+forAll ∷ ∀ prop. QC.Testable prop ⇒ QCG.Gen prop → Spec Unit
 forAll = quickCheck
 
-quickCheck ∷ ∀ prop. QC.Testable prop ⇒ prop → Aff Unit
+quickCheck ∷ ∀ prop. QC.Testable prop ⇒ prop → Spec Unit
 quickCheck = liftEffect <<< QC.quickCheck' 100

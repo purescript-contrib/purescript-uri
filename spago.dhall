@@ -2,15 +2,17 @@
 , dependencies =
   [ "aff"
   , "arrays"
+  , "assert"
   , "generics-rep"
-  , "globals"
   , "integers"
+  , "js-uri"
+  , "numbers"
   , "parsing"
   , "profunctor-lenses"
   , "quickcheck"
   , "these"
+  , "transformers"
   , "unfoldable"
-  , "spec"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

@@ -5,7 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty (nes)
-import Data.Symbol (SProxy(..))
+import Type.Proxy (Proxy(..))
 import Data.These (These(..))
 import Data.Tuple (Tuple(..))
 import Test.Spec (Spec, describe)
@@ -81,7 +81,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "localhost"))))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "localhost"))))))
             (path []))
           Nothing
           Nothing))
@@ -95,7 +95,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "1a.example.com"))))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "1a.example.com"))))))
             (path []))
           Nothing
           Nothing))
@@ -109,7 +109,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "en.wikipedia.org"))))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "en.wikipedia.org"))))))
             (path ["wiki", "URI_scheme"]))
           Nothing
           Nothing))
@@ -136,8 +136,8 @@ spec =
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-              (Just (UserInfo.unsafeFromString (nes (SProxy :: SProxy "sysop:moon"))))
-              (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "localhost"))))))
+              (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "sysop:moon"))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "localhost"))))))
             (path []))
           Nothing
           Nothing))
@@ -150,8 +150,8 @@ spec =
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-                (Just (UserInfo.unsafeFromString (nes (SProxy :: SProxy "sysop:moon"))))
-                (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "localhost"))))))
+                (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "sysop:moon"))))
+                (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "localhost"))))))
             (path [""]))
           Nothing
           Nothing))
@@ -164,8 +164,8 @@ spec =
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-                (Just (UserInfo.unsafeFromString (nes (SProxy :: SProxy "sysop:moon"))))
-                (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "localhost"))))))
+                (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "sysop:moon"))))
+                (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "localhost"))))))
             (path ["records"]))
           Nothing
           Nothing))
@@ -178,8 +178,8 @@ spec =
           (Scheme.unsafeFromString "mongodb")
           (HierarchicalPartAuth
             (Authority
-                (Just (UserInfo.unsafeFromString (nes (SProxy :: SProxy "sysop:moon"))))
-                (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "localhost"))))))
+                (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "sysop:moon"))))
+                (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "localhost"))))))
             (path ["records", "etc", ""]))
           Nothing
           Nothing))
@@ -235,7 +235,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "ftp.is.co.za"))))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "ftp.is.co.za"))))))
             (path ["rfc", "rfc1808.txt"]))
           Nothing
           Nothing))
@@ -249,7 +249,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "www.ietf.org"))))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "www.ietf.org"))))))
             (path ["rfc", "rfc2396.txt"]))
           Nothing
           Nothing))
@@ -291,7 +291,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "example.com"))) (Port.unsafeFromInt 8042))))
+              (Just (Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "example.com"))) (Port.unsafeFromInt 8042))))
             (path ["over", "there"]))
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString "nose"))))
@@ -305,7 +305,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "example.com"))) (Port.unsafeFromInt 8042))))
+              (Just (Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "example.com"))) (Port.unsafeFromInt 8042))))
             (path ["over", "there"]))
           (Just (Query.unsafeFromString "name=ferret"))
           (Just (Fragment.unsafeFromString ""))))
@@ -319,7 +319,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "info.example.com"))))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "info.example.com"))))))
             (path []))
           (Just (Query.unsafeFromString "fred"))
           Nothing))
@@ -332,7 +332,7 @@ spec =
           (Scheme.unsafeFromString "ftp")
           (HierarchicalPartAuth
             (Authority
-              (Just (UserInfo.unsafeFromString (nes (SProxy :: SProxy "cnn.example.com&story=breaking_news"))))
+              (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "cnn.example.com&story=breaking_news"))))
               (Just (This (IPv4Address (IPv4Address.unsafeFromInts 10 0 0 1)))))
             (path ["top_story.htm"]))
           Nothing
@@ -343,7 +343,7 @@ spec =
       "top_story.htm"
       (Right
         (RelativeRef
-          (RelativePartNoAuth (Just (Right (PathNoScheme (Tuple (PathSegment.unsafeSegmentNZNCFromString $ nes (SProxy :: SProxy "top_story.htm")) [])))))
+          (RelativePartNoAuth (Just (Right (PathNoScheme (Tuple (PathSegment.unsafeSegmentNZNCFromString $ nes (Proxy :: Proxy "top_story.htm")) [])))))
           Nothing
           Nothing))
     testIso
@@ -352,7 +352,7 @@ spec =
       "../top_story.htm"
       (Right
         (RelativeRef
-          (RelativePartNoAuth (Just (Right (PathNoScheme (Tuple (PathSegment.unsafeSegmentNZNCFromString $ nes (SProxy :: SProxy "..")) [PathSegment.unsafeSegmentFromString "top_story.htm"])))))
+          (RelativePartNoAuth (Just (Right (PathNoScheme (Tuple (PathSegment.unsafeSegmentNZNCFromString $ nes (Proxy :: Proxy "..")) [PathSegment.unsafeSegmentFromString "top_story.htm"])))))
           Nothing
           Nothing))
     testIso
@@ -361,7 +361,7 @@ spec =
       "/top_story.htm"
       (Right
         (RelativeRef
-          (RelativePartNoAuth (Just (Left (PathAbsolute (Just (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (SProxy :: SProxy "top_story.htm")) []))))))
+          (RelativePartNoAuth (Just (Left (PathAbsolute (Just (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (Proxy :: Proxy "top_story.htm")) []))))))
           Nothing
           Nothing))
     testIso
@@ -390,7 +390,7 @@ spec =
         (URI
           (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "www.example.com"))))))
+            (Authority Nothing (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "www.example.com"))))))
             (path ["some%20invented", "url%20with%20spaces.html"]))
           Nothing
           Nothing))
@@ -402,7 +402,7 @@ spec =
         (URI
           (Scheme.unsafeFromString "http")
           (HierarchicalPartAuth
-            (Authority Nothing (Just (Both (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "localhost"))) (Port.unsafeFromInt 53174))))
+            (Authority Nothing (Just (Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "localhost"))) (Port.unsafeFromInt 53174))))
             (path ["metadata", "fs", "test", "%D0%9F%D0%B0%D1%86%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%23%20%23"]))
           (Just (Query.unsafeFromString ""))
           Nothing))
@@ -413,7 +413,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "news")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (SProxy :: SProxy "comp.infosystems.www.servers.unix")) [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (Proxy :: Proxy "comp.infosystems.www.servers.unix")) [])))))
           Nothing
           Nothing))
     testIso
@@ -423,7 +423,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "tel")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (SProxy :: SProxy "+1-816-555-1212")) [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (Proxy :: Proxy "+1-816-555-1212")) [])))))
           Nothing
           Nothing))
     testIso
@@ -433,7 +433,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "urn")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (SProxy :: SProxy "oasis:names:specification:docbook:dtd:xml:4.1.2")) [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (Proxy :: Proxy "oasis:names:specification:docbook:dtd:xml:4.1.2")) [])))))
           Nothing
           Nothing))
     testIso
@@ -443,7 +443,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "mailto")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (SProxy :: SProxy "John.Doe@example.com")) [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (Proxy :: Proxy "John.Doe@example.com")) [])))))
           Nothing
           Nothing))
     testIso
@@ -453,7 +453,7 @@ spec =
       (Left
         (URI
           (Scheme.unsafeFromString "mailto")
-          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (SProxy :: SProxy "fred@example.com")) [])))))
+          (HierarchicalPartNoAuth (Just (Right (PathRootless (Tuple (PathSegment.unsafeSegmentNZFromString $ nes (Proxy :: Proxy "fred@example.com")) [])))))
           Nothing
           Nothing))
     testIso
@@ -466,7 +466,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "local.slamdata.com"))))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "local.slamdata.com"))))))
             (path [""]))
           (Just (Query.unsafeFromString ""))
           (Just (Fragment.unsafeFromString "?sort=asc&q=path%3A%2F&salt=1177214"))))
@@ -480,7 +480,7 @@ spec =
           (HierarchicalPartAuth
             (Authority
               Nothing
-              (Just (This (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "local.slamdata.com"))))))
+              (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "local.slamdata.com"))))))
             (path [""]))
           (Just (Query.unsafeFromString ""))
           (Just (Fragment.unsafeFromString "?sort=asc&q=path:/&salt=1177214"))))

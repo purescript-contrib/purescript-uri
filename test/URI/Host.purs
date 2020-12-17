@@ -4,10 +4,9 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.String.NonEmpty (nes)
-import Data.Symbol (SProxy(..))
+import Type.Proxy (Proxy(..))
 import Test.QuickCheck ((===))
-import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (shouldEqual)
+import Test.Spec (Spec, describe, it, shouldEqual)
 import Test.Util (forAll, testIso)
 import Text.Parsing.Parser (runParser)
 import URI.Host (Host(..))
@@ -20,9 +19,9 @@ import URI.Host.RegName as RegName
 spec ∷ Spec Unit
 spec = do
   describe "Host parser/printer" do
-    testIso Host.parser Host.print "localhost" (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "localhost")))
-    testIso Host.parser Host.print "github.com" (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "github.com")))
-    testIso Host.parser Host.print "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "www.multipart.domain.example.com")))
+    testIso Host.parser Host.print "localhost" (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "localhost")))
+    testIso Host.parser Host.print "github.com" (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "github.com")))
+    testIso Host.parser Host.print "www.multipart.domain.example.com" (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "www.multipart.domain.example.com")))
     testIso Host.parser Host.print "192.168.0.1" (IPv4Address (IPv4Address.unsafeFromInts 192 168 0 1))
     testIso Host.parser Host.print "[2001:cdba:0000:0000:0000:0000:3257:9652]" (IPv6Address (IPv6Address.unsafeFromString "2001:cdba:0000:0000:0000:0000:3257:9652"))
 
@@ -37,7 +36,7 @@ spec = do
 
     it "should not parse 0-lead octets as an IP address" do
       shouldEqual
-        (Right (NameAddress (RegName.unsafeFromString $ nes (SProxy :: SProxy "192.168.001.1"))))
+        (Right (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "192.168.001.1"))))
         (runParser "192.168.001.1" Host.parser)
 
   describe "NameAddress" do

@@ -13,9 +13,11 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Array as Array
+import Data.Maybe (fromJust)
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Data.String.NonEmpty (joinWith) as NES
-import Global.Unsafe (unsafeDecodeURIComponent)
+import JSURI (decodeURIComponent)
+import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.String (char)
 import URI.Common (subDelims, unreserved, pctEncoded, printEncoded)
@@ -52,7 +54,7 @@ fromString = Fragment <<< printEncoded fragmentChar
 -- | toString (unsafeFromString "foo%23bar") = "foo#bar"
 -- | ```
 toString ∷ Fragment → String
-toString (Fragment s) = unsafeDecodeURIComponent s
+toString (Fragment s) = unsafePartial $ fromJust $ decodeURIComponent s
 
 -- | Constructs a fragment value from a string directly - no percent-encoding
 -- | will be applied. This is useful when using a custom encoding scheme for
