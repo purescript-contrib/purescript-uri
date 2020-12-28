@@ -4,8 +4,8 @@ import Prelude
 
 import Data.Array as Array
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe(..))
+import Data.Show.Generic (genericShow)
 import Data.String as String
 import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser (Parser)

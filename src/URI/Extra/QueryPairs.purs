@@ -23,11 +23,11 @@ import Data.Array as Array
 import Data.Bifunctor (bimap)
 import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe(..), fromJust)
+import Data.Show.Generic (genericShow)
 import Data.String as String
-import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Data.String.NonEmpty (joinWith) as NES
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import JSURI (decodeURIComponent)
