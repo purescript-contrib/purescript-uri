@@ -20,9 +20,9 @@ import Control.Monad.State (get)
 import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (fromJust)
 import Data.Newtype (class Newtype, un)
+import Data.Show.Generic (genericShow)
 import Data.String (joinWith) as String
 import Data.String.CodeUnits (singleton) as String
 import Data.String.NonEmpty (NonEmptyString)

@@ -14,9 +14,9 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Prism', prism')
 import Data.Maybe (Maybe(..))
+import Data.Show.Generic (genericShow)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (try)
 import URI.Host.IPv4Address (IPv4Address)

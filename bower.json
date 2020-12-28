@@ -18,10 +18,10 @@
   ],
   "dependencies": {
     "purescript-arrays": "master",
-    "purescript-generics-rep": "master",
     "purescript-js-uri": "https://github.com/purescript-contrib/purescript-js-uri.git#main",
     "purescript-integers": "master",
     "purescript-parsing": "main",
+    "purescript-prelude": "master",
     "purescript-profunctor-lenses": "main",
     "purescript-unfoldable": "master",
     "purescript-these": "main"

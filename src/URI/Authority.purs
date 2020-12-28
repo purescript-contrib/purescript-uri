@@ -16,9 +16,9 @@ import Prelude
 
 import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
+import Data.Show.Generic (genericShow)
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (optionMaybe, try)
 import Text.Parsing.Parser.String (char, string)
