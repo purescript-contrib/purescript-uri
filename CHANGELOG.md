@@ -5,45 +5,49 @@ Notable changes to this project are documented in this file. The format is based
 ## [Unreleased]
 
 Breaking changes (😱!!!):
+- Added support for PureScript 0.14 and dropped support for all previous versions (#57, #58)
 
 New features:
 
 Bugfixes:
 
 Other improvements:
+- Replaced 'id' with 'identity' in documentation (#52)
+- Changed default branch to `main` from `master`
+- Updated to comply with Contributors library guidelines by adding new issue and pull request templates, updating documentation, and migrating to Spago for local development and CI (#53, #55, #56, #39)
 
 ## [v7.0.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v7.0.0) - 2019-03-18
 
-Updated dependencies
+- Updated dependencies
 
 ## [v6.1.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v6.1.0) - 2019-02-07
 
-Raised upper boundary on `purescript-profunctor-lenses` dependency (@athanclark)
+- Raised upper boundary on `purescript-profunctor-lenses` dependency (@athanclark)
 
 ## [v6.0.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v6.0.0) - 2018-06-29
 
-Updated for PureScript 0.12
+- Updated for PureScript 0.12
 
 ## [v5.1.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v5.1.0) - 2018-03-20
 
-- add Scheme.toString #44 @safareli
+- Added Scheme.toString (#44, @safareli)
 
 ## [v5.0.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v5.0.0) - 2018-03-20
 
-Complete redesign to fix some problems with the previous representations, and to add flexibility in dealing with customised URI formats. See the README for more information.
+- Completely redesigned to fix some problems with the previous representations, and to add flexibility in dealing with customised URI formats. See the README for more information.
 
 ## [v4.2.4](https://github.com/purescript-contrib/purescript-uri/releases/tag/v4.2.4) - 2018-01-26
 
-- Fix userInfo encoding/decoding  #42 @safareli
+- Fixed `userInfo` encoding/decoding (#42, @safareli)
   Some Chars were not correctly encoded and decoded, `@` for example.
 
 ## [v4.2.3](https://github.com/purescript-contrib/purescript-uri/releases/tag/v4.2.3) - 2018-01-04
 
-- Fix parsing to allow hostnames to start with numbers #39
+- Fixed parsing to allow hostnames to start with numbers #39
 
 ## [v4.2.2](https://github.com/purescript-contrib/purescript-uri/releases/tag/v4.2.2) - 2017-11-22
 
-- Fix for Pursuit publishing
+- Fixed Pursuit docs
 
 ## [v4.2.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v4.2.1) - 2017-11-08
 
@@ -51,7 +55,7 @@ Complete redesign to fix some problems with the previous representations, and to
 
 ## [v4.2.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v4.2.0) - 2017-10-06
 
-Each module now re-exports all types and lenses that are relevant to it, aside from `URIRef` since it would have conflicting lenses for relative vs hierarchical parts.
+- Each module now re-exports all types and lenses that are relevant to it, aside from `URIRef` since it would have conflicting lenses for relative vs hierarchical parts.
 
 ## [v4.1.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v4.1.1) - 2017-10-06
 
@@ -68,7 +72,7 @@ Each module now re-exports all types and lenses that are relevant to it, aside f
 
 ## [v4.0.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v4.0.1) - 2017-09-25
 
-- Remove unnecessary FFI usage (@joneshf)
+- Removed unnecessary FFI usage (@joneshf)
 
 ## [v4.0.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v4.0.0) - 2017-08-15
 
@@ -98,7 +102,7 @@ Each module now re-exports all types and lenses that are relevant to it, aside f
 
 ## [v1.0.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v1.0.0) - 2016-07-28
 
-Updated for PureScript 0.9
+- Updated for PureScript 0.9
 
 ## [v0.3.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v0.3.1) - 2016-05-11
 
@@ -131,8 +135,4 @@ This version is intended for use with PureScript v0.8.4+
 
 ## [v0.2.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v0.2.0) - 2015-10-06
 
-- Updated dependencies
-
-## [v0.1.0-rc.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v0.1.0-rc.1) - 2015-07-14
-
-- Initial release candidate
+- Initial versioned release
