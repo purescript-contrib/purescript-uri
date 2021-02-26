@@ -20,7 +20,7 @@
     "purescript-arrays": "^6.0.0",
     "purescript-integers": "^5.0.0",
     "purescript-js-uri": "^2.0.0",
-    "purescript-numbers": "^7.0.0",
+    "purescript-numbers": "^8.0.0",
     "purescript-parsing": "^6.0.0",
     "purescript-prelude": "^5.0.0",
     "purescript-profunctor-lenses": "^7.0.0",
