@@ -11,6 +11,7 @@ New features:
 Bugfixes:
 
 Other improvements:
+- Fix warnings revealed by v0.14.1 PS release (#61 by @JordanMartinez)
 
 ## [v8.0.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v8.0.0) - 2021-02-26
 
