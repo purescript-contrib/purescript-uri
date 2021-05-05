@@ -35,4 +35,4 @@ print ∷ PathNoScheme → String
 print (PathNoScheme (Tuple head tail)) =
   case tail of
     [] → printSegmentNZNC head
-    ps → printSegmentNZNC head <> "/" <> String.joinWith "/" (map printSegment tail)
+    _ → printSegmentNZNC head <> "/" <> String.joinWith "/" (map printSegment tail)
