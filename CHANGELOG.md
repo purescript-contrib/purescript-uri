@@ -11,6 +11,10 @@ New features:
 Bugfixes:
 
 Other improvements:
+
+## [v8.0.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v8.0.1) - 2021-05-06
+
+Other improvements:
 - Fix warnings revealed by v0.14.1 PS release (#61 by @JordanMartinez)
 - Install missing dependencies used in source code (#61 by @JordanMartinez)
 
@@ -18,10 +22,6 @@ Other improvements:
 
 Breaking changes:
 - Added support for PureScript 0.14 and dropped support for all previous versions (#57, #58)
-
-New features:
-
-Bugfixes:
 
 Other improvements:
 - Replaced 'id' with 'identity' in documentation (#52)
