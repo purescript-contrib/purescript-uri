@@ -12,10 +12,10 @@ module URI.Fragment
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
+import Data.List as List
 import Data.Maybe (fromJust)
-import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Data.String.NonEmpty (joinWith) as NES
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
@@ -75,7 +75,7 @@ parser ∷ Parser String Fragment
 parser =
   char '#' *>
     (Fragment <<< NES.joinWith ""
-      <$> Array.many (pctEncoded <|> NES.singleton <$> fragmentChar))
+      <$> List.manyRec (pctEncoded <|> NES.singleton <$> fragmentChar))
 
 -- | A printer for the fragment component of a URI. Will print the value with
 -- | a `'#'` prefix.

@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Array as Array
 import Data.Generic.Rep (class Generic)
+import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
 import Data.String as String
@@ -36,7 +37,11 @@ parse = do
   _ ← char '/'
   optionMaybe parseSegmentNZ >>= case _ of
     Just head →
-      PathAbsolute <<< Just <<< Tuple head <$> Array.many (char '/' *> parseSegment)
+      PathAbsolute
+        <<< Just
+        <<< Tuple head
+        <<< Array.fromFoldable
+        <$> List.manyRec (char '/' *> parseSegment)
     Nothing →
       pure (PathAbsolute Nothing)
 

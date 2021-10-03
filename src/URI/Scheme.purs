@@ -10,13 +10,12 @@ module URI.Scheme
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
 import Data.Either (hush)
+import Data.List as List
 import Data.Maybe (Maybe(..))
-import Data.String.CodeUnits as String
 import Data.String.NonEmpty (NonEmptyString)
+import Data.String.NonEmpty (appendString, joinWith, toString) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
-import Data.String.NonEmpty (appendString, toString) as NES
 import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, runParser)
 import Text.Parsing.Parser.String (char, eof)
@@ -71,8 +70,8 @@ parser = Scheme <$> parseScheme <* char ':'
 parseScheme ∷ Parser String NonEmptyString
 parseScheme = do
   init ← alpha
-  rest ← Array.many (alphaNum <|> char '+' <|> char '-' <|> char '.')
-  pure $ NES.singleton init `NES.appendString` String.fromCharArray rest
+  rest ← NES.joinWith "" <$> List.manyRec (NES.singleton <$> (alphaNum <|> char '+' <|> char '-' <|> char '.'))
+  pure $ NES.singleton init `NES.appendString` rest
 
 -- | A printer for the scheme component of a URI. Prints a scheme value
 -- | followed by a `':'`.
