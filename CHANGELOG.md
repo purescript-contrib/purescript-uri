@@ -9,6 +9,7 @@ Breaking changes:
 New features:
 
 Bugfixes:
+- Made all parsers stack safe on long input (#63 by @garyb)
 
 Other improvements:
 

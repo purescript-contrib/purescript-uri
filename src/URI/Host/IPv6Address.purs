@@ -8,8 +8,9 @@ module URI.Host.IPv6Address
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
-import Data.String.CodeUnits as String
+import Data.List as List
+import Data.String.NonEmpty as NES
+import Data.String.NonEmpty.CodeUnits as NESCU
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators ((<?>))
 import Text.Parsing.Parser.String (char)
@@ -34,7 +35,7 @@ unsafeToString (IPv6Address s) = "[" <> s <> "]"
 parser ∷ Parser String IPv6Address
 parser =
   IPv6Address
-    <$> (char '[' *> (String.fromCharArray <$> Array.some ipv6Char) <* char ']')
+    <$> (char '[' *> (NES.joinWith "" <$> List.someRec (NESCU.singleton <$> ipv6Char)) <* char ']')
     <?> "IPv6 address"
   where
     ipv6Char ∷ Parser String Char

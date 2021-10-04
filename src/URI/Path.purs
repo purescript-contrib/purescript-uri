@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Array as Array
 import Data.Generic.Rep (class Generic)
+import Data.List as List
 import Data.Show.Generic (genericShow)
 import Data.String as String
 import Text.Parsing.Parser (Parser)
@@ -26,7 +27,7 @@ instance showPath ∷ Show Path where show = genericShow
 
 -- | A parser for a _path-abempty_ URI component.
 parser ∷ Parser String Path
-parser = Path <$> Array.many (char '/' *> parseSegment)
+parser = Path <<< Array.fromFoldable <$> List.manyRec (char '/' *> parseSegment)
 
 -- | A printer for a _path-abempty_ URI component.
 print ∷ Path → String

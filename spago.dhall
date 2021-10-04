@@ -13,6 +13,7 @@
   , "gen"
   , "integers"
   , "js-uri"
+  , "lists"
   , "maybe"
   , "newtype"
   , "parsing"

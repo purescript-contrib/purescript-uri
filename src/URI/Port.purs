@@ -9,10 +9,11 @@ module URI.Port
 
 import Prelude
 
-import Data.Array as Array
 import Data.Int (decimal, fromStringAs)
+import Data.List as List
 import Data.Maybe (Maybe(..))
-import Data.String.CodeUnits as String
+import Data.String.NonEmpty (joinWith) as NES
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Partial.Unsafe (unsafeCrashWith)
 import Text.Parsing.Parser (Parser, fail)
 import Text.Parsing.Parser.String (char)
@@ -53,7 +54,7 @@ unsafeFromInt i =
 -- | `':'` prefix.
 parser ∷ Parser String Port
 parser = do
-  s ← String.fromCharArray <$> (char ':' *> Array.some digit)
+  s ← NES.joinWith "" <$> (char ':' *> List.someRec (NES.singleton <$> digit))
   case fromStringAs decimal s of
     Just x → pure (Port x)
     _ → fail "Expected a valid port number"

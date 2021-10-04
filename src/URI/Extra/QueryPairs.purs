@@ -23,6 +23,7 @@ import Data.Array as Array
 import Data.Bifunctor (bimap)
 import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
+import Data.List as List
 import Data.Maybe (Maybe(..), fromJust)
 import Data.Show.Generic (genericShow)
 import Data.String as String
@@ -78,10 +79,10 @@ parsePart
   → Parser String (Tuple k (Maybe v))
 parsePart parseK parseV = do
   key ← wrapParser (parseK <<< Key) $
-    NES.joinWith "" <$> Array.some (NES.singleton <$> keyPartChar <|> pctEncoded)
+    NES.joinWith "" <$> List.someRec (NES.singleton <$> keyPartChar <|> pctEncoded)
   value ← wrapParser (traverse (parseV <<< Value)) $ optionMaybe do
     _ ← char '='
-    NES.joinWith "" <$> Array.many (NES.singleton <$> valuePartChar <|> pctEncoded)
+    NES.joinWith "" <$> List.manyRec (NES.singleton <$> valuePartChar <|> pctEncoded)
   pure $ Tuple key value
 
 -- | A printer for key/value pairs style query string.

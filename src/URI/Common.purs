@@ -17,17 +17,16 @@ import Prelude
 import Control.Alt ((<|>))
 import Control.Monad.Except (throwError)
 import Control.Monad.State (get)
-import Data.Array as Array
 import Data.Either (Either(..), either)
 import Data.Generic.Rep (class Generic)
+import Data.List as List
 import Data.Maybe (fromJust)
 import Data.Newtype (class Newtype, un)
 import Data.Show.Generic (genericShow)
-import Data.String (joinWith) as String
 import Data.String.CodeUnits (singleton) as String
 import Data.String.NonEmpty (NonEmptyString)
+import Data.String.NonEmpty (joinWith, toString, unsafeFromString) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
-import Data.String.NonEmpty (unsafeFromString, toString) as NES
 import JSURI (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..), runParser)
@@ -93,11 +92,11 @@ printEncoded ∷ Parser String Char → String → String
 printEncoded p s = either (const s) identity (runParser s parse)
   where
     parse ∷ Parser String String
-    parse = (String.joinWith "" <$> Array.many (simpleChar <|> encodedChar)) <* eof
-    simpleChar ∷ Parser String String
-    simpleChar = String.singleton <$> p
-    encodedChar ∷ Parser String String
-    encodedChar = unsafePartial fromJust <<< encodeURIComponent <<< String.singleton <$> anyChar
+    parse = (NES.joinWith "" <$> List.manyRec (simpleChar <|> encodedChar)) <* eof
+    simpleChar ∷ Parser String NonEmptyString
+    simpleChar = NES.singleton <$> p
+    encodedChar ∷ Parser String NonEmptyString
+    encodedChar = unsafePartial (NES.unsafeFromString <<< fromJust) <<< encodeURIComponent <<< String.singleton <$> anyChar
 
 -- | A version of [`printEncoded`](#v:printEncoded) that operates on non-empty
 -- | strings.

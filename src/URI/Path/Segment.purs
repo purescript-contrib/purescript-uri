@@ -27,12 +27,12 @@ module URI.Path.Segment
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array as Array
 import Data.Array.NonEmpty as NEA
+import Data.List as List
 import Data.Maybe (fromJust)
 import Data.String.NonEmpty (NonEmptyString)
-import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Data.String.NonEmpty (join1With, joinWith, toString) as NES
+import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (Parser)
@@ -81,7 +81,7 @@ parseSegment ∷ Parser String PathSegment
 parseSegment =
   PathSegment
     <<< NES.joinWith ""
-    <$> Array.many (pctEncoded <|> NES.singleton <$> segmentChar)
+    <$> List.manyRec (pctEncoded <|> NES.singleton <$> segmentChar)
 
 -- | A printer for a _segment_ component of a URI.
 printSegment ∷ PathSegment → String
