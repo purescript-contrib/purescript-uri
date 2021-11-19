@@ -24,10 +24,10 @@ import URI.Common (alpha, alphaNum)
 -- | The scheme part of an absolute URI. For example: `http`, `ftp`, `git`.
 newtype Scheme = Scheme NonEmptyString
 
-derive newtype instance eqScheme ∷ Eq Scheme
-derive newtype instance ordScheme ∷ Ord Scheme
+derive newtype instance eqScheme :: Eq Scheme
+derive newtype instance ordScheme :: Ord Scheme
 
-instance showScheme ∷ Show Scheme where
+instance showScheme :: Show Scheme where
   show (Scheme s) = "(Scheme.unsafeFromString " <> show (NES.toString s) <> ")"
 
 -- | Attempts to create a `Scheme` from the passed string. The scheme component
@@ -40,7 +40,7 @@ instance showScheme ∷ Show Scheme where
 -- | fromString "!!!" == Nothing
 -- | fromString "" == Nothing
 -- | ```
-fromString ∷ String → Maybe Scheme
+fromString :: String -> Maybe Scheme
 fromString = map Scheme <<< hush <<< flip runParser (parseScheme <* eof)
 
 -- | Returns the string value for a scheme.
@@ -49,7 +49,7 @@ fromString = map Scheme <<< hush <<< flip runParser (parseScheme <* eof)
 -- | toString (unsafeFromString "http") == "http"
 -- | toString (unsafeFromString "git+ssh") == "git+ssh"
 -- | ```
-toString ∷ Scheme → NonEmptyString
+toString :: Scheme -> NonEmptyString
 toString (Scheme s) = s
 
 -- | Constructs a `Scheme` part unsafely: if the value is not an acceptable
@@ -57,23 +57,23 @@ toString (Scheme s) = s
 -- |
 -- | This is intended as a convenience when describing `Scheme`s statically in
 -- | PureScript code, in all other cases `fromString` should be used.
-unsafeFromString ∷ String → Scheme
+unsafeFromString :: String -> Scheme
 unsafeFromString s = case fromString s of
-  Just s' → s'
-  Nothing → unsafeCrashWith $ "Scheme value is invalid: `" <> show s <> "`"
+  Just s' -> s'
+  Nothing -> unsafeCrashWith $ "Scheme value is invalid: `" <> show s <> "`"
 
 -- | A parser for the scheme component of a URI. Expects a scheme string
 -- | followed by `':'`.
-parser ∷ Parser String Scheme
+parser :: Parser String Scheme
 parser = Scheme <$> parseScheme <* char ':'
 
-parseScheme ∷ Parser String NonEmptyString
+parseScheme :: Parser String NonEmptyString
 parseScheme = do
-  init ← alpha
-  rest ← NES.joinWith "" <$> List.manyRec (NES.singleton <$> (alphaNum <|> char '+' <|> char '-' <|> char '.'))
+  init <- alpha
+  rest <- NES.joinWith "" <$> List.manyRec (NES.singleton <$> (alphaNum <|> char '+' <|> char '-' <|> char '.'))
   pure $ NES.singleton init `NES.appendString` rest
 
 -- | A printer for the scheme component of a URI. Prints a scheme value
 -- | followed by a `':'`.
-print ∷ Scheme → String
+print :: Scheme -> String
 print (Scheme s) = NES.toString s <> ":"

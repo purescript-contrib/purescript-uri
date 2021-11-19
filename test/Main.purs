@@ -18,7 +18,7 @@ import Test.URI.Scheme as Scheme
 import Test.URI.URIRef as URIRef
 import Test.URI.UserInfo as UserInfo
 
-main ∷ Effect Unit
+main :: Effect Unit
 main = launchAff_ $ flip runReaderT 0 do
   Scheme.spec
   UserInfo.spec

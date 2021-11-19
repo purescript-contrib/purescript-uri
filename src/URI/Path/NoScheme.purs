@@ -19,21 +19,22 @@ import URI.Path.Segment (PathSegment, PathSegmentNZNC, parseSegment, parseSegmen
 -- | component.
 newtype PathNoScheme = PathNoScheme (Tuple PathSegmentNZNC (Array PathSegment))
 
-derive instance eqPathNoScheme ∷ Eq PathNoScheme
-derive instance ordPathNoScheme ∷ Ord PathNoScheme
-derive instance genericPathNoScheme ∷ Generic PathNoScheme _
-instance showPathNoScheme ∷ Show PathNoScheme where show = genericShow
+derive instance eqPathNoScheme :: Eq PathNoScheme
+derive instance ordPathNoScheme :: Ord PathNoScheme
+derive instance genericPathNoScheme :: Generic PathNoScheme _
+instance showPathNoScheme :: Show PathNoScheme where
+  show = genericShow
 
 -- | A parser for a _path-noscheme_ URI component.
-parse ∷ Parser String PathNoScheme
+parse :: Parser String PathNoScheme
 parse = do
-  head ← parseSegmentNZNC
-  tail ← List.manyRec (char '/' *> parseSegment)
+  head <- parseSegmentNZNC
+  tail <- List.manyRec (char '/' *> parseSegment)
   pure (PathNoScheme (Tuple head (Array.fromFoldable tail)))
 
 -- | A printer for a _path-noscheme_ URI component.
-print ∷ PathNoScheme → String
+print :: PathNoScheme -> String
 print (PathNoScheme (Tuple head tail)) =
   case tail of
-    [] → printSegmentNZNC head
-    _ → printSegmentNZNC head <> "/" <> String.joinWith "/" (map printSegment tail)
+    [] -> printSegmentNZNC head
+    _ -> printSegmentNZNC head <> "/" <> String.joinWith "/" (map printSegment tail)

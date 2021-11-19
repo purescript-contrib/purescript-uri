@@ -8,7 +8,7 @@ import Test.Spec (Spec, describe)
 import Test.Util (testIso)
 import URI.UserInfo as UserInfo
 
-spec ∷ Spec Unit
+spec :: Spec Unit
 spec =
   describe "UserInfo parser/printer" do
     testIso UserInfo.parser UserInfo.print "user" (UserInfo.fromString (nes (Proxy :: Proxy "user")))

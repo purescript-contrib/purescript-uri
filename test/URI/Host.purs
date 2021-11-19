@@ -16,7 +16,7 @@ import URI.Host.IPv4Address as IPv4Address
 import URI.Host.IPv6Address as IPv6Address
 import URI.Host.RegName as RegName
 
-spec ∷ Spec Unit
+spec :: Spec Unit
 spec = do
   describe "Host parser/printer" do
     testIso Host.parser Host.print "localhost" (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "localhost")))
@@ -29,7 +29,7 @@ spec = do
 
     it "should successfully roundtrip values sent through Host parse/print" do
       forAll do
-        ipv4 ← Host.Gen.genIPv4
+        ipv4 <- Host.Gen.genIPv4
         let printed = IPv4Address.print ipv4
         let parsed = runParser printed Host.parser
         pure $ pure (IPv4Address ipv4) === parsed
@@ -43,5 +43,5 @@ spec = do
 
     it "should uphold toString / fromString property" do
       forAll do
-        regName ← Host.Gen.genRegName
+        regName <- Host.Gen.genRegName
         pure $ RegName.fromString (RegName.toString regName) === regName

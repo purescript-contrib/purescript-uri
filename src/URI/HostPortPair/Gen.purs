@@ -15,21 +15,21 @@ import URI.Port.Gen (genPort)
 
 -- | Generates a random `HostPortPair` for testing purposes.
 genHostPortPair
-  ∷ ∀ m host port
-  . Gen.MonadGen m
-  ⇒ m host
-  → m port
-  → m (HostPortPair host port)
+  :: forall m host port
+   . Gen.MonadGen m
+  => m host
+  -> m port
+  -> m (HostPortPair host port)
 genHostPortPair host port = do
-  h ← sometimes 0.75 host
-  p ← sometimes 0.25 port
+  h <- sometimes 0.75 host
+  p <- sometimes 0.25 port
   pure case h, p of
-    Just h', Just p' → Just (Both h' p')
-    Just h', Nothing → Just (This h')
-    Nothing, Just p' → Just (That p')
-    Nothing, Nothing → Nothing
+    Just h', Just p' -> Just (Both h' p')
+    Just h', Nothing -> Just (This h')
+    Nothing, Just p' -> Just (That p')
+    Nothing, Nothing -> Nothing
   where
-  sometimes ∷ ∀ a. Number → m a → m (Maybe a)
+  sometimes :: forall a. Number -> m a -> m (Maybe a)
   sometimes chance g = do
-    n ← Gen.chooseFloat 0.0 1.0
+    n <- Gen.chooseFloat 0.0 1.0
     if n > chance then Just <$> g else pure Nothing

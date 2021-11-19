@@ -37,10 +37,11 @@ import URI.Scheme as Scheme
 -- | but is required to have a `Scheme` component.
 data AbsoluteURI userInfo hosts path hierPath query = AbsoluteURI Scheme (HierarchicalPart userInfo hosts path hierPath) (Maybe query)
 
-derive instance eqAbsoluteURI ∷ (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query) ⇒ Eq (AbsoluteURI userInfo hosts path hierPath query)
-derive instance ordAbsoluteURI ∷ (Ord userInfo, Ord hosts, Ord path, Ord hierPath, Ord query) ⇒ Ord (AbsoluteURI userInfo hosts path hierPath query)
-derive instance genericAbsoluteURI ∷ Generic (AbsoluteURI userInfo hosts path hierPath query) _
-instance showAbsoluteURI ∷ (Show userInfo, Show hosts, Show path, Show hierPath, Show query) ⇒ Show (AbsoluteURI userInfo hosts path hierPath query) where show = genericShow
+derive instance eqAbsoluteURI :: (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query) => Eq (AbsoluteURI userInfo hosts path hierPath query)
+derive instance ordAbsoluteURI :: (Ord userInfo, Ord hosts, Ord path, Ord hierPath, Ord query) => Ord (AbsoluteURI userInfo hosts path hierPath query)
+derive instance genericAbsoluteURI :: Generic (AbsoluteURI userInfo hosts path hierPath query) _
+instance showAbsoluteURI :: (Show userInfo, Show hosts, Show path, Show hierPath, Show query) => Show (AbsoluteURI userInfo hosts path hierPath query) where
+  show = genericShow
 
 -- | A row type for describing the options fields used by the absolute URI
 -- | parser and printer.
@@ -65,11 +66,11 @@ type AbsoluteURIOptions userInfo hosts path hierPath query =
 -- | `HostPortPair.parseHosts pure pure`. See [`URI.HostPortPair`](../URI.HostPortPair)
 -- | for more information on the host/port pair parser.
 type AbsoluteURIParseOptions userInfo hosts path hierPath query r =
-  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ Parser String hosts
-  , parsePath ∷ Path → Either URIPartParseError path
-  , parseHierPath ∷ Either PathAbsolute PathRootless → Either URIPartParseError hierPath
-  , parseQuery ∷ Query → Either URIPartParseError query
+  ( parseUserInfo :: UserInfo -> Either URIPartParseError userInfo
+  , parseHosts :: Parser String hosts
+  , parsePath :: Path -> Either URIPartParseError path
+  , parseHierPath :: Either PathAbsolute PathRootless -> Either URIPartParseError hierPath
+  , parseQuery :: Query -> Either URIPartParseError query
   | r
   )
 
@@ -85,19 +86,19 @@ type AbsoluteURIParseOptions userInfo hosts path hierPath query r =
 -- | `HostPortPair.printHosts identity identity`. See [`URI.HostPortPair`](../URI.HostPortPair)
 -- | for more information on the host/port pair printer.
 type AbsoluteURIPrintOptions userInfo hosts path hierPath query r =
-  ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts → String
-  , printPath ∷ path → Path
-  , printHierPath ∷ hierPath → Either PathAbsolute PathRootless
-  , printQuery ∷ query → Query
+  ( printUserInfo :: userInfo -> UserInfo
+  , printHosts :: hosts -> String
+  , printPath :: path -> Path
+  , printHierPath :: hierPath -> Either PathAbsolute PathRootless
+  , printQuery :: query -> Query
   | r
   )
 
 -- | A parser for an absolute URI.
 parser
-  ∷ ∀ userInfo hosts path hierPath query r
-  . Record (AbsoluteURIParseOptions userInfo hosts path hierPath query r)
-  → Parser String (AbsoluteURI userInfo hosts path hierPath query)
+  :: forall userInfo hosts path hierPath query r
+   . Record (AbsoluteURIParseOptions userInfo hosts path hierPath query r)
+  -> Parser String (AbsoluteURI userInfo hosts path hierPath query)
 parser opts = AbsoluteURI
   <$> Scheme.parser
   <*> HPart.parser opts
@@ -106,10 +107,10 @@ parser opts = AbsoluteURI
 
 -- | A printer for an absolute URI.
 print
-  ∷ ∀ userInfo hosts path hierPath query r
-  . Record (AbsoluteURIPrintOptions userInfo hosts path hierPath query r)
-  → AbsoluteURI userInfo hosts path hierPath query
-  → String
+  :: forall userInfo hosts path hierPath query r
+   . Record (AbsoluteURIPrintOptions userInfo hosts path hierPath query r)
+  -> AbsoluteURI userInfo hosts path hierPath query
+  -> String
 print opts (AbsoluteURI s h q) =
   String.joinWith "" $ Array.catMaybes
     [ Just (Scheme.print s)
@@ -119,33 +120,33 @@ print opts (AbsoluteURI s h q) =
 
 -- | The scheme component of an absolute URI.
 _scheme
-  ∷ ∀ userInfo hosts path hierPath query
-  . Lens'
-      (AbsoluteURI userInfo hosts path hierPath query)
-      Scheme
+  :: forall userInfo hosts path hierPath query
+   . Lens'
+       (AbsoluteURI userInfo hosts path hierPath query)
+       Scheme
 _scheme =
   lens
-    (\(AbsoluteURI s _ _) → s)
-    (\(AbsoluteURI _ h q) s → AbsoluteURI s h q)
+    (\(AbsoluteURI s _ _) -> s)
+    (\(AbsoluteURI _ h q) s -> AbsoluteURI s h q)
 
 -- | The hierarchical-part component of an absolute URI.
 _hierPart
-  ∷ ∀ userInfo hosts path hierPath query
-  . Lens'
-      (AbsoluteURI userInfo hosts path hierPath query)
-      (HierarchicalPart userInfo hosts path hierPath)
+  :: forall userInfo hosts path hierPath query
+   . Lens'
+       (AbsoluteURI userInfo hosts path hierPath query)
+       (HierarchicalPart userInfo hosts path hierPath)
 _hierPart =
   lens
-    (\(AbsoluteURI _ h _) → h)
-    (\(AbsoluteURI s _ q) h → AbsoluteURI s h q)
+    (\(AbsoluteURI _ h _) -> h)
+    (\(AbsoluteURI s _ q) h -> AbsoluteURI s h q)
 
 -- | The query component of an absolute URI.
 _query
-  ∷ ∀ userInfo hosts path hierPath query
-  . Lens'
-      (AbsoluteURI userInfo hosts path hierPath query)
-      (Maybe query)
+  :: forall userInfo hosts path hierPath query
+   . Lens'
+       (AbsoluteURI userInfo hosts path hierPath query)
+       (Maybe query)
 _query =
   lens
-    (\(AbsoluteURI _ _ q) → q)
-    (\(AbsoluteURI s h _) q → AbsoluteURI s h q)
+    (\(AbsoluteURI _ _ q) -> q)
+    (\(AbsoluteURI s h _) q -> AbsoluteURI s h q)

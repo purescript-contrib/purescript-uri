@@ -42,38 +42,38 @@ type MultiHostPortPair host port = Array (These host port)
 -- | custom representations. If this is not necessary, use `pure` for both of
 -- | these arguments.
 parser
-  ∷ ∀ host port
-  . (Host → Either URIPartParseError host)
-  → (Port → Either URIPartParseError port)
-  → Parser String (MultiHostPortPair host port)
+  :: forall host port
+   . (Host -> Either URIPartParseError host)
+  -> (Port -> Either URIPartParseError port)
+  -> Parser String (MultiHostPortPair host port)
 parser parseHost parsePort =
   Array.fromFoldable <$> sepBy (parsePair parseHost parsePort) (char ',')
 
 parsePair
-  ∷ ∀ host port
-  . (Host → Either URIPartParseError host)
-  → (Port → Either URIPartParseError port)
-  → Parser String (These host port)
+  :: forall host port
+   . (Host -> Either URIPartParseError host)
+  -> (Port -> Either URIPartParseError port)
+  -> Parser String (These host port)
 parsePair parseHost parsePort = do
-  mh ← optionMaybe (parseHost' parseHost)
-  mp ← optionMaybe (wrapParser parsePort Port.parser)
+  mh <- optionMaybe (parseHost' parseHost)
+  mp <- optionMaybe (wrapParser parsePort Port.parser)
   case mh, mp of
-    Just h, Nothing → pure (This h)
-    Nothing, Just p → pure (That p)
-    Just h, Just p → pure (Both h p)
-    Nothing, Nothing → fail "Neither host nor port present"
+    Just h, Nothing -> pure (This h)
+    Nothing, Just p -> pure (That p)
+    Just h, Just p -> pure (Both h p)
+    Nothing, Nothing -> fail "Neither host nor port present"
 
-parseHost' ∷ ∀ h. (Host → Either URIPartParseError h) → Parser String h
+parseHost' :: forall h. (Host -> Either URIPartParseError h) -> Parser String h
 parseHost' p = wrapParser p
   $ (IPv6Address <$> IPv6Address.parser)
-  <|> try (IPv4Address <$> IPv4Address.parser)
-  <|> (NameAddress <$> parseRegName')
+      <|> try (IPv4Address <$> IPv4Address.parser)
+      <|> (NameAddress <$> parseRegName')
 
-parseRegName' ∷ Parser String RegName
+parseRegName' :: Parser String RegName
 parseRegName' = RegName.unsafeFromString <<< NES.join1With "" <$> NEA.some p
   where
   p = pctEncoded <|> NES.singleton <$> c
-  c = unreserved <|> oneOf ['!', '$', '&', '\'', '(', ')', '*', '+', ';', '=']
+  c = unreserved <|> oneOf [ '!', '$', '&', '\'', '(', ')', '*', '+', ';', '=' ]
 
 -- | A printer for multiple host/port pairs embedded in a URI.
 -- |
@@ -81,10 +81,10 @@ parseRegName' = RegName.unsafeFromString <<< NES.join1With "" <$> NEA.some p
 -- | and `Port` components to be printed back from their custom representations.
 -- | If no custom types are being used, pass `identity` for both of these arguments.
 print
-  ∷ ∀ host port
-  . (host → Host)
-  → (port → Port)
-  → MultiHostPortPair host port
-  → String
+  :: forall host port
+   . (host -> Host)
+  -> (port -> Port)
+  -> MultiHostPortPair host port
+  -> String
 print printHost printPort =
   String.joinWith "," <<< map (HostPortPair.print printHost printPort <<< Just)

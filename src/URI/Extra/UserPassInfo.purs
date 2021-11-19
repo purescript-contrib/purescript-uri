@@ -32,48 +32,48 @@ import URI.UserInfo as UserInfo
 -- | containing un-encoded `:` characters.
 newtype UserPassInfo =
   UserPassInfo
-    { user ∷ NonEmptyString
-    , password ∷ Maybe NonEmptyString
+    { user :: NonEmptyString
+    , password :: Maybe NonEmptyString
     }
 
-derive instance eqUserPassInfo ∷ Eq UserPassInfo
-derive instance ordUserPassInfo ∷ Ord UserPassInfo
-derive instance newtypeUserPassInfo ∷ Newtype UserPassInfo _
+derive instance eqUserPassInfo :: Eq UserPassInfo
+derive instance ordUserPassInfo :: Ord UserPassInfo
+derive instance newtypeUserPassInfo :: Newtype UserPassInfo _
 
-instance showUserPassInfo ∷ Show UserPassInfo where
+instance showUserPassInfo :: Show UserPassInfo where
   show (UserPassInfo { user, password }) =
     "(UserPassInfo { user: " <> show user <> ", password: " <> show password <> "})"
 
 -- | A parser for `user:password` formatted user-info.
-parse ∷ UserInfo → Either URIPartParseError UserPassInfo
+parse :: UserInfo -> Either URIPartParseError UserPassInfo
 parse ui =
   let
     s = UserInfo.unsafeToString ui
   in
     case flip NES.splitAt s <$> NES.indexOf (String.Pattern ":") s of
-      Just { before: Nothing } →
+      Just { before: Nothing } ->
         Left (URIPartParseError "Expected a username before a password segment")
-      Just { before: Just before, after: Just after } →
+      Just { before: Just before, after: Just after } ->
         Right $ UserPassInfo
           { user: decodeURIComponent' before
           , password: decodeURIComponent' <$> NES.drop 1 after
           }
-      _ →
+      _ ->
         Right $ UserPassInfo
           { user: decodeURIComponent' s, password: Nothing }
 
 -- | A printer for `user:password` formatted user-info.
-print ∷ UserPassInfo → UserInfo
+print :: UserPassInfo -> UserInfo
 print (UserPassInfo { user, password }) =
   case password of
-    Nothing →
+    Nothing ->
       UserInfo.unsafeFromString (printEncoded' userPassInfoChar user)
-    Just p →
+    Just p ->
       UserInfo.unsafeFromString
         $ printEncoded' userPassInfoChar user
-        <> NES.singleton ':'
-        <> printEncoded' userPassInfoChar p
+            <> NES.singleton ':'
+            <> printEncoded' userPassInfoChar p
 
 -- | The supported user/password characters, excluding percent-encodings.
-userPassInfoChar ∷ Parser String Char
+userPassInfoChar :: Parser String Char
 userPassInfoChar = unreserved <|> subDelims

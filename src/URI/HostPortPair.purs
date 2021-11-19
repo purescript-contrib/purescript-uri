@@ -31,18 +31,18 @@ type HostPortPair host port = Maybe (These host port)
 -- | [`URI.Extra.MultiHostPortPair`](../URI.Extra.MultiHostPortPair) for an
 -- | example of this.
 parser
-  ∷ ∀ host port
-  . (Host → Either URIPartParseError host)
-  → (Port → Either URIPartParseError port)
-  → Parser String (HostPortPair host port)
+  :: forall host port
+   . (Host -> Either URIPartParseError host)
+  -> (Port -> Either URIPartParseError port)
+  -> Parser String (HostPortPair host port)
 parser parseHost parsePort = do
-  mh ← optionMaybe (wrapParser parseHost Host.parser)
-  mp ← optionMaybe (wrapParser parsePort Port.parser)
+  mh <- optionMaybe (wrapParser parseHost Host.parser)
+  mp <- optionMaybe (wrapParser parsePort Port.parser)
   pure case mh, mp of
-    Just h, Nothing → Just (This h)
-    Nothing, Just p → Just (That p)
-    Just h, Just p → Just (Both h p)
-    Nothing, Nothing → Nothing
+    Just h, Nothing -> Just (This h)
+    Nothing, Just p -> Just (That p)
+    Just h, Just p -> Just (Both h p)
+    Nothing, Nothing -> Nothing
 
 -- | A printer for a spec-conformant host/port pair.
 -- |
@@ -50,17 +50,17 @@ parser parseHost parsePort = do
 -- | and `Port` components to be printed back from their custom representations.
 -- | If no custom types are being used, pass `identity` for both of these arguments.
 print
-  ∷ ∀ host port
-  . (host → Host)
-  → (port → Port)
-  → HostPortPair host port
-  → String
+  :: forall host port
+   . (host -> Host)
+  -> (port -> Port)
+  -> HostPortPair host port
+  -> String
 print printHost printPort = case _ of
-  Nothing →
+  Nothing ->
     ""
-  Just (This host) →
+  Just (This host) ->
     Host.print (printHost host)
-  Just (That port) →
+  Just (That port) ->
     Port.print (printPort port)
-  Just (Both host port) →
+  Just (Both host port) ->
     Host.print (printHost host) <> Port.print (printPort port)

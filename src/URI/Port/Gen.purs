@@ -7,5 +7,5 @@ import URI.Port (Port)
 import URI.Port as Port
 
 -- | Generates a random `Port` for testing purposes.
-genPort ∷ ∀ m. Gen.MonadGen m ⇒ m Port
+genPort :: forall m. Gen.MonadGen m => m Port
 genPort = Port.unsafeFromInt <$> Gen.chooseInt 0 65535

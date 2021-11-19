@@ -32,10 +32,11 @@ import URI.UserInfo as UserInfo
 -- | `localhost:3000`, `user@example.net`.
 data Authority userInfo hosts = Authority (Maybe userInfo) hosts
 
-derive instance eqAuthority ∷ (Eq userInfo, Eq hosts) ⇒ Eq (Authority userInfo hosts)
-derive instance ordAuthority ∷ (Ord userInfo, Ord hosts) ⇒ Ord (Authority userInfo hosts)
-derive instance genericAuthority ∷ Generic (Authority userInfo hosts) _
-instance showAuthority ∷ (Show userInfo, Show hosts) ⇒ Show (Authority userInfo hosts) where show = genericShow
+derive instance eqAuthority :: (Eq userInfo, Eq hosts) => Eq (Authority userInfo hosts)
+derive instance ordAuthority :: (Ord userInfo, Ord hosts) => Ord (Authority userInfo hosts)
+derive instance genericAuthority :: Generic (Authority userInfo hosts) _
+instance showAuthority :: (Show userInfo, Show hosts) => Show (Authority userInfo hosts) where
+  show = genericShow
 
 -- | A row type for describing the options fields used by the authority parser
 -- | and printer.
@@ -51,8 +52,8 @@ type AuthorityOptions userInfo hosts =
 -- | Used as `Record (AuthorityParseOptions userInfo hosts ())` when type
 -- | annotating an options record.
 type AuthorityParseOptions userInfo hosts r =
-  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ Parser String hosts
+  ( parseUserInfo :: UserInfo -> Either URIPartParseError userInfo
+  , parseHosts :: Parser String hosts
   | r
   )
 
@@ -61,52 +62,52 @@ type AuthorityParseOptions userInfo hosts r =
 -- | Used as `Record (AuthorityPrintOptions userInfo hosts ())` when type
 -- | annotating an options record.
 type AuthorityPrintOptions userInfo hosts r =
-  ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts → String
+  ( printUserInfo :: userInfo -> UserInfo
+  , printHosts :: hosts -> String
   | r
   )
 
 -- | A parser for the authority part of a URI. Expects values with a `"//"`
 -- | prefix.
 parser
-  ∷ ∀ userInfo hosts r
-  . Record (AuthorityParseOptions userInfo hosts r)
-  → Parser String (Authority userInfo hosts)
+  :: forall userInfo hosts r
+   . Record (AuthorityParseOptions userInfo hosts r)
+  -> Parser String (Authority userInfo hosts)
 parser opts = do
-  _ ← string "//"
-  ui ← optionMaybe $ try (wrapParser opts.parseUserInfo UserInfo.parser <* char '@')
-  hosts ← opts.parseHosts
+  _ <- string "//"
+  ui <- optionMaybe $ try (wrapParser opts.parseUserInfo UserInfo.parser <* char '@')
+  hosts <- opts.parseHosts
   pure $ Authority ui hosts
 
 -- | A printer for the authority part of a URI. Will print the value with a
 -- | `"//"` prefix.
 print
-  ∷ ∀ userInfo hosts r
-  . Record (AuthorityPrintOptions userInfo hosts r)
-  → Authority userInfo hosts
-  → String
+  :: forall userInfo hosts r
+   . Record (AuthorityPrintOptions userInfo hosts r)
+  -> Authority userInfo hosts
+  -> String
 print opts (Authority mui hs) = case mui of
-  Just ui → "//" <> UserInfo.print (opts.printUserInfo ui) <> "@" <> opts.printHosts hs
-  Nothing → "//" <> opts.printHosts hs
+  Just ui -> "//" <> UserInfo.print (opts.printUserInfo ui) <> "@" <> opts.printHosts hs
+  Nothing -> "//" <> opts.printHosts hs
 
 -- | A lens for the user-info component of the authority.
 _userInfo
-  ∷ ∀ userInfo hosts
-  . Lens'
-      (Authority userInfo hosts)
-      (Maybe userInfo)
+  :: forall userInfo hosts
+   . Lens'
+       (Authority userInfo hosts)
+       (Maybe userInfo)
 _userInfo =
   lens
-    (\(Authority ui _) → ui)
-    (\(Authority _ hs) ui → Authority ui hs)
+    (\(Authority ui _) -> ui)
+    (\(Authority _ hs) ui -> Authority ui hs)
 
 -- | A lens for the host(s) component of the authority.
 _hosts
-  ∷ ∀ userInfo hosts
-  . Lens'
-      (Authority userInfo hosts)
-      hosts
+  :: forall userInfo hosts
+   . Lens'
+       (Authority userInfo hosts)
+       hosts
 _hosts =
   lens
-    (\(Authority _ hs) → hs)
-    (\(Authority ui _) hs → Authority ui hs)
+    (\(Authority _ hs) -> hs)
+    (\(Authority ui _) hs -> Authority ui hs)

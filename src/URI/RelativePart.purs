@@ -45,10 +45,11 @@ data RelativePart userInfo hosts path relPath
   = RelativePartAuth (Authority userInfo hosts) path
   | RelativePartNoAuth (Maybe relPath)
 
-derive instance eqRelativePart ∷ (Eq userInfo, Eq hosts, Eq path, Eq relPath) ⇒ Eq (RelativePart userInfo hosts path relPath)
-derive instance ordRelativePart ∷ (Ord userInfo, Ord hosts, Ord path, Ord relPath) ⇒ Ord (RelativePart userInfo hosts path relPath)
-derive instance genericRelativePart ∷ Generic (RelativePart userInfo hosts path relPath) _
-instance showRelativePart ∷ (Show userInfo, Show hosts, Show path, Show relPath) ⇒ Show (RelativePart userInfo hosts path relPath) where show = genericShow
+derive instance eqRelativePart :: (Eq userInfo, Eq hosts, Eq path, Eq relPath) => Eq (RelativePart userInfo hosts path relPath)
+derive instance ordRelativePart :: (Ord userInfo, Ord hosts, Ord path, Ord relPath) => Ord (RelativePart userInfo hosts path relPath)
+derive instance genericRelativePart :: Generic (RelativePart userInfo hosts path relPath) _
+instance showRelativePart :: (Show userInfo, Show hosts, Show path, Show relPath) => Show (RelativePart userInfo hosts path relPath) where
+  show = genericShow
 
 -- | A row type for describing the options fields used by the relative-part
 -- | parser and printer.
@@ -65,10 +66,10 @@ type RelativePartOptions userInfo hosts path relPath =
 -- | Used as `Record (RelativePartParseOptions userInfo hosts path relPath ())`
 -- | when type annotating an options record.
 type RelativePartParseOptions userInfo hosts path relPath r =
-  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ Parser String hosts
-  , parsePath ∷ Path → Either URIPartParseError path
-  , parseRelPath ∷ RelPath → Either URIPartParseError relPath
+  ( parseUserInfo :: UserInfo -> Either URIPartParseError userInfo
+  , parseHosts :: Parser String hosts
+  , parsePath :: Path -> Either URIPartParseError path
+  , parseRelPath :: RelPath -> Either URIPartParseError relPath
   | r
   )
 
@@ -78,10 +79,10 @@ type RelativePartParseOptions userInfo hosts path relPath r =
 -- | Used as `Record (RelativePartPrintOptions userInfo hosts path relPath ())`
 -- | when type annotating an options record.
 type RelativePartPrintOptions userInfo hosts path relPath r =
-  ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts → String
-  , printPath ∷ path → Path
-  , printRelPath ∷ relPath → RelPath
+  ( printUserInfo :: userInfo -> UserInfo
+  , printHosts :: hosts -> String
+  , printPath :: path -> Path
+  , printRelPath :: relPath -> RelPath
   | r
   )
 
@@ -93,9 +94,9 @@ type RelPath = Either PathAbsolute PathNoScheme
 
 -- | A parser for the relative-part of a URI.
 parser
-  ∷ ∀ userInfo hosts path relPath r
-  . Record (RelativePartParseOptions userInfo hosts path relPath r)
-  → Parser String (RelativePart userInfo hosts path relPath)
+  :: forall userInfo hosts path relPath r
+   . Record (RelativePartParseOptions userInfo hosts path relPath r)
+  -> Parser String (RelativePart userInfo hosts path relPath)
 parser opts = withAuth <|> withoutAuth
   where
   withAuth =
@@ -104,50 +105,50 @@ parser opts = withAuth <|> withoutAuth
       <*> wrapParser opts.parsePath Path.parser
   withoutAuth =
     RelativePartNoAuth <$> noAuthPath
-  noAuthPath
-    = (Just <$> wrapParser (opts.parseRelPath <<< Left) PathAbs.parse)
+  noAuthPath = (Just <$> wrapParser (opts.parseRelPath <<< Left) PathAbs.parse)
     <|> (Just <$> wrapParser (opts.parseRelPath <<< Right) PathNoScheme.parse)
     <|> pure Nothing
 
 -- | A printer for the relative-part of a URI.
 print
-  ∷ ∀ userInfo hosts path relPath r
-  . Record (RelativePartPrintOptions userInfo hosts path relPath r)
-  → RelativePart userInfo hosts path relPath → String
+  :: forall userInfo hosts path relPath r
+   . Record (RelativePartPrintOptions userInfo hosts path relPath r)
+  -> RelativePart userInfo hosts path relPath
+  -> String
 print opts = case _ of
-  RelativePartAuth a p →
+  RelativePartAuth a p ->
     Authority.print opts a <> Path.print (opts.printPath p)
-  RelativePartNoAuth p →
+  RelativePartNoAuth p ->
     maybe "" (either PathAbs.print PathNoScheme.print <<< opts.printRelPath) p
 
 -- | An affine traversal for the authority component of a relative-part.
 _authority
-  ∷ ∀ userInfo hosts path relPath
-  . Traversal'
-      (RelativePart userInfo hosts path relPath)
-      (Authority userInfo hosts)
-_authority = wander \f → case _ of
-  RelativePartAuth a p → flip RelativePartAuth p <$> f a
-  a → pure a
+  :: forall userInfo hosts path relPath
+   . Traversal'
+       (RelativePart userInfo hosts path relPath)
+       (Authority userInfo hosts)
+_authority = wander \f -> case _ of
+  RelativePartAuth a p -> flip RelativePartAuth p <$> f a
+  a -> pure a
 
 -- | An affine traversal for the path component of a relative-part, this
 -- | succeeds when the authority is present also.
 _path
-  ∷ ∀ userInfo hosts path relPath
-  . Traversal'
-      (RelativePart userInfo hosts path relPath)
-      path
-_path = wander \f → case _ of
-  RelativePartAuth a p → RelativePartAuth a <$> f p
-  a → pure a
+  :: forall userInfo hosts path relPath
+   . Traversal'
+       (RelativePart userInfo hosts path relPath)
+       path
+_path = wander \f -> case _ of
+  RelativePartAuth a p -> RelativePartAuth a <$> f p
+  a -> pure a
 
 -- | An affine traversal for the path component of a relative-part, this
 -- | succeeds when the authority is not present.
 _relPath
-  ∷ ∀ userInfo hosts path relPath
-  . Traversal'
-      (RelativePart userInfo hosts path relPath)
-      (Maybe relPath)
-_relPath = wander \f a → case a of
-  RelativePartNoAuth p → RelativePartNoAuth <$> f p
-  _ → pure a
+  :: forall userInfo hosts path relPath
+   . Traversal'
+       (RelativePart userInfo hosts path relPath)
+       (Maybe relPath)
+_relPath = wander \f a -> case a of
+  RelativePartNoAuth p -> RelativePartNoAuth <$> f p
+  _ -> pure a
