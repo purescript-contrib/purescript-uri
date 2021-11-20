@@ -36,6 +36,7 @@ spec = do
           , This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2")))
           ]
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -46,6 +47,7 @@ spec = do
           , Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2"))) (Port.unsafeFromInt 3000)
           ]
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -56,6 +58,7 @@ spec = do
           , This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2")))
           ]
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -66,6 +69,7 @@ spec = do
           , Both (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2"))) (Port.unsafeFromInt 3000)
           ]
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -76,6 +80,7 @@ spec = do
           , That (Port.unsafeFromInt 3000)
           ]
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -86,6 +91,7 @@ spec = do
           , This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "mongo-2")))
           ]
       )
+
   describe "URIRef+MultiHostPortPair parser/printer" do
     testIso
       (URIRef.parser options)
@@ -107,6 +113,7 @@ spec = do
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -127,6 +134,7 @@ spec = do
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)

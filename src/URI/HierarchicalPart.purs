@@ -48,6 +48,7 @@ data HierarchicalPart userInfo hosts path hierPath
 derive instance eqHierarchicalPart :: (Eq userInfo, Eq hosts, Eq path, Eq hierPath) => Eq (HierarchicalPart userInfo hosts path hierPath)
 derive instance ordHierarchicalPart :: (Ord userInfo, Ord hosts, Ord path, Ord hierPath) => Ord (HierarchicalPart userInfo hosts path hierPath)
 derive instance genericHierarchicalPart :: Generic (HierarchicalPart userInfo hosts path hierPath) _
+
 instance showHierarchicalPart :: (Show userInfo, Show hosts, Show path, Show hierPath) => Show (HierarchicalPart userInfo hosts path hierPath) where
   show = genericShow
 
@@ -122,33 +123,21 @@ print opts = case _ of
     maybe "" (either PathAbs.print PathRootless.print <<< opts.printHierPath) p
 
 -- | An affine traversal for the authority component of a hierarchical-part.
-_authority
-  :: forall userInfo hosts path hierPath
-   . Traversal'
-       (HierarchicalPart userInfo hosts path hierPath)
-       (Authority userInfo hosts)
+_authority :: forall userInfo hosts path hierPath. Traversal' (HierarchicalPart userInfo hosts path hierPath) (Authority userInfo hosts)
 _authority = wander \f -> case _ of
   HierarchicalPartAuth a p -> flip HierarchicalPartAuth p <$> f a
   a -> pure a
 
 -- | An affine traversal for the path component of a hierarchical-part, this
 -- | succeeds when the authority is present also.
-_path
-  :: forall userInfo hosts path hierPath
-   . Traversal'
-       (HierarchicalPart userInfo hosts path hierPath)
-       path
+_path :: forall userInfo hosts path hierPath. Traversal' (HierarchicalPart userInfo hosts path hierPath) path
 _path = wander \f -> case _ of
   HierarchicalPartAuth a p -> HierarchicalPartAuth a <$> f p
   a -> pure a
 
 -- | An affine traversal for the path component of a hierarchical-part, this
 -- | succeeds when the authority is not present.
-_hierPath
-  :: forall userInfo hosts path hierPath
-   . Traversal'
-       (HierarchicalPart userInfo hosts path hierPath)
-       (Maybe hierPath)
+_hierPath :: forall userInfo hosts path hierPath. Traversal' (HierarchicalPart userInfo hosts path hierPath) (Maybe hierPath)
 _hierPath = wander \f -> case _ of
   HierarchicalPartNoAuth p -> HierarchicalPartNoAuth <$> f p
   a -> pure a

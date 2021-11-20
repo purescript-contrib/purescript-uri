@@ -27,6 +27,7 @@ spec =
           Nothing
           (Just (This (NameAddress (RegName.unsafeFromString (nes (Proxy :: Proxy "localhost"))))))
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -35,6 +36,7 @@ spec =
           Nothing
           (Just (Both (NameAddress (RegName.unsafeFromString (nes (Proxy :: Proxy "localhost")))) (Port.unsafeFromInt 3000)))
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -43,6 +45,7 @@ spec =
           (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "user"))))
           (Just (Both (NameAddress (RegName.unsafeFromString (nes (Proxy :: Proxy "localhost")))) (Port.unsafeFromInt 3000)))
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)

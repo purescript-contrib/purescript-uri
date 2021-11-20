@@ -28,6 +28,7 @@ spec = do
           (Just (UserPassInfo { user: nes (Proxy :: Proxy "user"), password: Nothing }))
           (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host")))))
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -36,6 +37,7 @@ spec = do
           (Just (UserPassInfo { user: nes (Proxy :: Proxy "user"), password: Just (nes (Proxy :: Proxy "pass")) }))
           (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host")))))
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -44,6 +46,7 @@ spec = do
           (Just (UserPassInfo { user: nes (Proxy :: Proxy "user"), password: Just (nes (Proxy :: Proxy "pa:ss")) }))
           (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host")))))
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -52,6 +55,7 @@ spec = do
           (Just (UserPassInfo { user: nes (Proxy :: Proxy "us:er"), password: Just (nes (Proxy :: Proxy "pa:ss")) }))
           (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host")))))
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
@@ -60,6 +64,7 @@ spec = do
           (Just (UserPassInfo { user: nes (Proxy :: Proxy "us:er"), password: Just (nes (Proxy :: Proxy "pa:ss")) }))
           (Just (This (NameAddress (RegName.unsafeFromString $ nes (Proxy :: Proxy "host")))))
       )
+
     testIso
       (Authority.parser options)
       (Authority.print options)

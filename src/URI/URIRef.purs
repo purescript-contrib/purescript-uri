@@ -109,8 +109,7 @@ parser
   :: forall userInfo hosts path hierPath relPath query fragment r
    . Record (URIRefParseOptions userInfo hosts path hierPath relPath query fragment r)
   -> Parser String (URIRef userInfo hosts path hierPath relPath query fragment)
-parser opts = try (Left <$> URI.parser opts)
-  <|> (Right <$> RelativeRef.parser opts)
+parser opts = try (Left <$> URI.parser opts) <|> (Right <$> RelativeRef.parser opts)
 
 -- | A printer for a general URI.
 print

@@ -64,10 +64,10 @@ parsePair parseHost parsePort = do
     Nothing, Nothing -> fail "Neither host nor port present"
 
 parseHost' :: forall h. (Host -> Either URIPartParseError h) -> Parser String h
-parseHost' p = wrapParser p
-  $ (IPv6Address <$> IPv6Address.parser)
-      <|> try (IPv4Address <$> IPv4Address.parser)
-      <|> (NameAddress <$> parseRegName')
+parseHost' p = wrapParser p do
+  (IPv6Address <$> IPv6Address.parser)
+    <|> try (IPv4Address <$> IPv4Address.parser)
+    <|> (NameAddress <$> parseRegName')
 
 parseRegName' :: Parser String RegName
 parseRegName' = RegName.unsafeFromString <<< NES.join1With "" <$> NEA.some p

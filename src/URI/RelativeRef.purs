@@ -39,6 +39,7 @@ data RelativeRef userInfo hosts path relPath query fragment = RelativeRef (Relat
 derive instance eqRelativeRef :: (Eq userInfo, Eq hosts, Eq path, Eq relPath, Eq query, Eq fragment) => Eq (RelativeRef userInfo hosts path relPath query fragment)
 derive instance ordRelativeRef :: (Ord userInfo, Ord hosts, Ord path, Ord relPath, Ord query, Ord fragment) => Ord (RelativeRef userInfo hosts path relPath query fragment)
 derive instance genericRelativeRef :: Generic (RelativeRef userInfo hosts path relPath query fragment) _
+
 instance showRelativeRef :: (Show userInfo, Show hosts, Show path, Show relPath, Show query, Show fragment) => Show (RelativeRef userInfo hosts path relPath query fragment) where
   show = genericShow
 
@@ -118,33 +119,21 @@ print opts (RelativeRef h q f) =
     ]
 
 -- | The relative-part component of a relative URI.
-_relPart
-  :: forall userInfo hosts path relPath query fragment
-   . Lens'
-       (RelativeRef userInfo hosts path relPath query fragment)
-       (RelativePart userInfo hosts path relPath)
+_relPart :: forall userInfo hosts path relPath query fragment. Lens' (RelativeRef userInfo hosts path relPath query fragment) (RelativePart userInfo hosts path relPath)
 _relPart =
   lens
     (\(RelativeRef r _ _) -> r)
     (\(RelativeRef _ q f) r -> RelativeRef r q f)
 
 -- | The query component of a relative URI.
-_query
-  :: forall userInfo hosts path relPath query fragment
-   . Lens'
-       (RelativeRef userInfo hosts path relPath query fragment)
-       (Maybe query)
+_query :: forall userInfo hosts path relPath query fragment. Lens' (RelativeRef userInfo hosts path relPath query fragment) (Maybe query)
 _query =
   lens
     (\(RelativeRef _ q _) -> q)
     (\(RelativeRef r _ f) q -> RelativeRef r q f)
 
 -- | The fragment component of a relative URI.
-_fragment
-  :: forall userInfo hosts path relPath query fragment
-   . Lens'
-       (RelativeRef userInfo hosts path relPath query fragment)
-       (Maybe fragment)
+_fragment :: forall userInfo hosts path relPath query fragment. Lens' (RelativeRef userInfo hosts path relPath query fragment) (Maybe fragment)
 _fragment =
   lens
     (\(RelativeRef _ _ f) -> f)

@@ -48,6 +48,7 @@ data RelativePart userInfo hosts path relPath
 derive instance eqRelativePart :: (Eq userInfo, Eq hosts, Eq path, Eq relPath) => Eq (RelativePart userInfo hosts path relPath)
 derive instance ordRelativePart :: (Ord userInfo, Ord hosts, Ord path, Ord relPath) => Ord (RelativePart userInfo hosts path relPath)
 derive instance genericRelativePart :: Generic (RelativePart userInfo hosts path relPath) _
+
 instance showRelativePart :: (Show userInfo, Show hosts, Show path, Show relPath) => Show (RelativePart userInfo hosts path relPath) where
   show = genericShow
 
@@ -105,9 +106,10 @@ parser opts = withAuth <|> withoutAuth
       <*> wrapParser opts.parsePath Path.parser
   withoutAuth =
     RelativePartNoAuth <$> noAuthPath
-  noAuthPath = (Just <$> wrapParser (opts.parseRelPath <<< Left) PathAbs.parse)
-    <|> (Just <$> wrapParser (opts.parseRelPath <<< Right) PathNoScheme.parse)
-    <|> pure Nothing
+  noAuthPath =
+    (Just <$> wrapParser (opts.parseRelPath <<< Left) PathAbs.parse)
+      <|> (Just <$> wrapParser (opts.parseRelPath <<< Right) PathNoScheme.parse)
+      <|> pure Nothing
 
 -- | A printer for the relative-part of a URI.
 print
@@ -122,33 +124,21 @@ print opts = case _ of
     maybe "" (either PathAbs.print PathNoScheme.print <<< opts.printRelPath) p
 
 -- | An affine traversal for the authority component of a relative-part.
-_authority
-  :: forall userInfo hosts path relPath
-   . Traversal'
-       (RelativePart userInfo hosts path relPath)
-       (Authority userInfo hosts)
+_authority :: forall userInfo hosts path relPath. Traversal' (RelativePart userInfo hosts path relPath) (Authority userInfo hosts)
 _authority = wander \f -> case _ of
   RelativePartAuth a p -> flip RelativePartAuth p <$> f a
   a -> pure a
 
 -- | An affine traversal for the path component of a relative-part, this
 -- | succeeds when the authority is present also.
-_path
-  :: forall userInfo hosts path relPath
-   . Traversal'
-       (RelativePart userInfo hosts path relPath)
-       path
+_path :: forall userInfo hosts path relPath. Traversal' (RelativePart userInfo hosts path relPath) path
 _path = wander \f -> case _ of
   RelativePartAuth a p -> RelativePartAuth a <$> f p
   a -> pure a
 
 -- | An affine traversal for the path component of a relative-part, this
 -- | succeeds when the authority is not present.
-_relPath
-  :: forall userInfo hosts path relPath
-   . Traversal'
-       (RelativePart userInfo hosts path relPath)
-       (Maybe relPath)
+_relPath :: forall userInfo hosts path relPath. Traversal' (RelativePart userInfo hosts path relPath) (Maybe relPath)
 _relPath = wander \f a -> case a of
   RelativePartNoAuth p -> RelativePartNoAuth <$> f p
   _ -> pure a

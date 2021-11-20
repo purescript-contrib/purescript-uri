@@ -40,6 +40,7 @@ data AbsoluteURI userInfo hosts path hierPath query = AbsoluteURI Scheme (Hierar
 derive instance eqAbsoluteURI :: (Eq userInfo, Eq hosts, Eq path, Eq hierPath, Eq query) => Eq (AbsoluteURI userInfo hosts path hierPath query)
 derive instance ordAbsoluteURI :: (Ord userInfo, Ord hosts, Ord path, Ord hierPath, Ord query) => Ord (AbsoluteURI userInfo hosts path hierPath query)
 derive instance genericAbsoluteURI :: Generic (AbsoluteURI userInfo hosts path hierPath query) _
+
 instance showAbsoluteURI :: (Show userInfo, Show hosts, Show path, Show hierPath, Show query) => Show (AbsoluteURI userInfo hosts path hierPath query) where
   show = genericShow
 
@@ -99,11 +100,12 @@ parser
   :: forall userInfo hosts path hierPath query r
    . Record (AbsoluteURIParseOptions userInfo hosts path hierPath query r)
   -> Parser String (AbsoluteURI userInfo hosts path hierPath query)
-parser opts = AbsoluteURI
-  <$> Scheme.parser
-  <*> HPart.parser opts
-  <*> optionMaybe (wrapParser opts.parseQuery Query.parser)
-  <* eof
+parser opts =
+  AbsoluteURI
+    <$> Scheme.parser
+    <*> HPart.parser opts
+    <*> optionMaybe (wrapParser opts.parseQuery Query.parser)
+    <* eof
 
 -- | A printer for an absolute URI.
 print
@@ -119,33 +121,21 @@ print opts (AbsoluteURI s h q) =
     ]
 
 -- | The scheme component of an absolute URI.
-_scheme
-  :: forall userInfo hosts path hierPath query
-   . Lens'
-       (AbsoluteURI userInfo hosts path hierPath query)
-       Scheme
+_scheme :: forall userInfo hosts path hierPath query. Lens' (AbsoluteURI userInfo hosts path hierPath query) Scheme
 _scheme =
   lens
     (\(AbsoluteURI s _ _) -> s)
     (\(AbsoluteURI _ h q) s -> AbsoluteURI s h q)
 
 -- | The hierarchical-part component of an absolute URI.
-_hierPart
-  :: forall userInfo hosts path hierPath query
-   . Lens'
-       (AbsoluteURI userInfo hosts path hierPath query)
-       (HierarchicalPart userInfo hosts path hierPath)
+_hierPart :: forall userInfo hosts path hierPath query. Lens' (AbsoluteURI userInfo hosts path hierPath query) (HierarchicalPart userInfo hosts path hierPath)
 _hierPart =
   lens
     (\(AbsoluteURI _ h _) -> h)
     (\(AbsoluteURI s _ q) h -> AbsoluteURI s h q)
 
 -- | The query component of an absolute URI.
-_query
-  :: forall userInfo hosts path hierPath query
-   . Lens'
-       (AbsoluteURI userInfo hosts path hierPath query)
-       (Maybe query)
+_query :: forall userInfo hosts path hierPath query. Lens' (AbsoluteURI userInfo hosts path hierPath query) (Maybe query)
 _query =
   lens
     (\(AbsoluteURI _ _ q) -> q)

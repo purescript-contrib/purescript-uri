@@ -25,7 +25,8 @@ equal :: forall a. Eq a => Show a => a -> a -> Spec Unit
 equal expected actual =
   when (expected /= actual) do
     fail $
-      "\nexpected: " <> show expected
+      "\nexpected: "
+        <> show expected
         <> "\ngot:      "
         <> show actual
 

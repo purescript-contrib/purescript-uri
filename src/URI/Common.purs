@@ -40,6 +40,7 @@ derive newtype instance eqURIPartParseError :: Eq URIPartParseError
 derive newtype instance ordURIPartParseError :: Ord URIPartParseError
 derive instance newtypeURIPartParseError :: Newtype URIPartParseError _
 derive instance genericURIPartParseError :: Generic URIPartParseError _
+
 instance showURIPartParseError :: Show URIPartParseError where
   show = genericShow
 

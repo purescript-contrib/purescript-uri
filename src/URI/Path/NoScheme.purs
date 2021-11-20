@@ -22,6 +22,7 @@ newtype PathNoScheme = PathNoScheme (Tuple PathSegmentNZNC (Array PathSegment))
 derive instance eqPathNoScheme :: Eq PathNoScheme
 derive instance ordPathNoScheme :: Ord PathNoScheme
 derive instance genericPathNoScheme :: Generic PathNoScheme _
+
 instance showPathNoScheme :: Show PathNoScheme where
   show = genericShow
 

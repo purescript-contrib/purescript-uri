@@ -23,6 +23,7 @@ derive newtype instance ordPath :: Ord Path
 derive newtype instance semigroupPath :: Semigroup Path
 derive newtype instance monoidPath :: Monoid Path
 derive instance genericPath :: Generic Path _
+
 instance showPath :: Show Path where
   show = genericShow
 

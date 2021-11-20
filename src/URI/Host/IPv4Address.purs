@@ -67,10 +67,10 @@ print (IPv4Address o1 o2 o3 o4) =
   show o1 <> "." <> show o2 <> "." <> show o3 <> "." <> show o4
 
 octet :: Parser String Int
-octet = wrapParser toInt
-  $ try ((\x y z -> String.fromCharArray [ x, y, z ]) <$> nzDigit <*> digit <*> digit)
-      <|> try ((\x y -> String.fromCharArray [ x, y ]) <$> nzDigit <*> digit)
-      <|> (String.singleton <$> digit)
+octet = wrapParser toInt $
+  try ((\x y z -> String.fromCharArray [ x, y, z ]) <$> nzDigit <*> digit <*> digit)
+    <|> try ((\x y -> String.fromCharArray [ x, y ]) <$> nzDigit <*> digit)
+    <|> (String.singleton <$> digit)
 
 nzDigit :: Parser String Char
 nzDigit = satisfy (\c -> c >= '1' && c <= '9')

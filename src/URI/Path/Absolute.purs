@@ -29,6 +29,7 @@ newtype PathAbsolute = PathAbsolute (Maybe (Tuple PathSegmentNZ (Array PathSegme
 derive instance eqPathAbsolute :: Eq PathAbsolute
 derive instance ordPathAbsolute :: Ord PathAbsolute
 derive instance genericPathAbsolute :: Generic PathAbsolute _
+
 instance showPathAbsolute :: Show PathAbsolute where
   show = genericShow
 

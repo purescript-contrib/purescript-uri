@@ -42,6 +42,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -57,6 +58,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -69,6 +71,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -81,6 +84,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -99,6 +103,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -117,6 +122,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -135,6 +141,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -153,6 +160,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -171,6 +179,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -189,6 +198,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -207,6 +217,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -225,6 +236,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -243,6 +255,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -261,6 +274,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -279,6 +293,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -297,6 +312,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -315,6 +331,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -333,6 +350,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -351,6 +369,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -369,6 +388,7 @@ spec =
               (Just (Fragment.unsafeFromString "nose"))
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -387,6 +407,7 @@ spec =
               (Just (Fragment.unsafeFromString ""))
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -405,6 +426,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -423,6 +445,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -434,6 +457,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -445,6 +469,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -456,6 +481,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -467,6 +493,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -478,6 +505,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -493,6 +521,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -508,6 +537,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -520,6 +550,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -532,6 +563,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -544,6 +576,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -556,6 +589,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -568,6 +602,7 @@ spec =
               Nothing
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)
@@ -586,6 +621,7 @@ spec =
               (Just (Fragment.unsafeFromString "?sort=asc&q=path%3A%2F&salt=1177214"))
           )
       )
+
     testIso
       (URIRef.parser options)
       (URIRef.print options)

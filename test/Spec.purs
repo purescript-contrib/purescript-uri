@@ -28,8 +28,7 @@ it :: String -> Spec Unit -> Spec Unit
 it = describe
 
 shouldEqual :: forall m a. MonadEffect m => Eq a => Show a => a -> a -> m Unit
-shouldEqual actual expected =
-  liftEffect $ assertEqual { actual, expected }
+shouldEqual actual expected = liftEffect $ assertEqual { actual, expected }
 
 fail :: forall m. MonadThrow Error m => String -> m Unit
 fail = throwError <<< error

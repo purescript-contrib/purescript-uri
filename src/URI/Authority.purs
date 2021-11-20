@@ -35,6 +35,7 @@ data Authority userInfo hosts = Authority (Maybe userInfo) hosts
 derive instance eqAuthority :: (Eq userInfo, Eq hosts) => Eq (Authority userInfo hosts)
 derive instance ordAuthority :: (Ord userInfo, Ord hosts) => Ord (Authority userInfo hosts)
 derive instance genericAuthority :: Generic (Authority userInfo hosts) _
+
 instance showAuthority :: (Show userInfo, Show hosts) => Show (Authority userInfo hosts) where
   show = genericShow
 
@@ -91,22 +92,14 @@ print opts (Authority mui hs) = case mui of
   Nothing -> "//" <> opts.printHosts hs
 
 -- | A lens for the user-info component of the authority.
-_userInfo
-  :: forall userInfo hosts
-   . Lens'
-       (Authority userInfo hosts)
-       (Maybe userInfo)
+_userInfo :: forall userInfo hosts. Lens' (Authority userInfo hosts) (Maybe userInfo)
 _userInfo =
   lens
     (\(Authority ui _) -> ui)
     (\(Authority _ hs) ui -> Authority ui hs)
 
 -- | A lens for the host(s) component of the authority.
-_hosts
-  :: forall userInfo hosts
-   . Lens'
-       (Authority userInfo hosts)
-       hosts
+_hosts :: forall userInfo hosts. Lens' (Authority userInfo hosts) hosts
 _hosts =
   lens
     (\(Authority _ hs) -> hs)

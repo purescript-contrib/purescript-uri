@@ -103,12 +103,13 @@ parser
   :: forall userInfo hosts path hierPath query fragment r
    . Record (URIParseOptions userInfo hosts path hierPath query fragment r)
   -> Parser String (URI userInfo hosts path hierPath query fragment)
-parser opts = URI
-  <$> Scheme.parser
-  <*> HPart.parser opts
-  <*> optionMaybe (wrapParser opts.parseQuery Query.parser)
-  <*> optionMaybe (wrapParser opts.parseFragment Fragment.parser)
-  <* eof
+parser opts =
+  URI
+    <$> Scheme.parser
+    <*> HPart.parser opts
+    <*> optionMaybe (wrapParser opts.parseQuery Query.parser)
+    <*> optionMaybe (wrapParser opts.parseFragment Fragment.parser)
+    <* eof
 
 -- | A printer for a URI.
 print
@@ -125,44 +126,28 @@ print opts (URI s h q f) =
     ]
 
 -- | The scheme component of a URI.
-_scheme
-  :: forall userInfo hosts path hierPath query fragment
-   . Lens'
-       (URI userInfo hosts path hierPath query fragment)
-       Scheme
+_scheme :: forall userInfo hosts path hierPath query fragment. Lens' (URI userInfo hosts path hierPath query fragment) Scheme
 _scheme =
   lens
     (\(URI s _ _ _) -> s)
     (\(URI _ h q f) s -> URI s h q f)
 
 -- | The hierarchical-part component of a URI.
-_hierPart
-  :: forall userInfo hosts path hierPath query fragment
-   . Lens'
-       (URI userInfo hosts path hierPath query fragment)
-       (HierarchicalPart userInfo hosts path hierPath)
+_hierPart :: forall userInfo hosts path hierPath query fragment. Lens' (URI userInfo hosts path hierPath query fragment) (HierarchicalPart userInfo hosts path hierPath)
 _hierPart =
   lens
     (\(URI _ h _ _) -> h)
     (\(URI s _ q f) h -> URI s h q f)
 
 -- | The query component of a URI.
-_query
-  :: forall userInfo hosts path hierPath query fragment
-   . Lens'
-       (URI userInfo hosts path hierPath query fragment)
-       (Maybe query)
+_query :: forall userInfo hosts path hierPath query fragment. Lens' (URI userInfo hosts path hierPath query fragment) (Maybe query)
 _query =
   lens
     (\(URI _ _ q _) -> q)
     (\(URI s h _ f) q -> URI s h q f)
 
 -- | The fragment component of a URI.
-_fragment
-  :: forall userInfo hosts path hierPath query fragment
-   . Lens'
-       (URI userInfo hosts path hierPath query fragment)
-       (Maybe fragment)
+_fragment :: forall userInfo hosts path hierPath query fragment. Lens' (URI userInfo hosts path hierPath query fragment) (Maybe fragment)
 _fragment =
   lens
     (\(URI _ _ _ f) -> f)

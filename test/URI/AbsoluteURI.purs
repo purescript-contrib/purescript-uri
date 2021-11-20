@@ -38,6 +38,7 @@ spec =
           )
           (Just (Query.unsafeFromString "password=&docTypeKey="))
       )
+
     testIso
       (AbsoluteURI.parser options)
       (AbsoluteURI.print options)
@@ -53,6 +54,7 @@ spec =
           )
           (Just (Query.unsafeFromString "password=pass&docTypeKey=type&queryTimeoutSeconds=20"))
       )
+
     testIso
       (AbsoluteURI.parser options)
       (AbsoluteURI.print options)
@@ -64,6 +66,7 @@ spec =
           )
           Nothing
       )
+
     testIso
       (AbsoluteURI.parser options)
       (AbsoluteURI.print options)

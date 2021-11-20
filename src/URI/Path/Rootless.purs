@@ -20,6 +20,7 @@ newtype PathRootless = PathRootless (Tuple PathSegmentNZ (Array PathSegment))
 derive instance eqPathRootless :: Eq PathRootless
 derive instance ordPathRootless :: Ord PathRootless
 derive instance genericPathRootless :: Generic PathRootless _
+
 instance showPathRootless :: Show PathRootless where
   show = genericShow
 

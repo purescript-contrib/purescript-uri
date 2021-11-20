@@ -49,14 +49,14 @@ import URI.Query as Q
 -- | - `&` and `;` are both treated as pair delimiters.
 newtype QueryPairs k v = QueryPairs (Array (Tuple k (Maybe v)))
 
+derive instance genericQueryPairs :: Generic (QueryPairs k v) _
 derive newtype instance eqQueryPairs :: (Eq k, Eq v) => Eq (QueryPairs k v)
 derive newtype instance ordQueryPairs :: (Ord k, Ord v) => Ord (QueryPairs k v)
-derive instance genericQueryPairs :: Generic (QueryPairs k v) _
-instance showQueryPairs :: (Show k, Show v) => Show (QueryPairs k v) where
-  show = genericShow
-
 derive newtype instance semigroupQueryPairs :: Semigroup (QueryPairs k v)
 derive newtype instance monoidQueryPairs :: Monoid (QueryPairs k v)
+
+instance showQueryPairs :: (Show k, Show v) => Show (QueryPairs k v) where
+  show = genericShow
 
 -- | Parses a query into key/value pairs.
 -- |
@@ -209,8 +209,9 @@ unsafeValueToString (Value s) = s
 
 -- | The supported key characters, excluding percent-encodings.
 keyPartChar :: Parser String Char
-keyPartChar = unreserved
-  <|> oneOf [ '!', '$', '\'', '(', ')', '*', '+', ',', ':', '@', '/', '?' ]
+keyPartChar =
+  unreserved
+    <|> oneOf [ '!', '$', '\'', '(', ')', '*', '+', ',', ':', '@', '/', '?' ]
 
 -- | The supported value characters, excluding percent-encodings.
 valuePartChar :: Parser String Char
