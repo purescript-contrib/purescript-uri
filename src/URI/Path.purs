@@ -18,19 +18,21 @@ import URI.Path.Segment (PathSegment, parseSegment, unsafeSegmentToString)
 -- | A path value of `/` corresponds to `Path [""]`, an empty path is `Path []`.
 newtype Path = Path (Array PathSegment)
 
-derive newtype instance eqPath ∷ Eq Path
-derive newtype instance ordPath ∷ Ord Path
-derive newtype instance semigroupPath ∷ Semigroup Path
-derive newtype instance monoidPath ∷ Monoid Path
-derive instance genericPath ∷ Generic Path _
-instance showPath ∷ Show Path where show = genericShow
+derive newtype instance eqPath :: Eq Path
+derive newtype instance ordPath :: Ord Path
+derive newtype instance semigroupPath :: Semigroup Path
+derive newtype instance monoidPath :: Monoid Path
+derive instance genericPath :: Generic Path _
+
+instance showPath :: Show Path where
+  show = genericShow
 
 -- | A parser for a _path-abempty_ URI component.
-parser ∷ Parser String Path
+parser :: Parser String Path
 parser = Path <<< Array.fromFoldable <$> List.manyRec (char '/' *> parseSegment)
 
 -- | A printer for a _path-abempty_ URI component.
-print ∷ Path → String
+print :: Path -> String
 print (Path segs)
   | Array.null segs = ""
   | otherwise = "/" <> String.joinWith "/" (map unsafeSegmentToString segs)

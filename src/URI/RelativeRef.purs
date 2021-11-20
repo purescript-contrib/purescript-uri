@@ -36,10 +36,12 @@ import URI.RelativePart as RPart
 -- | A relative URI. Relative in the sense that it lacks a `Scheme` component.
 data RelativeRef userInfo hosts path relPath query fragment = RelativeRef (RelativePart userInfo hosts path relPath) (Maybe query) (Maybe fragment)
 
-derive instance eqRelativeRef ∷ (Eq userInfo, Eq hosts, Eq path, Eq relPath, Eq query, Eq fragment) ⇒ Eq (RelativeRef userInfo hosts path relPath query fragment)
-derive instance ordRelativeRef ∷ (Ord userInfo, Ord hosts, Ord path, Ord relPath, Ord query, Ord fragment) ⇒ Ord (RelativeRef userInfo hosts path relPath query fragment)
-derive instance genericRelativeRef ∷ Generic (RelativeRef userInfo hosts path relPath query fragment) _
-instance showRelativeRef ∷ (Show userInfo, Show hosts, Show path, Show relPath, Show query, Show fragment) ⇒ Show (RelativeRef userInfo hosts path relPath query fragment) where show = genericShow
+derive instance eqRelativeRef :: (Eq userInfo, Eq hosts, Eq path, Eq relPath, Eq query, Eq fragment) => Eq (RelativeRef userInfo hosts path relPath query fragment)
+derive instance ordRelativeRef :: (Ord userInfo, Ord hosts, Ord path, Ord relPath, Ord query, Ord fragment) => Ord (RelativeRef userInfo hosts path relPath query fragment)
+derive instance genericRelativeRef :: Generic (RelativeRef userInfo hosts path relPath query fragment) _
+
+instance showRelativeRef :: (Show userInfo, Show hosts, Show path, Show relPath, Show query, Show fragment) => Show (RelativeRef userInfo hosts path relPath query fragment) where
+  show = genericShow
 
 -- | A row type for describing the options fields used by the relative URI
 -- | parser and printer.
@@ -64,12 +66,12 @@ type RelativeRefOptions userInfo hosts path relPath query fragment =
 -- | `HostPortPair.parseHosts pure pure`. See [`URI.HostPortPair`](../URI.HostPortPair)
 -- | for more information on the host/port pair parser.
 type RelativeRefParseOptions userInfo hosts path relPath query fragment r =
-  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ Parser String hosts
-  , parsePath ∷ Path → Either URIPartParseError path
-  , parseRelPath ∷ Either PathAbsolute PathNoScheme → Either URIPartParseError relPath
-  , parseQuery ∷ Query → Either URIPartParseError query
-  , parseFragment ∷ Fragment → Either URIPartParseError fragment
+  ( parseUserInfo :: UserInfo -> Either URIPartParseError userInfo
+  , parseHosts :: Parser String hosts
+  , parsePath :: Path -> Either URIPartParseError path
+  , parseRelPath :: Either PathAbsolute PathNoScheme -> Either URIPartParseError relPath
+  , parseQuery :: Query -> Either URIPartParseError query
+  , parseFragment :: Fragment -> Either URIPartParseError fragment
   | r
   )
 
@@ -82,20 +84,20 @@ type RelativeRefParseOptions userInfo hosts path relPath query fragment r =
 -- | `HostPortPair.printHosts identity identity`. See [`URI.HostPortPair`](../URI.HostPortPair)
 -- | for more information on the host/port pair printer.
 type RelativeRefPrintOptions userInfo hosts path relPath query fragment r =
-  ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts → String
-  , printPath ∷ path → Path
-  , printRelPath ∷ relPath → Either PathAbsolute PathNoScheme
-  , printQuery ∷ query → Query
-  , printFragment ∷ fragment → Fragment
+  ( printUserInfo :: userInfo -> UserInfo
+  , printHosts :: hosts -> String
+  , printPath :: path -> Path
+  , printRelPath :: relPath -> Either PathAbsolute PathNoScheme
+  , printQuery :: query -> Query
+  , printFragment :: fragment -> Fragment
   | r
   )
 
 -- | A parser for a relative URI.
 parser
-  ∷ ∀ userInfo hosts path relPath query fragment r
-  . Record (RelativeRefParseOptions userInfo hosts path relPath query fragment r)
-  → Parser String (RelativeRef userInfo hosts path relPath query fragment)
+  :: forall userInfo hosts path relPath query fragment r
+   . Record (RelativeRefParseOptions userInfo hosts path relPath query fragment r)
+  -> Parser String (RelativeRef userInfo hosts path relPath query fragment)
 parser opts =
   RelativeRef
     <$> RPart.parser opts
@@ -105,10 +107,10 @@ parser opts =
 
 -- | A printer for a relative URI.
 print
-  ∷ ∀ userInfo hosts path relPath query fragment r
-  . Record (RelativeRefPrintOptions userInfo hosts path relPath query fragment r)
-  → RelativeRef userInfo hosts path relPath query fragment
-  → String
+  :: forall userInfo hosts path relPath query fragment r
+   . Record (RelativeRefPrintOptions userInfo hosts path relPath query fragment r)
+  -> RelativeRef userInfo hosts path relPath query fragment
+  -> String
 print opts (RelativeRef h q f) =
   String.joinWith "" $ Array.catMaybes
     [ Just (RPart.print opts h)
@@ -117,34 +119,22 @@ print opts (RelativeRef h q f) =
     ]
 
 -- | The relative-part component of a relative URI.
-_relPart
-  ∷ ∀ userInfo hosts path relPath query fragment
-  . Lens'
-      (RelativeRef userInfo hosts path relPath query fragment)
-      (RelativePart userInfo hosts path relPath)
+_relPart :: forall userInfo hosts path relPath query fragment. Lens' (RelativeRef userInfo hosts path relPath query fragment) (RelativePart userInfo hosts path relPath)
 _relPart =
   lens
-    (\(RelativeRef r _ _) → r)
-    (\(RelativeRef _ q f) r → RelativeRef r q f)
+    (\(RelativeRef r _ _) -> r)
+    (\(RelativeRef _ q f) r -> RelativeRef r q f)
 
 -- | The query component of a relative URI.
-_query
-  ∷ ∀ userInfo hosts path relPath query fragment
-  . Lens'
-      (RelativeRef userInfo hosts path relPath query fragment)
-      (Maybe query)
+_query :: forall userInfo hosts path relPath query fragment. Lens' (RelativeRef userInfo hosts path relPath query fragment) (Maybe query)
 _query =
   lens
-    (\(RelativeRef _ q _) → q)
-    (\(RelativeRef r _ f) q → RelativeRef r q f)
+    (\(RelativeRef _ q _) -> q)
+    (\(RelativeRef r _ f) q -> RelativeRef r q f)
 
 -- | The fragment component of a relative URI.
-_fragment
-  ∷ ∀ userInfo hosts path relPath query fragment
-  . Lens'
-      (RelativeRef userInfo hosts path relPath query fragment)
-      (Maybe fragment)
+_fragment :: forall userInfo hosts path relPath query fragment. Lens' (RelativeRef userInfo hosts path relPath query fragment) (Maybe fragment)
 _fragment =
   lens
-    (\(RelativeRef _ _ f) → f)
-    (\(RelativeRef r q _) f → RelativeRef r q f)
+    (\(RelativeRef _ _ f) -> f)
+    (\(RelativeRef r q _) f -> RelativeRef r q f)

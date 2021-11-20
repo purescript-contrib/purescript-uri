@@ -16,37 +16,43 @@ import URI.HostPortPair as HostPortPair
 import URI.Port as Port
 import URI.UserInfo as UserInfo
 
-spec ∷ Spec Unit
+spec :: Spec Unit
 spec =
   describe "Authority parser/printer" do
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//localhost"
-      (Authority
-        Nothing
-        (Just (This (NameAddress (RegName.unsafeFromString (nes (Proxy :: Proxy "localhost")))))))
+      ( Authority
+          Nothing
+          (Just (This (NameAddress (RegName.unsafeFromString (nes (Proxy :: Proxy "localhost"))))))
+      )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//localhost:3000"
-      (Authority
-        Nothing
-        (Just (Both (NameAddress (RegName.unsafeFromString (nes (Proxy :: Proxy "localhost")))) (Port.unsafeFromInt 3000))))
+      ( Authority
+          Nothing
+          (Just (Both (NameAddress (RegName.unsafeFromString (nes (Proxy :: Proxy "localhost")))) (Port.unsafeFromInt 3000)))
+      )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//user@localhost:3000"
-      (Authority
-        (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "user"))))
-        (Just (Both (NameAddress (RegName.unsafeFromString (nes (Proxy :: Proxy "localhost")))) (Port.unsafeFromInt 3000))))
+      ( Authority
+          (Just (UserInfo.unsafeFromString (nes (Proxy :: Proxy "user"))))
+          (Just (Both (NameAddress (RegName.unsafeFromString (nes (Proxy :: Proxy "localhost")))) (Port.unsafeFromInt 3000)))
+      )
+
     testIso
       (Authority.parser options)
       (Authority.print options)
       "//:8000"
       (Authority Nothing (Just (That (Port.unsafeFromInt 8000))))
 
-options ∷ Record (AuthorityOptions UserInfo (HostPortPair Host Port))
+options :: Record (AuthorityOptions UserInfo (HostPortPair Host Port))
 options =
   { parseUserInfo: pure
   , printUserInfo: identity

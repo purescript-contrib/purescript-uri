@@ -12,6 +12,7 @@ Bugfixes:
 - Made all parsers stack safe on long input (#63 by @garyb)
 
 Other improvements:
+- Added `purs-tidy` formatter (#66 by @thomashoneyman)
 
 ## [v8.0.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v8.0.1) - 2021-05-06
 

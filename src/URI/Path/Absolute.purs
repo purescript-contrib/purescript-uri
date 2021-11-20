@@ -26,33 +26,35 @@ import URI.Path.Segment (PathSegment, PathSegmentNZ, parseSegment, parseSegmentN
 -- | path means the same thing as `/` anyway!
 newtype PathAbsolute = PathAbsolute (Maybe (Tuple PathSegmentNZ (Array PathSegment)))
 
-derive instance eqPathAbsolute ∷ Eq PathAbsolute
-derive instance ordPathAbsolute ∷ Ord PathAbsolute
-derive instance genericPathAbsolute ∷ Generic PathAbsolute _
-instance showPathAbsolute ∷ Show PathAbsolute where show = genericShow
+derive instance eqPathAbsolute :: Eq PathAbsolute
+derive instance ordPathAbsolute :: Ord PathAbsolute
+derive instance genericPathAbsolute :: Generic PathAbsolute _
+
+instance showPathAbsolute :: Show PathAbsolute where
+  show = genericShow
 
 -- | A parser for a _path-absolute_ URI component.
-parse ∷ Parser String PathAbsolute
+parse :: Parser String PathAbsolute
 parse = do
-  _ ← char '/'
+  _ <- char '/'
   optionMaybe parseSegmentNZ >>= case _ of
-    Just head →
+    Just head ->
       PathAbsolute
         <<< Just
         <<< Tuple head
         <<< Array.fromFoldable
         <$> List.manyRec (char '/' *> parseSegment)
-    Nothing →
+    Nothing ->
       pure (PathAbsolute Nothing)
 
 -- | A printer for a _path-absolute_ URI component.
-print ∷ PathAbsolute → String
+print :: PathAbsolute -> String
 print = case _ of
-  PathAbsolute Nothing →
+  PathAbsolute Nothing ->
     "/"
-  PathAbsolute (Just (Tuple head [])) →
+  PathAbsolute (Just (Tuple head [])) ->
     "/" <> printSegmentNZ head
-  PathAbsolute (Just (Tuple head tail)) →
+  PathAbsolute (Just (Tuple head tail)) ->
     "/"
       <> printSegmentNZ head
       <> "/"

@@ -9,7 +9,7 @@ import Test.Util (forAll, testIso)
 import URI.Port as Port
 import URI.Port.Gen as Port.Gen
 
-spec ∷ Spec Unit
+spec :: Spec Unit
 spec =
   describe "Port parser/printer" do
     testIso Port.parser Port.print ":0" (Port.unsafeFromInt 0)
@@ -18,5 +18,5 @@ spec =
 
     it "should uphold toString / fromString property" do
       forAll do
-        port ← Port.Gen.genPort
+        port <- Port.Gen.genPort
         pure $ Port.fromInt (Port.toInt port) === Just port

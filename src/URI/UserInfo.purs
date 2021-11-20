@@ -27,11 +27,11 @@ import URI.Common (decodeURIComponent', subDelims, unreserved, pctEncoded, print
 -- | look at `URI.Extra.UserPassInfo`.
 newtype UserInfo = UserInfo NonEmptyString
 
-derive newtype instance eqUserInfo ∷ Eq UserInfo
-derive newtype instance ordUserInfo ∷ Ord UserInfo
-derive newtype instance semigroupUserInfo ∷ Semigroup UserInfo
+derive newtype instance eqUserInfo :: Eq UserInfo
+derive newtype instance ordUserInfo :: Ord UserInfo
+derive newtype instance semigroupUserInfo :: Semigroup UserInfo
 
-instance showUserInfo ∷ Show UserInfo where
+instance showUserInfo :: Show UserInfo where
   show (UserInfo s) = "(UserInfo.unsafeFromString " <> show s <> ")"
 
 -- | Constructs a user-info value from a string, percent-encoding any characters
@@ -44,7 +44,7 @@ instance showUserInfo ∷ Show UserInfo where
 -- | fromString "foo@bar" = unsafeFromString "foo%40bar"
 -- | fromString "foo%40bar" = unsafeFromString "foo%2540bar"
 -- | ```
-fromString ∷ NonEmptyString → UserInfo
+fromString :: NonEmptyString -> UserInfo
 fromString = UserInfo <<< printEncoded' userInfoChar
 
 -- | Returns the string value for user-info, percent-decoding any characters
@@ -54,33 +54,33 @@ fromString = UserInfo <<< printEncoded' userInfoChar
 -- | toString (unsafeFromString "foo") = "foo"
 -- | toString (unsafeFromString "foo%40bar") = "foo@bar"
 -- | ```
-toString ∷ UserInfo → NonEmptyString
+toString :: UserInfo -> NonEmptyString
 toString (UserInfo s) = decodeURIComponent' s
 
 -- | Constructs a user-info value from a string directly - no percent-encoding
 -- | will be applied. This is useful when using a custom encoding scheme for
 -- | the query, to prevent double-encoding.
-unsafeFromString ∷ NonEmptyString → UserInfo
+unsafeFromString :: NonEmptyString -> UserInfo
 unsafeFromString = UserInfo
 
 -- | Returns the string value for user-info without percent-decoding. Only
 -- | "unsafe" in the sense that values this produces may need further decoding,
 -- | the name is more for symmetry with the `fromString`/`unsafeFromString`
 -- | pairing.
-unsafeToString ∷ UserInfo → NonEmptyString
+unsafeToString :: UserInfo -> NonEmptyString
 unsafeToString (UserInfo s) = s
 
 -- | A parser for the user-info component of a URI.
-parser ∷ Parser String UserInfo
+parser :: Parser String UserInfo
 parser = UserInfo <<< NES.join1With "" <$> NEA.some parse
   where
-  parse ∷ Parser String NonEmptyString
+  parse :: Parser String NonEmptyString
   parse = NES.singleton <$> userInfoChar <|> pctEncoded
 
 -- | A printer for the user-info component of a URI.
-print ∷ UserInfo → String
+print :: UserInfo -> String
 print = NES.toString <<< unsafeToString
 
 -- | The supported user info characters, excluding percent-encodings.
-userInfoChar ∷ Parser String Char
+userInfoChar :: Parser String Char
 userInfoChar = unreserved <|> subDelims <|> char ':'

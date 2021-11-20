@@ -17,24 +17,26 @@ import URI.Path.Segment (PathSegment, PathSegmentNZ, parseSegment, parseSegmentN
 -- | appear in a hierarchical-part when there is no authority component.
 newtype PathRootless = PathRootless (Tuple PathSegmentNZ (Array PathSegment))
 
-derive instance eqPathRootless ∷ Eq PathRootless
-derive instance ordPathRootless ∷ Ord PathRootless
-derive instance genericPathRootless ∷ Generic PathRootless _
-instance showPathRootless ∷ Show PathRootless where show = genericShow
+derive instance eqPathRootless :: Eq PathRootless
+derive instance ordPathRootless :: Ord PathRootless
+derive instance genericPathRootless :: Generic PathRootless _
+
+instance showPathRootless :: Show PathRootless where
+  show = genericShow
 
 -- | A parser for a _path-rootless_ URI component.
-parse ∷ Parser String PathRootless
+parse :: Parser String PathRootless
 parse = do
-  head ← parseSegmentNZ
-  tail ← List.manyRec (char '/' *> parseSegment)
+  head <- parseSegmentNZ
+  tail <- List.manyRec (char '/' *> parseSegment)
   pure (PathRootless (Tuple head (Array.fromFoldable tail)))
 
 -- | A printer for a _path-rootless_ URI component.
-print ∷ PathRootless → String
+print :: PathRootless -> String
 print = case _ of
-  PathRootless (Tuple head []) →
+  PathRootless (Tuple head []) ->
     printSegmentNZ head
-  PathRootless (Tuple head tail) →
+  PathRootless (Tuple head tail) ->
     printSegmentNZ head
       <> "/"
       <> String.joinWith "/" (map printSegment tail)

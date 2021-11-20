@@ -25,12 +25,12 @@ import URI.Common (subDelims, unreserved, pctEncoded, printEncoded)
 -- | The fragment component (hash) of a URI.
 newtype Fragment = Fragment String
 
-derive newtype instance eqFragment ∷ Eq Fragment
-derive newtype instance ordFragment ∷ Ord Fragment
-derive newtype instance semigroupFragment ∷ Semigroup Fragment
-derive newtype instance monoidFragment ∷ Monoid Fragment
+derive newtype instance eqFragment :: Eq Fragment
+derive newtype instance ordFragment :: Ord Fragment
+derive newtype instance semigroupFragment :: Semigroup Fragment
+derive newtype instance monoidFragment :: Monoid Fragment
 
-instance showFragment ∷ Show Fragment where
+instance showFragment :: Show Fragment where
   show (Fragment s) = "(Fragment.unsafeFromString " <> show s <> ")"
 
 -- | Constructs a fragment value from a string, percent-encoding any characters
@@ -43,7 +43,7 @@ instance showFragment ∷ Show Fragment where
 -- | fromString "foo#bar" = unsafeFromString "foo%23bar"
 -- | fromString "foo%23bar" = unsafeFromString "foo%2523bar"
 -- | ```
-fromString ∷ String → Fragment
+fromString :: String -> Fragment
 fromString = Fragment <<< printEncoded fragmentChar
 
 -- | Returns the string value for a fragment, percent-decoding any characters
@@ -53,37 +53,41 @@ fromString = Fragment <<< printEncoded fragmentChar
 -- | toString (unsafeFromString "foo") = "foo"
 -- | toString (unsafeFromString "foo%23bar") = "foo#bar"
 -- | ```
-toString ∷ Fragment → String
+toString :: Fragment -> String
 toString (Fragment s) = unsafePartial $ fromJust $ decodeURIComponent s
 
 -- | Constructs a fragment value from a string directly - no percent-encoding
 -- | will be applied. This is useful when using a custom encoding scheme for
 -- | the fragment, to prevent double-encoding.
-unsafeFromString ∷ String → Fragment
+unsafeFromString :: String -> Fragment
 unsafeFromString = Fragment
 
 -- | Returns the string value for the fragment without percent-decoding. Only
 -- | "unsafe" in the sense that values this produces may need further decoding,
 -- | the name is more for symmetry with the `fromString`/`unsafeFromString`
 -- | pairing.
-unsafeToString ∷ Fragment → String
+unsafeToString :: Fragment -> String
 unsafeToString (Fragment s) = s
 
 -- | A parser for the fragment component of a URI. Expects values with a `'#'`
 -- | prefix.
-parser ∷ Parser String Fragment
+parser :: Parser String Fragment
 parser =
   char '#' *>
-    (Fragment <<< NES.joinWith ""
-      <$> List.manyRec (pctEncoded <|> NES.singleton <$> fragmentChar))
+    ( Fragment <<< NES.joinWith ""
+        <$> List.manyRec (pctEncoded <|> NES.singleton <$> fragmentChar)
+    )
 
 -- | A printer for the fragment component of a URI. Will print the value with
 -- | a `'#'` prefix.
-print ∷ Fragment → String
+print :: Fragment -> String
 print (Fragment f) = "#" <> f
 
 -- | The supported fragment characters, excluding percent-encodings.
-fragmentChar ∷ Parser String Char
+fragmentChar :: Parser String Char
 fragmentChar =
   unreserved <|> subDelims
-    <|> char ':' <|> char '@' <|> char '/' <|> char '?'
+    <|> char ':'
+    <|> char '@'
+    <|> char '/'
+    <|> char '?'

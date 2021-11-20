@@ -72,13 +72,13 @@ type URIRefOptions userInfo hosts path hierPath relPath query fragment =
 -- | `HostPortPair.parseHosts pure pure`. See [`URI.HostPortPair`](../URI.HostPortPair)
 -- | for more information on the host/port pair parser.
 type URIRefParseOptions userInfo hosts path hierPath relPath query fragment r =
-  ( parseUserInfo ∷ UserInfo → Either URIPartParseError userInfo
-  , parseHosts ∷ Parser String hosts
-  , parsePath ∷ Path → Either URIPartParseError path
-  , parseHierPath ∷ Either PathAbsolute PathRootless → Either URIPartParseError hierPath
-  , parseRelPath ∷ Either PathAbsolute PathNoScheme → Either URIPartParseError relPath
-  , parseQuery ∷ Query → Either URIPartParseError query
-  , parseFragment ∷ Fragment → Either URIPartParseError fragment
+  ( parseUserInfo :: UserInfo -> Either URIPartParseError userInfo
+  , parseHosts :: Parser String hosts
+  , parsePath :: Path -> Either URIPartParseError path
+  , parseHierPath :: Either PathAbsolute PathRootless -> Either URIPartParseError hierPath
+  , parseRelPath :: Either PathAbsolute PathNoScheme -> Either URIPartParseError relPath
+  , parseQuery :: Query -> Either URIPartParseError query
+  , parseFragment :: Fragment -> Either URIPartParseError fragment
   | r
   )
 
@@ -94,29 +94,27 @@ type URIRefParseOptions userInfo hosts path hierPath relPath query fragment r =
 -- | `HostPortPair.printHosts id id`. See [`URI.HostPortPair`](../URI.HostPortPair)
 -- | for more information on the host/port pair printer.
 type URIRefPrintOptions userInfo hosts path hierPath relPath query fragment r =
-  ( printUserInfo ∷ userInfo → UserInfo
-  , printHosts ∷ hosts → String
-  , printPath ∷ path → Path
-  , printHierPath ∷ hierPath → Either PathAbsolute PathRootless
-  , printRelPath ∷ relPath → Either PathAbsolute PathNoScheme
-  , printQuery ∷ query → Query
-  , printFragment ∷ fragment → Fragment
+  ( printUserInfo :: userInfo -> UserInfo
+  , printHosts :: hosts -> String
+  , printPath :: path -> Path
+  , printHierPath :: hierPath -> Either PathAbsolute PathRootless
+  , printRelPath :: relPath -> Either PathAbsolute PathNoScheme
+  , printQuery :: query -> Query
+  , printFragment :: fragment -> Fragment
   | r
   )
 
 -- | A parser for a general URI.
 parser
-  ∷ ∀ userInfo hosts path hierPath relPath query fragment r
-  . Record (URIRefParseOptions userInfo hosts path hierPath relPath query fragment r)
-  → Parser String (URIRef userInfo hosts path hierPath relPath query fragment)
-parser opts
-  = try (Left <$> URI.parser opts)
-  <|> (Right <$> RelativeRef.parser opts)
+  :: forall userInfo hosts path hierPath relPath query fragment r
+   . Record (URIRefParseOptions userInfo hosts path hierPath relPath query fragment r)
+  -> Parser String (URIRef userInfo hosts path hierPath relPath query fragment)
+parser opts = try (Left <$> URI.parser opts) <|> (Right <$> RelativeRef.parser opts)
 
 -- | A printer for a general URI.
 print
-  ∷ ∀ userInfo hosts path hierPath relPath query fragment r
-  . Record (URIRefPrintOptions userInfo hosts path hierPath relPath query fragment r)
-  → URIRef userInfo hosts path hierPath relPath query fragment
-  → String
+  :: forall userInfo hosts path hierPath relPath query fragment r
+   . Record (URIRefPrintOptions userInfo hosts path hierPath relPath query fragment r)
+  -> URIRef userInfo hosts path hierPath relPath query fragment
+  -> String
 print opts = either (URI.print opts) (RelativeRef.print opts)
