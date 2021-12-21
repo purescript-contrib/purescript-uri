@@ -13,6 +13,7 @@ Bugfixes:
 
 Other improvements:
 - Added `purs-tidy` formatter (#66 by @thomashoneyman)
+- Update README.md rfc link (#67 @codingedgar)
 
 ## [v8.0.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v8.0.1) - 2021-05-06
 
