@@ -4,14 +4,22 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
-import Test.Spec (Spec, describe)
-import Test.Util (testIso)
+import Test.Spec (Spec, describe, it)
+import Test.Util (forAll, testIso)
+import Test.QuickCheck ((===))
+import Test.QuickCheck.Arbitrary (arbitrary)
 import URI.Common (wrapParser)
 import URI.Extra.QueryPairs as NQP
 import URI.Query as Query
 
 spec :: Spec Unit
-spec =
+spec = do
+  describe "valueFromString" do
+    it "should not throw exceptions for any inputs" do
+      forAll do
+        unencoded <- arbitrary
+        pure $ NQP.valueFromString unencoded === NQP.valueFromString unencoded
+
   describe "QueryPairs printer/parser" do
     let parser = wrapParser (NQP.parse pure pure) Query.parser
     let printer = Query.print <<< NQP.print identity identity

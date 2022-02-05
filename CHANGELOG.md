@@ -10,6 +10,7 @@ New features:
 
 Bugfixes:
 - Made all parsers stack safe on long input (#63 by @garyb)
+- Exceptions are no longer thrown when using e.g. `valueFromString` with lone surrogates (#68 by @ysangkok)
 
 Other improvements:
 - Added `purs-tidy` formatter (#66 by @thomashoneyman)
