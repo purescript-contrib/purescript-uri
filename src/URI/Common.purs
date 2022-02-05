@@ -20,7 +20,7 @@ import Control.Monad.State (get)
 import Data.Either (Either(..), either)
 import Data.Generic.Rep (class Generic)
 import Data.List as List
-import Data.Maybe (fromJust)
+import Data.Maybe (Maybe(..), fromJust)
 import Data.Newtype (class Newtype, un)
 import Data.Show.Generic (genericShow)
 import Data.String.CodeUnits (singleton) as String
@@ -30,6 +30,7 @@ import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..), runParser)
+import Text.Parsing.Parser.Pos (initialPos)
 import Text.Parsing.Parser.String (anyChar, char, eof, oneOf, satisfy)
 import Text.Parsing.Parser.Token (digit, hexDigit)
 
@@ -100,7 +101,14 @@ printEncoded p s = either (const s) identity (runParser s parse)
   simpleChar = NES.singleton <$> p
 
   encodedChar :: Parser String NonEmptyString
-  encodedChar = unsafePartial (NES.unsafeFromString <<< fromJust) <<< encodeURIComponent <<< String.singleton <$> anyChar
+  encodedChar = handleURIEncodingResult =<< encodeURIComponent <<< String.singleton <$> anyChar
+
+  handleURIEncodingResult :: Maybe String -> Parser String NonEmptyString
+  handleURIEncodingResult Nothing =
+    -- E.g. when there is a lone surrogate. See encodeURIComponent MDN documentation.
+    throwError $ ParseError "Could not URI encode" initialPos
+  handleURIEncodingResult (Just encoded) =
+    pure $ unsafePartial (NES.unsafeFromString encoded)
 
 -- | A version of [`printEncoded`](#v:printEncoded) that operates on non-empty
 -- | strings.
