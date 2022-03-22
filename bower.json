@@ -19,7 +19,7 @@
   "dependencies": {
     "purescript-arrays": "master",
     "purescript-integers": "master",
-    "purescript-js-uri": "main",
+    "purescript-js-uri": "https://github.com/purescript-contrib/purescript-js-uri.git#main",
     "purescript-numbers": "master",
     "purescript-parsing": "main",
     "purescript-prelude": "master",
