@@ -29,7 +29,7 @@ import Data.String.NonEmpty (joinWith, toString, unsafeFromString) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
-import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..), runParser)
+import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..), runParser, runParserT')
 import Text.Parsing.Parser.Pos (initialPos)
 import Text.Parsing.Parser.String (anyChar, char, eof, oneOf, satisfy)
 import Text.Parsing.Parser.Token (digit, hexDigit)
@@ -54,8 +54,8 @@ wrapParser
   -> ParserT s m a
   -> ParserT s m b
 wrapParser parseA p = ParserT do
-  ParseState _ pos _ <- get
-  a <- un ParserT p
+  st@(ParseState _ pos _) <- get
+  a <- runParserT' st p
   case parseA a of
     Left (URIPartParseError err) -> throwError (ParseError err pos)
     Right b -> pure b
