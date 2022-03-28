@@ -21,7 +21,7 @@ import Data.Either (Either(..), either)
 import Data.Generic.Rep (class Generic)
 import Data.List as List
 import Data.Maybe (Maybe(..), fromJust)
-import Data.Newtype (class Newtype, un)
+import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Data.String.CodeUnits (singleton) as String
 import Data.String.NonEmpty (NonEmptyString)
@@ -29,7 +29,7 @@ import Data.String.NonEmpty (joinWith, toString, unsafeFromString) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
-import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT(..), runParser)
+import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT, runParser)
 import Text.Parsing.Parser.Pos (initialPos)
 import Text.Parsing.Parser.String (anyChar, char, eof, oneOf, satisfy)
 import Text.Parsing.Parser.Token (digit, hexDigit)
@@ -53,9 +53,9 @@ wrapParser
   => (a -> Either URIPartParseError b)
   -> ParserT s m a
   -> ParserT s m b
-wrapParser parseA p = ParserT do
-  ParseState _ pos _ <- get
-  a <- un ParserT p
+wrapParser parseA p = do
+  (ParseState _ pos _) <- get
+  a <- p
   case parseA a of
     Left (URIPartParseError err) -> throwError (ParseError err pos)
     Right b -> pure b
