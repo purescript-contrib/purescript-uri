@@ -36,7 +36,7 @@ parser :: Parser String IPv6Address
 parser =
   IPv6Address
     <$> (char '[' *> (NES.joinWith "" <$> List.someRec (NESCU.singleton <$> ipv6Char)) <* char ']')
-    <?> "IPv6 address"
+      <?> "IPv6 address"
   where
   ipv6Char :: Parser String Char
   ipv6Char = hexDigit <|> char ':' <|> char '.'
