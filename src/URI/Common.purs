@@ -29,10 +29,10 @@ import Data.String.NonEmpty (joinWith, toString, unsafeFromString) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent, encodeURIComponent)
 import Partial.Unsafe (unsafePartial)
-import Text.Parsing.Parser (ParseError(..), ParseState(..), Parser, ParserT, runParser)
-import Text.Parsing.Parser.Pos (initialPos)
-import Text.Parsing.Parser.String (anyChar, char, eof, oneOf, satisfy)
-import Text.Parsing.Parser.Token (digit, hexDigit)
+import Parsing (ParseError(..), ParseState(..), Parser, ParserT, runParser)
+import Parsing.Pos (initialPos)
+import Parsing.String (anyChar, char, eof, oneOf, satisfy)
+import Parsing.Token (digit, hexDigit)
 
 -- | An error type used when a custom component parser fails to handle a value.
 newtype URIPartParseError = URIPartParseError String

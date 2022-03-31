@@ -15,9 +15,9 @@ import Data.Maybe (Maybe(..))
 import Data.String.NonEmpty (joinWith) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Partial.Unsafe (unsafeCrashWith)
-import Text.Parsing.Parser (Parser, fail)
-import Text.Parsing.Parser.String (char)
-import Text.Parsing.Parser.Token (digit)
+import Parsing (Parser, fail)
+import Parsing.String (char)
+import Parsing.Token (digit)
 
 -- | The port component of a host in a URI.
 newtype Port = Port Int

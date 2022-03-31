@@ -9,9 +9,9 @@ import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
 import Data.String as String
 import Data.Tuple (Tuple(..))
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators (optionMaybe)
-import Text.Parsing.Parser.String (char)
+import Parsing (Parser)
+import Parsing.Combinators (optionMaybe)
+import Parsing.String (char)
 import URI.Path.Segment (PathSegment, PathSegmentNZ, parseSegment, parseSegmentNZ, printSegmentNZ, printSegment)
 
 -- | An absolute path, corresponding to _path-absolute_ in the spec. This path

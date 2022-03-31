@@ -22,9 +22,9 @@ import Data.Lens (Lens', lens)
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
 import Data.String as String
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators (optionMaybe)
-import Text.Parsing.Parser.String (eof)
+import Parsing (Parser)
+import Parsing.Combinators (optionMaybe)
+import Parsing.String (eof)
 import URI.Common (URIPartParseError, wrapParser)
 import URI.HierarchicalPart (Authority(..), AuthorityOptions, AuthorityParseOptions, AuthorityPrintOptions, HierPath, HierarchicalPart(..), HierarchicalPartOptions, HierarchicalPartParseOptions, HierarchicalPartPrintOptions, Host(..), IPv4Address, IPv6Address, Path(..), PathAbsolute(..), PathRootless(..), Port, RegName, UserInfo, _IPv4Address, _IPv6Address, _NameAddress, _authority, _hierPath, _hosts, _path, _userInfo)
 import URI.HierarchicalPart as HPart

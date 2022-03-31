@@ -16,7 +16,7 @@ import Data.Array.NonEmpty as NEA
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Data.String.NonEmpty (join1With, toString) as NES
-import Text.Parsing.Parser (Parser)
+import Parsing (Parser)
 import URI.Common (decodeURIComponent', subDelims, unreserved, pctEncoded, printEncoded')
 
 -- | The reg-name variation of the host part of a URI. A reg-name is probably

@@ -11,10 +11,10 @@ import Control.Alt ((<|>))
 import Data.List as List
 import Data.String.NonEmpty as NES
 import Data.String.NonEmpty.CodeUnits as NESCU
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators ((<?>))
-import Text.Parsing.Parser.String (char)
-import Text.Parsing.Parser.Token (hexDigit)
+import Parsing (Parser)
+import Parsing.Combinators ((<?>))
+import Parsing.String (char)
+import Parsing.Token (hexDigit)
 
 -- | This type and parser are much too forgiving currently, allowing almost
 -- | anything through that looks vaguely IPv6ish.
@@ -36,7 +36,7 @@ parser :: Parser String IPv6Address
 parser =
   IPv6Address
     <$> (char '[' *> (NES.joinWith "" <$> List.someRec (NESCU.singleton <$> ipv6Char)) <* char ']')
-    <?> "IPv6 address"
+      <?> "IPv6 address"
   where
   ipv6Char :: Parser String Char
   ipv6Char = hexDigit <|> char ':' <|> char '.'

@@ -17,8 +17,8 @@ import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty (appendString, joinWith, toString) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import Partial.Unsafe (unsafeCrashWith)
-import Text.Parsing.Parser (Parser, runParser)
-import Text.Parsing.Parser.String (char, eof)
+import Parsing (Parser, runParser)
+import Parsing.String (char, eof)
 import URI.Common (alpha, alphaNum)
 
 -- | The scheme part of an absolute URI. For example: `http`, `ftp`, `git`.

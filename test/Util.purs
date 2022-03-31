@@ -7,7 +7,7 @@ import Effect.Class (liftEffect)
 import Test.QuickCheck as QC
 import Test.QuickCheck.Gen as QCG
 import Test.Spec (Spec, it, fail)
-import Text.Parsing.Parser (Parser, runParser)
+import Parsing (Parser, runParser)
 
 testPrinter :: forall a. Show a => (a -> String) -> String -> a -> Spec Unit
 testPrinter f expected value =

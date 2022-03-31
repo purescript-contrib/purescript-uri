@@ -7,8 +7,8 @@ import Data.Generic.Rep (class Generic)
 import Data.List as List
 import Data.Show.Generic (genericShow)
 import Data.String as String
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.String (char)
+import Parsing (Parser)
+import Parsing.String (char)
 import URI.Path.Segment (PathSegment, parseSegment, unsafeSegmentToString)
 
 -- | A generic absolute-or-empty path, used in both hierarchical-part and
