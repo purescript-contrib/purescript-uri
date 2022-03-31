@@ -35,8 +35,8 @@ import Data.String.NonEmpty (join1With, joinWith, toString) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent)
 import Partial.Unsafe (unsafePartial)
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.String (char)
+import Parsing (Parser)
+import Parsing.String (char)
 import URI.Common (decodeURIComponent', pctEncoded, printEncoded, printEncoded', subDelims, unreserved)
 
 -- | A path segment. Can be empty, as this is required to represent some paths -

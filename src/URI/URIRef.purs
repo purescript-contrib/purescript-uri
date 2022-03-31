@@ -24,8 +24,8 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Data.Either (Either(..), either)
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators (try)
+import Parsing (Parser)
+import Parsing.Combinators (try)
 import URI.Authority (Authority(..))
 import URI.Common (URIPartParseError)
 import URI.Fragment (Fragment)

@@ -14,7 +14,7 @@ import Data.Newtype (class Newtype)
 import Data.String as String
 import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty.CodeUnits (singleton, splitAt, indexOf, drop) as NES
-import Text.Parsing.Parser (Parser)
+import Parsing (Parser)
 import URI.Common (URIPartParseError(..), decodeURIComponent', subDelims, unreserved, printEncoded')
 import URI.UserInfo (UserInfo)
 import URI.UserInfo as UserInfo

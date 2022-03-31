@@ -8,8 +8,8 @@ import Data.List as List
 import Data.Show.Generic (genericShow)
 import Data.String as String
 import Data.Tuple (Tuple(..))
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.String (char)
+import Parsing (Parser)
+import Parsing.String (char)
 import URI.Path.Segment (PathSegment, PathSegmentNZ, parseSegment, parseSegmentNZ, printSegmentNZ, printSegment)
 
 -- | A relative path, corresponding to _path-rootless_ in the spec. This path

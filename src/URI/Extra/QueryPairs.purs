@@ -33,9 +33,9 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import JSURI (decodeURIComponent)
 import Partial.Unsafe (unsafePartial)
-import Text.Parsing.Parser (ParseError(..), Parser, runParser)
-import Text.Parsing.Parser.Combinators (optionMaybe, sepBy)
-import Text.Parsing.Parser.String (char, oneOf)
+import Parsing (ParseError(..), Parser, runParser)
+import Parsing.Combinators (optionMaybe, sepBy)
+import Parsing.String (char, oneOf)
 import URI.Common (URIPartParseError(..), unreserved, pctEncoded, printEncoded, wrapParser)
 import URI.Query as Q
 

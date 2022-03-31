@@ -5,8 +5,8 @@ import Prelude
 import Data.Either (Either)
 import Data.Maybe (Maybe(..))
 import Data.These (These(..))
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.Combinators (optionMaybe)
+import Parsing (Parser)
+import Parsing.Combinators (optionMaybe)
 import URI.Common (URIPartParseError, wrapParser)
 import URI.Host (Host)
 import URI.Host as Host

@@ -8,8 +8,8 @@ import Data.List as List
 import Data.Show.Generic (genericShow)
 import Data.String as String
 import Data.Tuple (Tuple(..))
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.String (char)
+import Parsing (Parser)
+import Parsing.String (char)
 import URI.Path.Segment (PathSegment, PathSegmentNZNC, parseSegment, parseSegmentNZNC, printSegmentNZNC, printSegment)
 
 -- | A relative path that doesn't look like a URI scheme, corresponding to

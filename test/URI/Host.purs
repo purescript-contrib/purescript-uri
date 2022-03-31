@@ -8,7 +8,7 @@ import Type.Proxy (Proxy(..))
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, describe, it, shouldEqual)
 import Test.Util (forAll, testIso)
-import Text.Parsing.Parser (runParser)
+import Parsing (runParser)
 import URI.Host (Host(..))
 import URI.Host as Host
 import URI.Host.Gen as Host.Gen

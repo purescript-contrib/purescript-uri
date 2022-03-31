@@ -18,8 +18,8 @@ import Data.String.NonEmpty (joinWith) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent)
 import Partial.Unsafe (unsafePartial)
-import Text.Parsing.Parser (Parser)
-import Text.Parsing.Parser.String (char)
+import Parsing (Parser)
+import Parsing.String (char)
 import URI.Common (subDelims, unreserved, pctEncoded, printEncoded)
 
 -- | The query component of a URI.
