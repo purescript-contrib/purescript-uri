@@ -16,7 +16,6 @@ import Prelude
 
 import Control.Alt ((<|>))
 import Control.Monad.Except (throwError)
-import Control.Monad.State (get)
 import Data.Either (Either(..), either)
 import Data.Generic.Rep (class Generic)
 import Data.List as List
@@ -28,11 +27,12 @@ import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty (joinWith, toString, unsafeFromString) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent, encodeURIComponent)
-import Partial.Unsafe (unsafePartial)
-import Parsing (ParseError(..), ParseState(..), Parser, ParserT, runParser)
+import Parsing (ParseError(..), ParseState(..), Parser, ParserT, getParserT, runParser)
 import Parsing.Pos (initialPos)
-import Parsing.String (anyChar, char, eof, oneOf, satisfy)
+import Parsing.String (anyChar, char, eof, satisfy)
+import Parsing.String.Basic (oneOf)
 import Parsing.Token (digit, hexDigit)
+import Partial.Unsafe (unsafePartial)
 
 -- | An error type used when a custom component parser fails to handle a value.
 newtype URIPartParseError = URIPartParseError String
@@ -54,7 +54,7 @@ wrapParser
   -> ParserT s m a
   -> ParserT s m b
 wrapParser parseA p = do
-  (ParseState _ pos _) <- get
+  (ParseState _ pos _) <- getParserT
   a <- p
   case parseA a of
     Left (URIPartParseError err) -> throwError (ParseError err pos)
