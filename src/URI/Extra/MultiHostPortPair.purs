@@ -17,7 +17,8 @@ import Data.String.NonEmpty (join1With) as NES
 import Data.These (These(..))
 import Parsing (Parser, fail)
 import Parsing.Combinators (optionMaybe, sepBy, try)
-import Parsing.String (char, oneOf)
+import Parsing.String (char)
+import Parsing.String.Basic (oneOf)
 import URI.Common (URIPartParseError, unreserved, pctEncoded, wrapParser)
 import URI.Host (Host(..), RegName)
 import URI.Host.IPv4Address as IPv4Address

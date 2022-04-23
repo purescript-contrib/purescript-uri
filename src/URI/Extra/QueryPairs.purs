@@ -35,7 +35,8 @@ import JSURI (decodeURIComponent)
 import Partial.Unsafe (unsafePartial)
 import Parsing (ParseError(..), Parser, runParser)
 import Parsing.Combinators (optionMaybe, sepBy)
-import Parsing.String (char, oneOf)
+import Parsing.String (char)
+import Parsing.String.Basic (oneOf)
 import URI.Common (URIPartParseError(..), unreserved, pctEncoded, printEncoded, wrapParser)
 import URI.Query as Q
 
