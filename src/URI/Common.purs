@@ -27,8 +27,7 @@ import Data.String.NonEmpty (NonEmptyString)
 import Data.String.NonEmpty (joinWith, toString, unsafeFromString) as NES
 import Data.String.NonEmpty.CodeUnits (singleton) as NES
 import JSURI (decodeURIComponent, encodeURIComponent)
-import Parsing (ParseError(..), ParseState(..), Parser, ParserT, getParserT, runParser)
-import Parsing.Pos (initialPos)
+import Parsing (ParseError(..), ParseState(..), Parser, ParserT, getParserT, initialPos, runParser)
 import Parsing.String (anyChar, char, eof, satisfy)
 import Parsing.String.Basic (oneOf)
 import Parsing.Token (digit, hexDigit)
