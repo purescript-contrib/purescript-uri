@@ -17,20 +17,20 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-arrays": "master",
-    "purescript-integers": "master",
-    "purescript-js-uri": "https://github.com/purescript-contrib/purescript-js-uri.git#main",
-    "purescript-numbers": "master",
-    "purescript-parsing": "main",
-    "purescript-prelude": "master",
-    "purescript-profunctor-lenses": "main",
-    "purescript-these": "main",
-    "purescript-transformers": "master",
-    "purescript-unfoldable": "master"
+    "purescript-arrays": "^7.0.0",
+    "purescript-integers": "^6.0.0",
+    "purescript-js-uri": "https://github.com/purescript-contrib/purescript-js-uri.git#^3.0.0",
+    "purescript-numbers": "^9.0.0",
+    "purescript-parsing": "^9.0.0",
+    "purescript-prelude": "^6.0.0",
+    "purescript-profunctor-lenses": "^8.0.0",
+    "purescript-these": "^6.0.0",
+    "purescript-transformers": "^6.0.0",
+    "purescript-unfoldable": "^6.0.0"
   },
   "devDependencies": {
-    "purescript-aff": "main",
-    "purescript-assert": "master",
-    "purescript-quickcheck": "master"
+    "purescript-aff": "^7.0.0",
+    "purescript-assert": "^6.0.0",
+    "purescript-quickcheck": "^8.0.1"
   }
 }
