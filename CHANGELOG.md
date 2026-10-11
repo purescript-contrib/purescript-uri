@@ -12,6 +12,12 @@ Bugfixes:
 
 Other improvements:
 
+## [v9.0.1](https://github.com/purescript-contrib/purescript-uri/releases/tag/v9.0.1) - 2026-10-11
+
+Other improvements:
+- Migrate to registry-backed Spago 1.0 while preserving published dependency ranges, and update repository tooling and CI actions (#77 by @thomashoneyman).
+- Apply a whitespace-only indentation correction required by the latest formatter.
+
 ## [v9.0.0](https://github.com/purescript-contrib/purescript-uri/releases/tag/v9.0.0) - 2022-04-28
 
 Breaking changes:
